@@ -30,7 +30,7 @@ Lists the available categories that all our assets are in, as well as the number
 
 Returned data looks like this:
 
-```json
+```js
 {
   'outdoor': 339,
   'indoor': 121,
@@ -48,7 +48,7 @@ Takes the following **optional arguments**:
 
 Returns a list of asset types available, e.g:
 
-```json
+```js
 [
   'hdris',
   'textures',
