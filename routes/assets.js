@@ -38,6 +38,10 @@ router.get('/', async (req, res) => {
     collectionRef = collectionRef.where('categories', 'array-contains', last_cat);
   }
 
+  if (author) {
+    collectionRef = collectionRef.where(`authors.${author}`, '>=', "");
+  }
+
   const collection = await collectionRef.get();
   const docs = {};
   collection.forEach(doc => {
