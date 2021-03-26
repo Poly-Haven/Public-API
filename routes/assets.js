@@ -20,6 +20,8 @@ router.get('/', async (req, res) => {
 
   let collectionRef = db.collection('assets');
 
+
+  // Type
   if (asset_type in asset_types) {
     collectionRef = collectionRef.where('type', '==', asset_types[asset_type]);
   } else if (asset_type) {
@@ -29,6 +31,8 @@ router.get('/', async (req, res) => {
     return;
   }
 
+
+  // Categories (1/2)
   let categories_arr = [];
   if (categories) {
     // Firestore only supports using one 'array-contains' check. So we filter for the last one, and then will manually filter the rest later.
@@ -38,16 +42,22 @@ router.get('/', async (req, res) => {
     collectionRef = collectionRef.where('categories', 'array-contains', last_cat);
   }
 
+
+  // Author
   if (author) {
     collectionRef = collectionRef.where(`authors.${author}`, '>=', "");
   }
 
+
+  // Get data and conver to an object we can work with further
   const collection = await collectionRef.get();
   const docs = {};
   collection.forEach(doc => {
     docs[doc.id] = doc.data();
   });
 
+
+  // Categories (2/2)
   // Filter out the remaining assets that aren't in all specifed categories
   console.log(categories_arr);
   for (const cat of categories_arr) {
