@@ -23,9 +23,11 @@ Information about an individual asset specified by its unique ID.
 
 E.g: `/info/brick_factory_02`
 
-### `/categories`
+### `/categories/[type]`
 
 Lists the available categories that all our assets are in, as well as the number of assets in each category.
+
+The `type` must be one of the supported asset types (see `/types` endpoint below).
 
 Returned data looks like this:
 
@@ -40,7 +42,6 @@ Returned data looks like this:
 
 Takes the following **optional arguments**:
 
-* `type`: Only count assets of a particular type. Must be: `hdris`/`textures`/`models`.
 * `in`: A comma separated list of categories - only returns categories with assets that are also in these categories. The value of each key is then also only counting assets that are in both the categories specified and the key.
 
 ### `/types`
