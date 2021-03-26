@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
 
   // Get data and conver to an object we can work with further
   const collection = await collectionRef.get();
-  const docs = {};
+  let docs = {};
   collection.forEach(doc => {
     docs[doc.id] = doc.data();
   });
@@ -59,13 +59,33 @@ router.get('/', async (req, res) => {
 
   // Categories (2/2)
   // Filter out the remaining assets that aren't in all specifed categories
-  console.log(categories_arr);
   for (const cat of categories_arr) {
     for (const id in docs) {
       if (!docs[id].categories.includes(cat)) {
         delete docs[id];
       }
     }
+  }
+
+
+  // Search
+  if (search) {
+    const Fuse = require('fuse.js');
+
+    doc_values = Object.values(docs);
+    const fuse = new Fuse(doc_values, {
+      keys: ['categories', 'tags', 'name'],
+      includeScore: true
+    })
+
+    const search_results = fuse.search(search);
+
+    matched_docs = {};
+    for (sr of search_results) {
+      let doc_id = Object.keys(docs)[sr.refIndex];
+      matched_docs[doc_id] = docs[doc_id];
+    }
+    docs = matched_docs;
   }
 
   res.status(200).json(docs);
