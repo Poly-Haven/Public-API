@@ -3,11 +3,7 @@ const router = express.Router();
 
 const firestore = require('../firestore');
 
-const asset_types = {
-  "hdris": 0,
-  "textures": 1,
-  "models": 2
-}
+const asset_types = require("../asset_types.json");
 
 const db = firestore();
 
@@ -16,7 +12,6 @@ router.get('/', async (req, res) => {
   const categories = req.query.categories || req.query.c;
   const search = req.query.search || req.query.s;
   const author = req.query.author || req.query.a;
-  const sort = req.query.sort || req.query.o;
 
   let collectionRef = db.collection('assets');
 
@@ -49,7 +44,7 @@ router.get('/', async (req, res) => {
   }
 
 
-  // Get data and conver to an object we can work with further
+  // Get data and convert to an object we can work with further
   const collection = await collectionRef.get();
   let docs = {};
   collection.forEach(doc => {
