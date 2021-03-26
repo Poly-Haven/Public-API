@@ -10,13 +10,12 @@ Provides endpoints for getting lists of assets, categories, and information abou
 
 A list of assets, including their individual metadata.
 
-To filter and sort the returned data, some **optional arguments** can by provided in the request URL (e.g. `/assets?type=hdris&categories=outdoor`):
+To filter the returned data, some **optional arguments** can by provided in the request URL (e.g. `/assets?type=hdris&categories=outdoor`):
 
 * `type`/`t`: Return only assets of a particular type. Must be: `hdris`/`textures`/`models`.
 * `categories`/`c`: A comma-separated list of categories to filter by. Only assets that match all categories specified will be returned.
 * `search`/`s`: A string to search by.
 * `author`/`a`: Specify the author ID.
-* `sort`/`o`: What method to sort assets by. Must be `latest`/`hot`/`top`/`alphabetical`. Defaults to `hot`.
 
 ### `/info/[id]`
 
