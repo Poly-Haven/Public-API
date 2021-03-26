@@ -4,6 +4,10 @@ The public API used by polyhaven.com itself, as well as any third party applicat
 
 Provides endpoints for getting lists of assets, categories, and information about individual assets as well.
 
+## TODO:
+
+* Download URLs and available formats/resolutions.
+
 ## `GET` Endpoints:
 
 ### `/assets`
