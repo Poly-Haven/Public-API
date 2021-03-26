@@ -20,13 +20,22 @@ router.get('/', async (req, res) => {
 
   let collectionRef = db.collection('assets');
 
-  if (asset_type in asset_types){
+  if (asset_type in asset_types) {
     collectionRef = collectionRef.where('type', '==', asset_types[asset_type]);
-  }else if(asset_type){
+  } else if (asset_type) {
     res.status(400).send(
       `Unsupported asset type: ${asset_type}.
       Must be: ${Object.keys(asset_types).join('/')}`);
     return;
+  }
+
+  let categories_arr = [];
+  if (categories) {
+    // Firestore only supports using one 'array-contains' check. So we filter for the last one, and then will manually filter the rest later.
+    // TODO Reduce Firestore reads by first getting assets according to least-used category. Will need to separately track which categories are least used, maybe with cloud function.
+    categories_arr = categories.split(',').map(c => c.trim());
+    const last_cat = categories_arr.pop();
+    collectionRef = collectionRef.where('categories', 'array-contains', last_cat);
   }
 
   const collection = await collectionRef.get();
@@ -34,6 +43,16 @@ router.get('/', async (req, res) => {
   collection.forEach(doc => {
     docs[doc.id] = doc.data();
   });
+
+  // Filter out the remaining assets that aren't in all specifed categories
+  console.log(categories_arr);
+  for (const cat of categories_arr) {
+    for (const id in docs) {
+      if (!docs[id].categories.includes(cat)) {
+        delete docs[id];
+      }
+    }
+  }
 
   res.status(200).json(docs);
 });
