@@ -25,7 +25,7 @@ To filter the returned data, some **optional arguments** can by provided in the 
 
 Information about an individual asset specified by its unique ID.
 
-E.g: `/info/brick_factory_02`
+E.g: `/info/muddy_autumn_forest`
 
 ### `/categories/[type]`
 
