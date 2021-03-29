@@ -6,7 +6,11 @@ Provides endpoints for getting lists of assets, categories, and information abou
 
 ## TODO:
 
+> **Note:** The data accessible through this API is currently incomplete. While polyhaven.com itself is a work-in-progress, we recommend you use the `Xhaven.com/json` pages of the 3 Havens instead.
+
 * Download URLs and available formats/resolutions.
+* `collections` endpoint
+* `similar` endpoint
 
 ## `GET` Endpoints:
 
@@ -14,7 +18,7 @@ Provides endpoints for getting lists of assets, categories, and information abou
 
 A list of assets, including their individual metadata.
 
-To filter the returned data, some **optional arguments** can by provided in the request URL (e.g. `/assets?type=hdris&categories=outdoor`):
+To filter the returned data, some **optional arguments** can by provided in the request URL (e.g. `/assets?t=hdris&c=outdoor`):
 
 * `type`/`t`: Return only assets of a particular type. Must be: `hdris`/`textures`/`models`.
 * `categories`/`c`: A comma-separated list of categories to filter by. Only assets that match all categories specified will be returned.
