@@ -4,6 +4,8 @@ The public API used by polyhaven.com itself, as well as any third party applicat
 
 Provides endpoints for getting lists of assets, categories, and information about individual assets as well.
 
+Currently live at https://api.polyhaven.com
+
 ## TODO:
 
 > **Note:** The data accessible through this API is currently incomplete. While polyhaven.com itself is a work-in-progress, we recommend you use the `Xhaven.com/json` pages of the 3 Havens instead.
