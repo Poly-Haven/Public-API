@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
   }
 
   const ip = req.body.ip
-  const asset_id = req.body.asset_id
+  const asset_id = parseInt(req.body.asset_id)
   const resolution = req.body.res
 
   if (!ip) {
