@@ -18,6 +18,9 @@ app.use('/types', typesRoute);
 const collectionsRoute = require('./routes/collections');
 app.use('/collections', collectionsRoute);
 
+const dlTrackRoute = require('./routes/dl_track');
+app.use('/dl_track', dlTrackRoute);
+
 app.get('/', (req, res) => {
   res.status(400).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
