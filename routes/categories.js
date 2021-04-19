@@ -67,6 +67,9 @@ router.get('/:asset_type', async (req, res) => {
     for (cat of docs[id].categories) {
       all_categories[cat] = (all_categories[cat] || 0) + 1;
     }
+    if (!categories) {
+      all_categories['all'] = (all_categories['all'] || 0) + 1;
+    }
   }
 
   for (const cat of original_categories_arr) {
