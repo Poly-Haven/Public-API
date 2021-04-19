@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
+require('dotenv').config()
+
 router.use(express.json())
 
 router.post('/', async (req, res) => {
@@ -38,8 +40,24 @@ router.post('/', async (req, res) => {
     return
   }
 
-  const firestore = require('../firestore');
-  const db = firestore();
+  const admin = require('firebase-admin');
+
+  if (!admin.apps.length) {
+    console.log("Firebase init")
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      })
+    });
+  }
+
+  const db = admin.firestore();
+
+  const increment = admin.firestore.FieldValue.increment(1);
+  const doc = db.collection('assets').doc(asset_id);
+  doc.update({ download_count: increment })
 
   await db.collection('downloads').add({
     datetime: Date.now(),
