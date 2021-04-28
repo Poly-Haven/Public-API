@@ -26,6 +26,9 @@ app.use('/dl_track', dlTrackRoute);
 const corporateRoute = require('./routes/corporate');
 app.use('/corporate', corporateRoute);
 
+const authorRoute = require('./routes/author');
+app.use('/author', authorRoute);
+
 app.get('/', (req, res) => {
   res.status(400).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
