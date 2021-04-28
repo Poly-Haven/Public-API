@@ -33,6 +33,12 @@ Information about an individual asset specified by its unique ID.
 
 E.g: `/info/muddy_autumn_forest`
 
+### `/author/[id]`
+
+Information about a specific author, such as their name and links.
+
+E.g: `/author/gregzaal`
+
 ### `/categories/[type]`
 
 Lists the available categories that all our assets are in, as well as the number of assets in each category.
