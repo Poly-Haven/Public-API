@@ -52,6 +52,15 @@ router.get('/', async (req, res) => {
   });
 
 
+  // Filter unpublished
+  const now = Math.floor(Date.now() / 1000);
+  for (const id in docs) {
+    if (docs[id].staging || docs[id].date_published > now) {
+      delete docs[id];
+    }
+  }
+
+
   // Categories (2/2)
   // Filter out the remaining assets that aren't in all specifed categories
   for (const cat of categories_arr) {
