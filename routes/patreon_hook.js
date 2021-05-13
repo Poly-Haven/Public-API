@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
   data.hook = req.header('x-patreon-event');
 
   if (!success) {
-    console.log('Signature received: ' + request.header('x-patreon-signature'));
+    console.log('Signature received: ' + req.header('x-patreon-signature'));
     console.log('Signature generated: ' + hash);
     console.log('Signature validation status: ' + success);
 
