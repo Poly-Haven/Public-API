@@ -17,5 +17,9 @@
     "firebase-admin": "^9.5.0",
     "fuse.js": "^6.4.6",
     "nodemon": "^2.0.7"
+  },
+  "jshintConfig": {
+    "esversion": 8,
+    "asi": true
   }
 }

@@ -23,6 +23,9 @@ app.use('/collections', collectionsRoute);
 const dlTrackRoute = require('./routes/dl_track');
 app.use('/dl_track', dlTrackRoute);
 
+const patreonHookRoute = require('./routes/patreon_hook');
+app.use('/patreon_hook', patreonHookRoute);
+
 const corporateRoute = require('./routes/corporate');
 app.use('/corporate', corporateRoute);
 
