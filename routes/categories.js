@@ -20,7 +20,10 @@ router.get('/:asset_type', async (req, res) => {
 
   // Type
   if (asset_type in asset_types) {
-    collectionRef = collectionRef.where('type', '==', asset_types[asset_type]);
+    const typeIndex = asset_types[asset_type];
+    if (typeIndex !== null) {
+      collectionRef = collectionRef.where('type', '==', typeIndex);
+    }
   } else if (asset_type) {
     res.status(400).send(
       `Unsupported asset type: ${asset_type}.
