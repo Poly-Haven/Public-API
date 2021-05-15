@@ -75,12 +75,22 @@ router.get('/:asset_type', async (req, res) => {
 
   // Combine and count occurances
   const all_categories = {}
-  for (id in docs) {
-    for (cat of docs[id].categories) {
-      all_categories[cat] = (all_categories[cat] || 0) + 1;
+  if (asset_type !== 'all') {
+    for (const id in docs) {
+      for (const cat of docs[id].categories) {
+        all_categories[cat] = (all_categories[cat] || 0) + 1;
+      }
+      if (!categories) {
+        all_categories.all = (all_categories.all || 0) + 1;
+      }
     }
-    if (!categories) {
-      all_categories['all'] = (all_categories['all'] || 0) + 1;
+  } else {
+    for (const id in docs) {
+      const type_name = Object.keys(asset_types)[docs[id].type];
+      all_categories[type_name] = (all_categories[type_name] || 0) + 1;
+      if (!categories) {
+        all_categories.all = (all_categories.all || 0) + 1;
+      }
     }
   }
 

@@ -19,7 +19,7 @@
     "nodemon": "^2.0.7"
   },
   "jshintConfig": {
-    "esversion": 8,
+    "esversion": 9,
     "asi": true
   }
 }
