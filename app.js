@@ -26,6 +26,9 @@ app.use('/dl_track', dlTrackRoute);
 const patronsRoute = require('./routes/patrons');
 app.use('/patrons', patronsRoute);
 
+const patronsLatestRoute = require('./routes/patrons_latest');
+app.use('/patrons_latest', patronsLatestRoute);
+
 const patreonHookRoute = require('./routes/patreon_hook');
 app.use('/patreon_hook', patreonHookRoute);
 
