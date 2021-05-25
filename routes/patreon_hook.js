@@ -86,7 +86,7 @@ router.post('/', async (req, res) => {
     patron.tier = data.data.relationships.currently_entitled_tiers[0].id
     // Deliberately not setting `else patron.tier = null` so we can always know what tier a past patron was on.
   }
-  db.collection('patrons').doc(uid).set(patron)
+  db.collection('patrons').doc(uid).set(patron, { merge: true })
 
   res.status(200).json({
     message: "OK"
