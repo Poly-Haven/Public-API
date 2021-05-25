@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
     patronFunds: sumCents / 100,
     corpFunds: sumCorp,
     totalFunds: totalFunds,
-    goals: goals
+    goals: Object.values(goals)
   }
 
   res.status(200).json(funding)
