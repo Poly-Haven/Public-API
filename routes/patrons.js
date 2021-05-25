@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
   let patrons = [];
   for (const p of sortedKeys) {
-    patrons.push([data[p].name, data[p].rank])
+    patrons.push([data[p].display_name || data[p].name, data[p].rank])
   }
 
   res.status(200).json(patrons)

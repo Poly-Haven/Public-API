@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
   collection.forEach(doc => {
     const data = doc.data()
     if (data.status === 'active_patron') {
-      patrons.push([data.uid, data.name, Date.parse(data.joined)])
+      patrons.push([data.uid, data.display_name || data.name, Date.parse(data.joined)])
     }
   });
 
