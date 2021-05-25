@@ -78,6 +78,7 @@ router.post('/', async (req, res) => {
   patron.last_charge_status = data.data.attributes.last_charge_status
   patron.next_charge_date = data.data.attributes.next_charge_date
   patron.status = data.data.attributes.patron_status
+  patron.last_edited = Date.now()
   const entitled_tiers = data.data.relationships.currently_entitled_tiers
   if (entitled_tiers.length > 0) {
     patron.tier = data.data.relationships.currently_entitled_tiers[0].id
