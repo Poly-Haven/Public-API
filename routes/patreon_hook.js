@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
 
   const db = admin.firestore();
 
-  const docID = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+  const docID = Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
   db.collection('patreon_hooks').doc(docID).set(data)
 
   res.status(200).json({
