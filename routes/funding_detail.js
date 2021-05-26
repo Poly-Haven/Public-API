@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   });
 
   const funding = {
-    num_patrons: numPatrons,
+    numPatrons: numPatrons,
     patronFunds: sumCents / 100,
     numCorps: numCorps,
     corpFunds: sumCorp,
