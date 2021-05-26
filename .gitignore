@@ -12,10 +12,12 @@ Desktop.ini
 .directory
 *~
 
-
 # npm
 node_modules
 package-lock.json
 *.log
 *.gz
 .env
+
+# misc
+/routes/tmp.js

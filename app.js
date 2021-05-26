@@ -41,6 +41,9 @@ app.use('/funding', fundingRoute);
 const authorRoute = require('./routes/author');
 app.use('/author', authorRoute);
 
+const sponsorRoute = require('./routes/sponsor');
+app.use('/sponsor', sponsorRoute);
+
 app.get('/', (req, res) => {
   res.status(400).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
