@@ -33,10 +33,10 @@ router.get('/', async (req, res) => {
 
   const funding = {
     numPatrons: numPatrons,
-    patronFunds: sumCents / 100,
+    patronFunds: Math.floor(sumCents / 100),
     numCorps: numCorps,
-    corpFunds: sumCorp,
-    totalFunds: totalFunds,
+    corpFunds: Math.floor(sumCorp),
+    totalFunds: Math.floor(totalFunds),
     goal: currentGoal
   }
 
