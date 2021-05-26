@@ -15,8 +15,10 @@ router.get('/', async (req, res) => {
   });
 
   const colCorp = await db.collection('corporate_sponsors').where('rank', '>', 0).get();
+  let numCorps = 0
   let sumCorp = 0
   colCorp.forEach(doc => {
+    numCorps += 1
     sumCorp += doc.data().usd || 0
   });
 
@@ -31,6 +33,7 @@ router.get('/', async (req, res) => {
   const funding = {
     num_patrons: numPatrons,
     patronFunds: sumCents / 100,
+    numCorps: numCorps,
     corpFunds: sumCorp,
     totalFunds: totalFunds,
     goals: Object.values(goals)
