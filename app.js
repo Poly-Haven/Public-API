@@ -38,9 +38,6 @@ app.use('/corporate', corporateRoute);
 const fundingRoute = require('./routes/funding');
 app.use('/funding', fundingRoute);
 
-const fundingDetailRoute = require('./routes/funding_detail');
-app.use('/funding_detail', fundingDetailRoute);
-
 const authorRoute = require('./routes/author');
 app.use('/author', authorRoute);
 
