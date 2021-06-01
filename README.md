@@ -33,6 +33,12 @@ Information about an individual asset specified by its unique ID.
 
 E.g: `/info/muddy_autumn_forest`
 
+### `/files/[id]`
+
+Get the list of available files to download for a specific asset.
+
+E.g: `/files/rocks_ground_06`
+
 ### `/author/[id]`
 
 Information about a specific author, such as their name and links.

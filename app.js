@@ -11,6 +11,9 @@ app.use('/assets', assetsRoute);
 const infoRoute = require('./routes/info');
 app.use('/info', infoRoute);
 
+const filesRoute = require('./routes/files');
+app.use('/files', filesRoute);
+
 const categoriesRoute = require('./routes/categories');
 app.use('/categories', categoriesRoute);
 
