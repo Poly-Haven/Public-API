@@ -11,7 +11,6 @@ fs.readdir(routeDir, (err, files) => {
   files.forEach(file => {
     fn = file.split('.')[0]
     if (fn === 'tmp' && process.env.NODE_ENV !== 'development') return
-    console.log("Register endpoint:", fn)
     const r = require(routeDir + fn);
     try {
       app.use('/' + fn, r);
