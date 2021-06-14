@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
   const ip = req.body.ip
   const asset_id = req.body.asset_id
   const resolution = req.body.res
+  const format = req.body.format
 
   if (!ip) {
     res.status(400).json({
@@ -59,12 +60,16 @@ router.post('/', async (req, res) => {
   const doc = db.collection('assets').doc(asset_id);
   doc.update({ download_count: increment })
 
-  await db.collection('downloads').add({
+  let submitData = {
     datetime: Date.now(),
     ip: ip,
     asset_id: asset_id,
     res: resolution
-  });
+  }
+  if (format) {
+    submitData.format = format
+  }
+  await db.collection('downloads').add(submitData);
   res.status(200).json({
     message: "OK"
   })
