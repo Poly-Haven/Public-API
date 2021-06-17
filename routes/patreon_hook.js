@@ -84,9 +84,9 @@ router.post('/', async (req, res) => {
   const entitled_tiers = data.data.relationships.currently_entitled_tiers.data
   if (entitled_tiers.length > 0) {
     // When a user deletes their pledge, entitled_tiers is empty, even though they are entitled for the rest of the month they paid for. So we don't set their tiers if this is the case.
-    patrons.tiers = []
+    patron.tiers = []
     for (const t of entitled_tiers) {
-      patrons.tiers.push(t.id)
+      patron.tiers.push(t.id)
     }
   }
   db.collection('patrons').doc(uid).set(patron, { merge: true })
