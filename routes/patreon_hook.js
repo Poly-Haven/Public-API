@@ -81,10 +81,13 @@ router.post('/', async (req, res) => {
   patron.next_charge_date = data.data.attributes.next_charge_date
   patron.status = data.data.attributes.patron_status
   patron.last_edited = Date.now()
-  const entitled_tiers = data.data.relationships.currently_entitled_tiers
+  const entitled_tiers = data.data.relationships.currently_entitled_tiers.data
   if (entitled_tiers.length > 0) {
-    patron.tier = data.data.relationships.currently_entitled_tiers[0].id
-    // Deliberately not setting `else patron.tier = null` so we can always know what tier a past patron was on.
+    // When a user deletes their pledge, entitled_tiers is empty, even though they are entitled for the rest of the month they paid for. So we don't set their tiers if this is the case.
+    patrons.tiers = []
+    for (const t of entitled_tiers) {
+      patrons.tiers.push(t.id)
+    }
   }
   db.collection('patrons').doc(uid).set(patron, { merge: true })
 
