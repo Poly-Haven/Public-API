@@ -15,6 +15,7 @@ router.get('/', async (req, res) => {
     }
   });
 
+  res.set("Cache-Control", `max-age=${30 * 60}`)
   res.status(200).json(patrons)
 });
 
