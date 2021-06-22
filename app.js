@@ -22,7 +22,7 @@ fs.readdir(routeDir, (err, files) => {
 });
 
 app.get('/', (req, res) => {
-  res.status(400).send(`Welcome to the Poly Haven API!
+  res.status(200).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
   https://github.com/Poly-Haven/Public-API`);
 })
