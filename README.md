@@ -6,13 +6,6 @@ Provides endpoints for getting lists of assets, categories, and information abou
 
 Currently live at https://api.polyhaven.com
 
-## TODO:
-
-> **Note:** The data accessible through this API is currently incomplete. While polyhaven.com itself is a work-in-progress, we recommend you use the `Xhaven.com/json` pages of the 3 Havens instead.
-
-* Download URLs and available formats/resolutions.
-* `collections` endpoint
-* `similar` endpoint
 
 ## `GET` Endpoints:
 
@@ -77,7 +70,3 @@ Returns a list of asset types available, e.g:
   'models'
 ]
 ```
-
-### `/collections`
-
-Returns a list of collections available and the number of assets in them as key-value pairs.
