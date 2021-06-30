@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
     const search_results = fuse.search(search);
 
     matched_docs = {};
-    for (sr of search_results) {
+    for (var sr of search_results) {
       let doc_id = Object.keys(docs)[sr.refIndex];
       matched_docs[doc_id] = docs[doc_id];
     }
