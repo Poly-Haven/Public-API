@@ -1,3 +1,4 @@
+const escape = require('escape-html');
 const express = require('express');
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.get('/:asset_type', async (req, res) => {
     }
   } else if (asset_type) {
     res.status(400).send(
-      `Unsupported asset type: ${asset_type}.
+      `Unsupported asset type: ${escape(asset_type)}.
       Must be: ${Object.keys(asset_types).join('/')}`);
     return;
   }

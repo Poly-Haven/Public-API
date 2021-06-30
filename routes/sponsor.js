@@ -1,3 +1,4 @@
+const escape = require('escape-html');
 const express = require('express');
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.get('/:id', async (req, res) => {
 
   const doc = await db.collection('patrons').doc(uid).get();
   if (!doc.exists) {
-    res.status(404).send(`No sponsor with id ${uid}`);
+    res.status(404).send(`No sponsor with id ${escape(uid)}`);
   } else {
     const data = doc.data()
     let sponsor = {}

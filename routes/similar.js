@@ -1,3 +1,4 @@
+const escape = require('escape-html');
 const express = require('express');
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.get('/:id', async (req, res) => {
 
   const doc = await collectionRef.doc(asset_id).get();
   if (!doc.exists) {
-    res.status(404).send(`No asset with id ${asset_id}`);
+    res.status(404).send(`No asset with id ${escape(asset_id)}`);
     return
   }
   this_asset = doc.data();
