@@ -24,23 +24,25 @@ const centsToRank = (c) => {
 }
 
 const grantToken = (data, previousData) => {
+  let granted = false
 
   if (data.lifetime_cents <= previousData.lifetime_cents) {
     // No payment made, probably just user updated
-    return data
+    return [data, granted]
   }
 
   const now = new Date()
   const tokenKey = `${now.getFullYear()}-${now.getMonth() + 1}`
 
-  if (previousData.sponsor_tokens && previousData.sponsor_tokens[tokenKey]) {
+  if (previousData.sponsor_tokens && Object.keys(previousData.sponsor_tokens).includes(tokenKey)) {
     // Token already used
-    return data
+    return [data, granted]
   }
 
   data.sponsor_tokens = {}
   data.sponsor_tokens[tokenKey] = false
-  return data
+  granted = true
+  return [data, granted]
 }
 
 router.post('/', async (req, res) => {
@@ -121,7 +123,16 @@ router.post('/', async (req, res) => {
           if (previousDoc.exists) {
             previousData = previousDoc.data()
           }
-          patron = grantToken(patron, previousData)
+          const [p, granted] = grantToken(patron, previousData)
+          patron = p
+          if (granted) {
+            const logID = Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            db.collection('log').doc(logID).set({
+              type: "granttoken",
+              timestamp: new Date().toISOString(),
+              uuid: patron.uid,
+            })
+          }
           break
         }
       }
