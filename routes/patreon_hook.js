@@ -2,6 +2,8 @@ const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
 
+const patreon_tiers = require('../constants/patreon_tiers.json')
+
 require('dotenv').config()
 
 const bodyParser = require('body-parser')
@@ -19,6 +21,26 @@ const centsToRank = (c) => {
     return 4
   }
   return 5
+}
+
+const grantToken = (data, previousData) => {
+
+  if (data.lifetime_cents <= previousData.lifetime_cents) {
+    // No payment made, probably just user updated
+    return data
+  }
+
+  const now = new Date()
+  const tokenKey = `${now.getFullYear()}-${now.getMonth() + 1}`
+
+  if (previousData.sponsor_tokens && previousData.sponsor_tokens[tokenKey]) {
+    // Token already used
+    return data
+  }
+
+  data.sponsor_tokens = {}
+  data.sponsor_tokens[tokenKey] = false
+  return data
 }
 
 router.post('/', async (req, res) => {
@@ -71,7 +93,7 @@ router.post('/', async (req, res) => {
 
   let patron = {}
   patron.uid = uid
-  patron.name = data.data.attributes.full_name
+  patron.name = data.data.attributes.full_name.trim()
   patron.joined = data.data.attributes.pledge_relationship_start
   patron.cents = data.data.attributes.currently_entitled_amount_cents
   patron.rank = centsToRank(patron.cents)
@@ -89,6 +111,23 @@ router.post('/', async (req, res) => {
       patron.tiers.push(t.id)
     }
   }
+
+  if (patron.tiers && patron.status === "active_patron") {
+    for (const tier of patron.tiers) {
+      if (Object.keys(patreon_tiers).includes(tier)) {
+        if (patreon_tiers[tier].rewards.includes("Sponsor")) {
+          const previousDoc = await db.collection('patrons').doc(uid).get()
+          let previousData = null
+          if (previousDoc.exists) {
+            previousData = previousDoc.data()
+          }
+          patron = grantToken(patron, previousData)
+          break
+        }
+      }
+    }
+  }
+
   db.collection('patrons').doc(uid).set(patron, { merge: true })
 
   res.status(200).json({
