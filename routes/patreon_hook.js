@@ -26,6 +26,11 @@ const centsToRank = (c) => {
 const grantToken = (data, previousData) => {
   let granted = false
 
+  if (!previousData) {
+    // Initial user creation, payment not made yet.
+    return [data, granted]
+  }
+
   if (data.lifetime_cents <= previousData.lifetime_cents) {
     // No payment made, probably just user updated
     return [data, granted]
