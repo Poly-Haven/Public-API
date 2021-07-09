@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
     return
   }
   const uuid = req.body.uuid
-  const hash = crypto.createHmac('md5', process.env.PATRON_INFO_KEY).update(uuid).digest('hex')
+  const hash = crypto.createHmac('sha256', process.env.PATRON_INFO_KEY).update(uuid).digest('hex')
   if (req.body.key !== hash) {
     res.status(403).json({
       error: "403 Forbidden",
