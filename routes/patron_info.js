@@ -30,14 +30,6 @@ router.post('/', async (req, res) => {
     return
   }
 
-  if (!uuid) {
-    res.status(400).json({
-      error: "400 Bad Request",
-      message: "uuid is undefined"
-    })
-    return
-  }
-
   const doc = await db.collection('patrons').doc(uuid).get();
   if (!doc.exists) {
     res.status(404).json({
