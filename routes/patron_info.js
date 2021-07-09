@@ -82,7 +82,7 @@ router.patch('/', async (req, res) => {
 
   const doc = await db.collection('patrons').doc(uuid);
 
-  doc.update(data)
+  doc.set(data, { merge: true })
 
   res.status(200).json(data);
 });
