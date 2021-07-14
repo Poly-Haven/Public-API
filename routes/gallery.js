@@ -45,7 +45,14 @@ router.get('/', async (req, res) => {
   })
   let data = []
   for (const k of sortedKeys) {
-    data.push(docs[k])
+    info = docs[k]
+    delete info.id
+    delete info.clicks
+    delete info.hash
+    delete info.software
+    delete info.favourite
+    delete info.date_added
+    data.push(info)
   }
 
   res.status(200).json(data);
