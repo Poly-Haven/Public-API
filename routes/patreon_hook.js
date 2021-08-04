@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
+const hookcord = require('hookcord')
 
 const patreon_tiers = require('../constants/patreon_tiers.json')
 
@@ -145,6 +146,54 @@ router.post('/', async (req, res) => {
   }
 
   db.collection('patrons').doc(uid).set(patron, { merge: true })
+
+  // Discord hook
+  const hooksToShare = [
+    'members:pledge:create',
+    'members:pledge:update',
+    'members:pledge:delete'
+  ]
+  if (hooksToShare.includes(data.hook)) {
+    let title = "???"
+    let color = 0
+    let description = `UID: ${patron.uid}`
+    if (data.hook === 'members:pledge:create') {
+      title = `New $${patron.cents / 100} patron!`;
+      color = 10212925;
+    } else if (data.hook === 'members:pledge:update') {
+      title = `Pledge edited to $${patron.cents / 100}`;
+      color = 4307929;
+    } else if (data.hook === 'members:pledge:delete') {
+      title = `$${patron.cents / 100} pledge deleted`;
+      color = 16345172;
+    }
+
+    if (data.hook !== 'members:pledge:create') {
+      description += `\nJoined: ${new Date(patron.joined).toLocaleDateString()}`
+      if (patron.lifetime_cents) {
+        description += `\nLifetime: $${patron.lifetime_cents}`
+      }
+    }
+
+    const Hook = new hookcord.Hook()
+      .setLink(process.env.DISCORD_PATRON_HOOK)
+      .setPayload({
+        embeds: [{
+          title: title,
+          description: description,
+          url: `https://www.patreon.com/user?u=${patron.uid}`,
+          type: 'rich',
+          color: color,
+          author: {
+            name: patron.name,
+            url: `https://www.patreon.com/user?u=${patron.uid}`,
+            icon_url: `https://c8.patreon.com/2/36/${patron.uid}`
+          }
+        }]
+      })
+      .fire()
+      .catch(console.error)
+  }
 
   res.status(200).json({
     message: "OK"
