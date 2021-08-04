@@ -171,7 +171,7 @@ router.post('/', async (req, res) => {
     if (data.hook !== 'members:pledge:create') {
       description += `\nJoined: ${new Date(patron.joined).toLocaleDateString()}`
       if (patron.lifetime_cents) {
-        description += `\nLifetime: $${patron.lifetime_cents}`
+        description += `\nLifetime: $${patron.lifetime_cents / 100}`
       }
     }
 
