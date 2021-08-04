@@ -21,4 +21,4 @@ jobs:
             cd ~/api
             git pull
             npm ci
-            pm2 restart app
+            pm2 restart app --time
