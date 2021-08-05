@@ -156,7 +156,7 @@ router.post('/', async (req, res) => {
   if (hooksToShare.includes(data.hook)) {
     let title = "???"
     let color = 0
-    let description = `UID: ${patron.uid}`
+    let description = ''
     if (data.hook === 'members:pledge:create') {
       title = `New $${patron.cents / 100} patron!`;
       color = 10212925;
@@ -169,7 +169,7 @@ router.post('/', async (req, res) => {
     }
 
     if (data.hook !== 'members:pledge:create') {
-      description += `\nJoined: ${new Date(patron.joined).toLocaleDateString("en-ZA")}`
+      description += `Joined: ${new Date(patron.joined).toLocaleDateString("en-ZA")}`
       if (patron.lifetime_cents) {
         description += `\nLifetime: $${patron.lifetime_cents / 100}`
       }
@@ -184,10 +184,12 @@ router.post('/', async (req, res) => {
           url: `https://www.patreon.com/user?u=${patron.uid}`,
           type: 'rich',
           color: color,
+          "thumbnail": {
+            "url": `https://c8.patreon.com/2/36/${patron.uid}`
+          },
           author: {
             name: patron.name,
-            url: `https://www.patreon.com/user?u=${patron.uid}`,
-            icon_url: `https://c8.patreon.com/2/36/${patron.uid}`
+            url: `https://www.patreon.com/user?u=${patron.uid}`
           }
         }]
       })
