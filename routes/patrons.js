@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const isBadWord = require('../utils/isBadWord')
 
 const firestore = require('../firestore');
 
@@ -16,7 +17,10 @@ router.get('/', async (req, res) => {
   let patrons = [];
   for (const p of sortedKeys) {
     if (!data[p].anon) {
-      patrons.push([data[p].display_name || data[p].name, data[p].rank])
+      const name = data[p].display_name || data[p].name
+      if (!isBadWord(name)) {
+        patrons.push([name, data[p].rank])
+      }
     }
   }
 
