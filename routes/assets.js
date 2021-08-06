@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const escape = require('escape-html');
 const express = require('express');
 const router = express.Router();
@@ -13,6 +14,22 @@ router.get('/', async (req, res) => {
   const categories = req.query.categories || req.query.c;
   const search = req.query.search || req.query.s;
   const author = req.query.author || req.query.a;
+  const earlyAccessKey = req.query.eakey;
+  const uuid = req.query.uuid;
+
+  let earlyAccess = false
+  if (earlyAccessKey && uuid) {
+    const hash = crypto.createHmac('sha256', process.env.EA_KEY).update(uuid).digest('hex')
+    if (earlyAccessKey === hash) {
+      earlyAccess = true
+    } else {
+      res.status(403).json({
+        error: "403 Forbidden",
+        message: "Incorrect Early Access key"
+      })
+      return
+    }
+  }
 
   let collectionRef = db.collection('assets');
 
@@ -59,7 +76,14 @@ router.get('/', async (req, res) => {
   // Filter unpublished
   const now = Math.floor(Date.now() / 1000);
   for (const id in docs) {
-    if (docs[id].staging || docs[id].date_published > now) {
+    if (docs[id].staging) {
+      delete docs[id];
+    }
+    if (!earlyAccess && docs[id].date_published > now) {
+      delete docs[id];
+    }
+    if (earlyAccess && docs[id].date_published < now) {
+      // Don't include published assets if eakey is present,we just want the early access stuff.
       delete docs[id];
     }
   }
