@@ -102,7 +102,7 @@ router.post('/', async (req, res) => {
 
   let patron = {}
   patron.uid = uid
-  patron.name = data.data.attributes.full_name.trim()
+  patron.name = (data.data.attributes.full_name || "UNKNOWN").trim()
   patron.joined = data.data.attributes.pledge_relationship_start
   patron.cents = data.data.attributes.currently_entitled_amount_cents
   patron.rank = centsToRank(patron.cents)
