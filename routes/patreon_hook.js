@@ -57,6 +57,7 @@ router.post('/', async (req, res) => {
   const success = (req.header('x-patreon-signature') === hash);
   let data = JSON.parse(req.body);
   data.hook = req.header('x-patreon-event');
+  data.timestamp = new Date().toISOString()
 
   if (!success) {
     console.log('Signature received: ' + req.header('x-patreon-signature'));
