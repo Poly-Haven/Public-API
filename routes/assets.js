@@ -78,11 +78,9 @@ router.get('/', async (req, res) => {
   for (const id in docs) {
     if (docs[id].staging) {
       delete docs[id];
-    }
-    if (!earlyAccess && docs[id].date_published > now) {
+    } else if (!earlyAccess && docs[id].date_published > now) {
       delete docs[id];
-    }
-    if (earlyAccess && docs[id].date_published < now) {
+    } else if (earlyAccess && docs[id].date_published < now) {
       // Don't include published assets if eakey is present,we just want the early access stuff.
       delete docs[id];
     }
