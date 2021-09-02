@@ -1,5 +1,9 @@
 const express = require('express');
+const fetch = require("node-fetch");
 const router = express.Router();
+const subMonths = require("date-fns/subMonths")
+
+require('dotenv').config()
 
 const firestore = require('../firestore');
 
@@ -109,7 +113,70 @@ router.get('/relativetype', async (req, res) => {
   }
 
   res.status(200).json(returnData);
+});
 
+router.get('/cfmonth', async (req, res) => {
+  // pageViews and bandwidth data for the previous month
+
+  const isoDay = date => date.toISOString().substring(0, 10) // YYYY-MM-DD
+
+  const now = Date.now()
+  const toDate = isoDay(new Date(now))
+  const fromDate = isoDay(subMonths(now, 1))
+
+  const zones = [
+    process.env.CLOUDFLARE_ZONE,
+    process.env.CLOUDFLARE_ZONE_ORG,
+  ]
+
+  let pageViews = 0
+  let bytes = 0
+
+  for (const zone of zones) {
+    const query = `
+    {
+    viewer {
+      zones(filter: {zoneTag: "${zone}"}) {
+        httpRequests1dGroups(
+          orderBy: [date_ASC],
+          limit: 1000,
+          filter: {
+            date_geq: "${fromDate}",
+            date_lt: "${toDate}",
+          }
+        ) {
+          date: dimensions {
+            date
+          }
+          sum {
+            pageViews
+            bytes
+          }
+        }
+      }
+    }
+  }
+  `
+    const result = await fetch("https://api.cloudflare.com/client/v4/graphql", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-AUTH-EMAIL': process.env.CLOUDFLARE_API_EMAIL,
+        authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+      },
+      body: JSON.stringify({ query: query })
+    }).then(r => r.json())
+
+    for (const day of result.data.viewer.zones[0].httpRequests1dGroups) {
+      pageViews += day.sum.pageViews
+      bytes += day.sum.bytes
+    }
+  }
+
+  res.status(200).json({
+    pageviews: pageViews,
+    terabytes: bytes / 1000 / 1000 / 1000 / 1000,
+  });
 });
 
 module.exports = router;
