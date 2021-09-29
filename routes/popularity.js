@@ -30,7 +30,7 @@ router.get('/:month', async (req, res) => {
   let hdris = {};
   colHDRIs.forEach(doc => {
     const info = doc.data()
-    if (!info.prepaid) {  // Ignore HDRIs not eligible for bonus earnings.
+    if (!info.prepaid && !info.donated) {  // Ignore HDRIs not eligible for bonus earnings.
       hdris[doc.id] = info;
     }
   });
