@@ -59,12 +59,6 @@ router.get('/', async (req, res) => {
   }
 
 
-  // Author
-  if (author) {
-    collectionRef = collectionRef.where(`authors.${author}`, '>=', "");
-  }
-
-
   // Get data and convert to an object we can work with further
   const collection = await collectionRef.get();
   let docs = {};
