@@ -81,6 +81,16 @@ router.get('/', async (req, res) => {
   }
 
 
+  // Filter Author
+  if (author) {
+    for (const id in docs) {
+      if (!Object.keys(docs[id].authors).includes(author)) {
+        delete docs[id];
+      }
+    }
+  }
+
+
   // Categories (2/2)
   // Filter out the remaining assets that aren't in all specifed categories
   for (const cat of categories_arr) {
