@@ -1,0 +1,638 @@
+openapi: "3.0.2"
+info:
+  title: Poly Haven API
+  version: "1.0.0"
+  description: Provides endpoints for getting lists of assets, categories, and information about individual assets on polyhaven.com
+  license:
+    name: AGPL
+    url: https://github.com/Poly-Haven/Public-API/blob/master/LICENSE
+  contact:
+    name: Poly Haven
+    url: https://polyhaven.com
+    email: info@polyhaven.com
+servers:
+  - url: https://api.polyhaven.com
+tags:
+  - name: assets
+    description: Endpoints for interacting with assets.
+paths:
+  /types:
+    get:
+      summary: List of asset types available.
+      description: "We currently publish three types of assets: `hdris`, `textures` and `models`. This endpoint simply returns an array of those types."
+      tags:
+        - assets
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of asset types
+                example: ["hdris", "textures", "models"]
+  /assets:
+    get:
+      summary: A list of assets, including their individual metadata.
+      description: To filter the returned data, some **optional arguments** can by provided in the request URL (e.g. `/assets?t=hdris&c=outdoor`)
+      tags:
+        - assets
+      parameters:
+        - name: type
+          in: query
+          description: Filter to assets of a particular type. Can be `hdris`/`textures`/`models`/`all`.
+          schema:
+            type: string
+          example: textures
+        - name: categories
+          in: query
+          description: A comma-separated list of categories to filter by. Only assets that match all categories specified will be included. Use the `/categories` endpoint to get a list of available categories.
+          schema:
+            type: string
+          example: brick
+        - name: author
+          in: query
+          description: Filter to assets by a specific author.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/assets"
+        "400":
+          description: Bad request, e.g. unsupported asset type
+  /info/{id}:
+    get:
+      summary: Information about an individual asset specified by its unique ID.
+      tags:
+        - assets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique ID/slug of the asset
+          schema:
+            type: string
+          example: abandoned_factory_canteen_01
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/hdri"
+                  - $ref: "#/components/schemas/texture"
+                  - $ref: "#/components/schemas/model"
+        "400":
+          description: Bad request, e.g. missing {id}
+        "404":
+          description: No asset found with that ID
+  /files/{id}:
+    get:
+      summary: File list for a specific asset.
+      description: Many files are available for each asset, most of which are available in different resolutions and file formats. This endpoint provides a tree containing all the available files organized by resolution and file type.
+      tags:
+        - assets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique ID/slug of the asset
+          schema:
+            type: string
+          example: ceramic_vase_03
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/hdriFiles"
+                  - $ref: "#/components/schemas/textureFiles"
+                  - $ref: "#/components/schemas/modelFiles"
+        "400":
+          description: Bad request, e.g. missing {id}
+        "404":
+          description: No asset found with that ID
+  /author/{id}:
+    get:
+      summary: Information about a specific author.
+      description: Returns some data about the requested author, such as their name (which may be different from the ID), links, email (if available), etc.
+      tags:
+        - assets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique ID of the author
+          schema:
+            type: string
+          example: Andreas Mischok
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/author"
+        "400":
+          description: Bad request, e.g. missing {id}
+        "404":
+          description: No author found with that ID
+  /categories/{type}:
+    get:
+      summary: A list of available categories.
+      description: The list of categories also show the number of assets inside them. If `all` is passed as the {type}, then rather than returning categories, it simply returns a list of the asset types instead, with their asset counts.
+      tags:
+        - assets
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: "One of the supported asset types: `hdris`, `textures`, or `models`."
+          schema:
+            type: string
+            example: hdris
+        - name: in
+          in: query
+          description: A comma separated list of categories - only returns categories with assets that are also in these categories. The value of each key is then also only counting assets that are in both the categories specified and the key. If this is not specified, then an `all` "category" is also returned, with the count of all assets of the specified type.
+          schema:
+            type: string
+            example: night,clear
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  $category:
+                    type: integer
+                    description: Count of assets in this category.
+              example:
+                all: 512
+                natural light: 434
+                outdoor: 377
+                urban: 272
+                nature: 265
+                low contrast: 188
+                high contrast: 182
+                morning-afternoon: 181
+                partly cloudy: 171
+                medium contrast: 141
+                indoor: 140
+                skies: 130
+                clear: 117
+                sunrise-sunset: 114
+                midday: 103
+                artificial light: 103
+                overcast: 76
+                night: 31
+                studio: 18
+        "400":
+          description: Bad request, e.g. missing or unsupported {type}
+
+components:
+  schemas:
+    assets:
+      type: object
+      properties:
+        assetID:
+          type: object
+          description: Asset data, see schema for `asset`.
+      example:
+        aerial_asphalt_01:
+          name: Aerial Asphalt 01
+          type: 1
+          date_published: 1597061145
+          download_count: 33151
+          authors:
+            Rob Tuytel: All
+          categories:
+            - asphalt
+            - outdoor
+            - floor
+            - road
+            - man made
+          tags:
+            - road
+            - flat
+            - cracked
+          dimensions:
+            - 30000
+            - 30000
+        aerial_beach_01:
+          name: Aerial Beach 01
+          type: 1
+          date_published: 1601489165
+          download_count: 33556
+          authors:
+            Rob Tuytel: All
+          categories:
+            - terrain
+            - sand
+            - outdoor
+            - natural
+          tags:
+            - beach
+            - wavy
+            - costal
+            - ocean
+            - seaside
+          dimensions:
+            - 30000
+            - 30000
+    asset:
+      type: object
+      description: All asset types include this data.
+      properties:
+        name:
+          type: string
+          description: The human-readable/display name.
+          example: Horse Statue 01
+        type:
+          type: integer
+          description: The asset type. HDRIs = 0, textures = 1, models =2.
+          example: 2
+        date_published:
+          type: integer
+          description: The epoch timestamp in seconds of when this asset was published.
+          example: 1634860800
+        download_count:
+          type: integer
+          description: The number of times this asset was downloaded. Useful for sorting by popularity.
+          example: 12345
+        authors:
+          type: object
+          description: Who created this asset, and what they did.
+          properties:
+            $authorID:
+              type: string
+              description: Credit
+          example:
+            Rico Cilliers: All
+        donated:
+          nullable: true
+          type: boolean
+          description: Whether or not this asset was donated free of charge to us.
+          example: false
+        categories:
+          type: array
+          description: A string array of categories that this asset belongs to.
+          example:
+            - props
+            - decorative
+        tags:
+          type: array
+          description: A string array of tags for this asset to help with search matches.
+          example:
+            - decorative
+            - horse
+            - statue
+            - figurine
+            - porcelain
+            - animal
+            - sculpture
+            - white
+            - fancy
+    hdri:
+      type: object
+      description: HDRI data, extends `asset` schema.
+      properties:
+        name:
+          type: string
+          description: The human-readable/display name.
+          example: Abandoned Factory Canteen 01
+        type:
+          type: integer
+          description: The asset type, for HDRIs this is 0.
+          example: 0
+        date_published:
+          type: integer
+          description: The epoch timestamp in seconds of when this asset was published.
+          example: 1600725600
+        download_count:
+          type: integer
+          description: The number of times this asset was downloaded. Useful for sorting by popularity.
+          example: 12345
+        authors:
+          type: object
+          description: Who created this asset, and what they did.
+          properties:
+            $authorID:
+              type: string
+              description: Credit
+          example:
+            Sergej Majboroda: All
+        donated:
+          nullable: true
+          type: boolean
+          description: Whether or not this asset was donated free of charge to us.
+          example: false
+        categories:
+          type: array
+          description: A string array of categories that this asset belongs to.
+          example:
+            - indoor
+            - urban
+            - low contrast
+            - natural light
+        tags:
+          type: array
+          description: A string array of tags for this asset to help with search matches.
+          example:
+            - hall
+            - abandoned
+            - fluorescent
+            - industrial
+            - backplates
+        whitebalance:
+          nullable: true
+          type: integer
+          description: The whitebalance in Kelvin that this HDRI and any included backplates were shot at. May not be present for all assets.
+          example: 5450
+        backplates:
+          nullable: true
+          type: boolean
+          description: Whether there are backplates available for this HDRI.
+          example: true
+        evs_cap:
+          type: integer
+          description: The number of exposure brackets captured when shooting this HDRI. I.e. the difference between the brightest and darkest shots, an indication of dynamic range.
+          example: 15
+        coords:
+          nullable: true
+          type: array
+          description: Decimal lat/lon GPS coordinates.
+          example: [50.995194, 35.105417]
+        date_taken:
+          type: integer
+          deprecated: true
+          description: Legacy (untrustworthy) epoch timestamp of when this HDRI was taken. Timezone issues caused this data to be generally unused and inaccurate. May be solved in future but don't depend on it!
+          example: 1591789620
+    texture:
+      type: object
+      description: Texture data, extends `asset` schema.
+      properties:
+        name:
+          type: string
+          description: The human-readable/display name.
+          example: Brick Floor 003
+        type:
+          type: integer
+          description: The asset type, for textures this is 1.
+          example: 1
+        date_published:
+          type: integer
+          description: The epoch timestamp in seconds of when this asset was published.
+          example: 1618385199
+        download_count:
+          type: integer
+          description: The number of times this asset was downloaded. Useful for sorting by popularity.
+          example: 12345
+        authors:
+          type: object
+          description: Who created this asset, and what they did.
+          properties:
+            $authorID:
+              type: string
+              description: Credit
+          example:
+            Dimitrios Savva: Photography
+            Rob Tuytel: Processing
+        donated:
+          nullable: true
+          type: boolean
+          description: Whether or not this asset was donated free of charge to us.
+          example: false
+        categories:
+          type: array
+          description: A string array of categories that this asset belongs to.
+          example:
+            - floor
+            - brick
+            - man made
+            - outdoor
+            - indoor
+            - clean
+            - wall
+        tags:
+          type: array
+          description: A string array of tags for this asset to help with search matches.
+          example:
+            - brown
+            - floor
+            - pavement
+        dimensions:
+          type: array
+          description: An array with the dimensions of this asset on each axis in millimeters.
+          example: [2000, 2000]
+    model:
+      type: object
+      description: Model data, extends `asset` schema.
+      properties:
+        name:
+          type: string
+          description: The human-readable/display name.
+          example: Horse Statue 01
+        type:
+          type: integer
+          description: The asset type, for models this is 2.
+          example: 2
+        date_published:
+          type: integer
+          description: The epoch timestamp in seconds of when this asset was published.
+          example: 1634860800
+        download_count:
+          type: integer
+          description: The number of times this asset was downloaded. Useful for sorting by popularity.
+          example: 12345
+        authors:
+          type: object
+          description: Who created this asset, and what they did.
+          properties:
+            $authorID:
+              type: string
+              description: Credit
+          example:
+            Rico Cilliers: All
+        donated:
+          nullable: true
+          type: boolean
+          description: Whether or not this asset was donated free of charge to us.
+          example: false
+        categories:
+          type: array
+          description: A string array of categories that this asset belongs to.
+          example:
+            - props
+            - decorative
+        tags:
+          type: array
+          description: A string array of tags for this asset to help with search matches.
+          example:
+            - decorative
+            - horse
+            - statue
+            - figurine
+            - porcelain
+            - animal
+            - sculpture
+            - white
+            - fancy
+    hdriFiles:
+      type: object
+      properties:
+        hdri:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                $format:
+                  $ref: "#/components/schemas/file"
+        backplates:
+          nullable: true
+          type: object
+          properties:
+            $image:
+              type: object
+              properties:
+                $format:
+                  $ref: "#/components/schemas/file"
+        colorchart:
+          $ref: "#/components/schemas/optionalFile"
+        tonemapped:
+          $ref: "#/components/schemas/optionalFile"
+    textureFiles:
+      type: object
+      properties:
+        blend:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                blend:
+                  $ref: "#/components/schemas/fileWithIncludes"
+        gltf:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                gltf:
+                  $ref: "#/components/schemas/fileWithIncludes"
+        $map:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                $format:
+                  $ref: "#/components/schemas/file"
+    modelFiles:
+      type: object
+      properties:
+        blend:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                blend:
+                  $ref: "#/components/schemas/fileWithIncludes"
+        gltf:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                gltf:
+                  $ref: "#/components/schemas/fileWithIncludes"
+        fbx:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                fbx:
+                  $ref: "#/components/schemas/fileWithIncludes"
+        $map:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                $format:
+                  $ref: "#/components/schemas/file"
+    file:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Direct URL to download this file.
+        md5:
+          type: string
+          description: MD5 checksum for verifying file integrity.
+        size:
+          type: integer
+          description: Size of the file in bytes.
+    optionalFile:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Direct URL to download this file.
+        md5:
+          type: string
+          description: MD5 checksum for verifying file integrity.
+        size:
+          type: integer
+          description: Size of the file in bytes.
+    fileWithIncludes:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Direct URL to download this file.
+        md5:
+          type: string
+          description: MD5 checksum for verifying file integrity.
+        size:
+          type: integer
+          description: Size of the file in bytes.
+        include:
+          type: object
+          description: A list of files that this file depends on and should be included when downloaded, typically textures that the model/texture uses.
+          properties:
+            $path:
+              $ref: "#/components/schemas/file"
+    author:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The author's full name, which may be different from the ID.
+          example: Jorge Camacho
+        link:
+          nullable: true
+          type: string
+          description: The author's preferred link to their portfolio.
+          example: https://www.artstation.com/jorgeandrespinedac
+        email:
+          nullable: true
+          type: string
+          description: Email address of the author.
+          example: foo@bar.com
+        donate:
+          nullable: true
+          type: string
+          description: Donation info of this author. May be a link to a donation page, or an email prefixed with `paypal:` to indicate a PayPal address.
+          example: paypal:foo@bar.com

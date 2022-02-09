@@ -5,8 +5,8 @@
   "license": "AGPL-3.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "dev": "nodemon app.js"
+    "start": "nodemon app.js -e js,mjs,json,yml",
+    "dev": "nodemon app.js -e js,mjs,json,yml"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +19,8 @@
     "firebase-admin": "^10.0.2",
     "fuse.js": "^6.4.6",
     "hookcord": "^2.0.2",
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.7",
+    "yamljs": "^0.3.0"
   },
   "jshintConfig": {
     "esversion": 9,
