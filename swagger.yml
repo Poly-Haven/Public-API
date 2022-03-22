@@ -2,13 +2,13 @@ openapi: "3.0.2"
 info:
   title: Poly Haven API
   version: "1.0.0"
-  description: Provides endpoints for getting lists of assets, categories, and information about individual assets on polyhaven.com
+  description: Provides endpoints for getting lists of assets, categories, and information about individual assets on polyhaven.com. The API is hosted at https://api.polyhaven.com
   license:
     name: AGPL
     url: https://github.com/Poly-Haven/Public-API/blob/master/LICENSE
   contact:
     name: Poly Haven
-    url: https://polyhaven.com
+    url: https://api.polyhaven.com
     email: info@polyhaven.com
 servers:
   - url: https://api.polyhaven.com
