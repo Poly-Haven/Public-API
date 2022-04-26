@@ -18,6 +18,25 @@ router.get('/:id', async (req, res) => {
   const firestore = require('../firestore');
   const db = firestore();
 
+  if (uid.startsWith('corp_')) {
+    const corp_name = uid.substring('corp_'.length)
+    const doc = await db.collection('corporate_sponsors').doc(corp_name).get();
+    if (!doc.exists) {
+      res.status(404).send(`No corporate sponsor with id ${escape(corp_name)}`);
+    } else {
+      let sponsor = doc.data()
+      sponsor.url = sponsor.link
+      delete sponsor.link
+      delete sponsor.usd
+      if (sponsor.rank <= 0) { // Inactive sponsor, don't show logo, only name
+        delete sponsor.logo
+      }
+      delete sponsor.rank
+      res.status(200).json(sponsor);
+    }
+    return
+  }
+
   const doc = await db.collection('patrons').doc(uid).get();
   if (!doc.exists) {
     res.status(404).send(`No sponsor with id ${escape(uid)}`);
