@@ -15,7 +15,6 @@ if (interface) {
 
 router.get('/', async (req, res) => {
   res.status(200).json({
-    message: "Pong!",
     time: Date.now(),
     node: nodeID,
   });
