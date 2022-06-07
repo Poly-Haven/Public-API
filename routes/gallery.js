@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 
   // Get all renders if request is for a specific asset, otherwise only favourited ones
   if (assetID) {
-    collectionRef = collectionRef.where('asset_used', '==', assetID);
+    collectionRef = collectionRef.where('assets_used', 'array-contains', assetID);
   }
 
   if (parseInt(limit)) {
