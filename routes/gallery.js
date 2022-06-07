@@ -52,6 +52,7 @@ router.get('/', async (req, res) => {
     delete info.favourite
     delete info.date_added
     delete info.reviewed_by
+    delete info.author_email
     info.id = k
     data.push(info)
   }
