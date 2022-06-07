@@ -6,7 +6,7 @@ const firestore = require('../firestore');
 const db = firestore();
 
 const popularity = (num, epoch) => {
-  return num / Math.pow(Math.abs(Date.now() - epoch) + 1, 1.7)
+  return (num + 1) / Math.pow(Math.abs(Date.now() - epoch) + 1, 1.7)
 }
 
 router.get('/', async (req, res) => {
