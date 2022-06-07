@@ -18,12 +18,11 @@ router.get('/', async (req, res) => {
   // Get all renders if request is for a specific asset, otherwise only favourited ones
   if (assetID) {
     collectionRef = collectionRef.where('asset_used', '==', assetID);
-  } else {
-    collectionRef = collectionRef.where('favourite', '==', true);
   }
 
   if (parseInt(limit)) {
-    collectionRef = collectionRef.limit(parseInt(limit))
+    // If a limit is requested, we probably only want the best stuff.
+    collectionRef = collectionRef.where('favourite', '==', true);
   }
 
   const collection = await collectionRef.get();
@@ -55,6 +54,8 @@ router.get('/', async (req, res) => {
     info.id = k
     data.push(info)
   }
+
+  data = data.slice(0, parseInt(limit) || 150) // More than this and the browser starts to chug.
 
   res.status(200).json(data);
 });
