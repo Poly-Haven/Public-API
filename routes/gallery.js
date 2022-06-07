@@ -51,6 +51,7 @@ router.get('/', async (req, res) => {
     delete info.software
     delete info.favourite
     delete info.date_added
+    delete info.reviewed_by
     info.id = k
     data.push(info)
   }
