@@ -115,6 +115,7 @@ router.get('/relativetype', async (req, res) => {
   res.status(200).json(returnData);
 });
 
+
 router.get('/cfmonth', async (req, res) => {
   // pageViews and bandwidth data for the previous month
 
@@ -177,6 +178,38 @@ router.get('/cfmonth', async (req, res) => {
     pageviews: pageViews,
     terabytes: bytes / 1000 / 1000 / 1000 / 1000,
   });
+});
+
+
+router.get('/cfdaily', async (req, res) => {
+  const date_from = req.query.date_from;
+  const date_to = req.query.date_to;
+
+  let collectionRef = db.collection('cloudflare_analytics');
+
+  collectionRef = date_from ? collectionRef.where('__name__', '>=', date_from) : collectionRef
+  collectionRef = date_to ? collectionRef.where('__name__', '<=', date_to) : collectionRef
+
+  const collection = await collectionRef.get();
+  let docs = {};
+  collection.forEach(doc => {
+    const data = doc.data()
+    for (const site of Object.values(data)) {
+      if (!site.data) continue
+      const d = site.data.viewer.zones[0].httpRequests1dGroups[0]
+      if (!d) continue
+      try {
+        delete d.sum.countryMap
+        delete d.sum.responseStatusMap
+        delete d.sum.ipClassMap
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    docs[doc.id] = data;
+  });
+
+  res.status(200).json(docs);
 });
 
 module.exports = router;
