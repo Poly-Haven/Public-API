@@ -116,6 +116,53 @@ router.get('/relativetype', async (req, res) => {
 });
 
 
+router.get('/relativecategory', async (req, res) => {
+
+  let collectionRef = db.collection('assets');
+
+  const collection = await collectionRef.get();
+  let assets = {};
+  collection.forEach(doc => {
+    assets[doc.id] = doc.data()
+  });
+
+  const types = [
+    "hdris",
+    "textures",
+    "models",
+  ]
+
+  const returnData = {
+    hdris: {},
+    textures: {},
+    models: {},
+  }
+
+  // First store all downloads/day per asset with each cat
+  for (const asset of Object.values(assets)) {
+    for (const cat of asset.categories) {
+      const t = types[asset.type]
+      const secondsPublished = Date.now() / 1000 - asset.date_published
+      const daysPublished = secondsPublished / 24 / 60 / 60
+      if (daysPublished < 1) continue
+      const downloadsPerDay = asset.download_count / daysPublished
+      returnData[t][cat] = returnData[t][cat] || []
+      returnData[t][cat].push(downloadsPerDay);
+    }
+  }
+
+  // Then average the downloads/day for each cat
+  const average = (array) => array.reduce((a, b) => a + b) / array.length;
+  for (const [t, typeData] of Object.entries(returnData)) {
+    for (const [c, data] of Object.entries(typeData)) {
+      returnData[t][c] = { count: data.length, avg: average(data) }
+    }
+  }
+
+  res.status(200).json(returnData);
+});
+
+
 router.get('/cfmonth', async (req, res) => {
   // pageViews and bandwidth data for the previous month
 
