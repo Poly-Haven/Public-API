@@ -179,6 +179,7 @@ router.get('/cfmonth', async (req, res) => {
 
   let pageViews = 0
   let bytes = 0
+  let users = 0
 
   for (const zone of zones) {
     const query = `
@@ -200,6 +201,9 @@ router.get('/cfmonth', async (req, res) => {
             pageViews
             bytes
           }
+          uniq {
+            uniques
+          }
         }
       }
     }
@@ -218,12 +222,14 @@ router.get('/cfmonth', async (req, res) => {
     for (const day of result.data.viewer.zones[0].httpRequests1dGroups) {
       pageViews += day.sum.pageViews
       bytes += day.sum.bytes
+      users += day.uniq.uniques
     }
   }
 
   res.status(200).json({
     pageviews: pageViews,
     terabytes: bytes / 1000 / 1000 / 1000 / 1000,
+    users: users,
   });
 });
 
