@@ -28,7 +28,7 @@ fs.readdir(routeDir, (err, files) => {
 app.get('/', (req, res) => {
   res.status(200).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
-  https://redocly.github.io/redoc/?url=https://api.polyhaven.com/api-docs/swagger.json`);
+  https://redocly.github.io/redoc/?url=https://api.polyhaven.com/api-docs/swagger.json&nocors`);
 })
 
 app.listen(3000);
