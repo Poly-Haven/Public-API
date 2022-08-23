@@ -15,6 +15,7 @@ router.get('/', (req, res) => {
 router.get('/:asset_type', async (req, res) => {
   const asset_type = req.params.asset_type;
   const categories = req.query.in;
+  const includeUpcoming = req.query.future;
 
   let collectionRef = db.collection('assets');
 
@@ -57,7 +58,9 @@ router.get('/:asset_type', async (req, res) => {
   // Filter unpublished
   const now = Math.floor(Date.now() / 1000);
   for (const id in docs) {
-    if (docs[id].staging || docs[id].date_published > now) {
+    if (docs[id].staging) {
+      delete docs[id];
+    } else if (!includeUpcoming && docs[id].date_published > now) {
       delete docs[id];
     }
   }

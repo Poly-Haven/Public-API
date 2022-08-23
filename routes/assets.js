@@ -14,22 +14,10 @@ router.get('/', async (req, res) => {
   const categories = req.query.categories || req.query.c;
   const search = req.query.search || req.query.s;
   const author = req.query.author || req.query.a;
-  const earlyAccessKey = req.query.eakey;
-  const uuid = req.query.uuid;
+  const earlyAccessKey = req.query.eakey; // DEPRECATED
+  const includeUpcoming = req.query.future;
 
-  let earlyAccess = false
-  if (earlyAccessKey && uuid) {
-    const hash = crypto.createHmac('sha256', process.env.EA_KEY).update(uuid).digest('hex')
-    if (earlyAccessKey === hash) {
-      earlyAccess = true
-    } else {
-      res.status(403).json({
-        error: "403 Forbidden",
-        message: "Incorrect Early Access key"
-      })
-      return
-    }
-  }
+  let earlyAccess = includeUpcoming || earlyAccessKey
 
   let collectionRef = db.collection('assets');
 
@@ -74,7 +62,7 @@ router.get('/', async (req, res) => {
       delete docs[id];
     } else if (!earlyAccess && docs[id].date_published > now) {
       delete docs[id];
-    } else if (earlyAccess && docs[id].date_published < now) {
+    } else if (!includeUpcoming && earlyAccess && docs[id].date_published < now) {
       // Don't include published assets if eakey is present,we just want the early access stuff.
       delete docs[id];
     }
