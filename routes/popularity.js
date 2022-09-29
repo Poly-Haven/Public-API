@@ -197,7 +197,7 @@ router.get('/tex/:month', async (req, res) => {
     }
   }
 
-  const bonus_per_tex = 50;
+  const bonus_per_tex = month >= "2022-11" ? 100 : 50;
   const share_amount = bonus_per_tex * Object.keys(popularities).length;
 
   // Calculate relative popularity & bonus amounts
