@@ -51,6 +51,10 @@ router.get('/:id', async (req, res) => {
   similarities = {};
   for (const [slug, asset] of Object.entries(docs)) {
     if (slug === asset_id) continue
+    if (slug === asset_id + "_puresky") {
+      // Force very high similarity for puresky version
+      similarities[slug] = similarities[slug] + 100 || 100
+    }
     for (const cat of asset.categories) {
       if (this_asset.categories.includes(cat)) {
         similarities[slug] = similarities[slug] + 1 || 1
