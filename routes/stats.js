@@ -10,6 +10,23 @@ const firestore = require('../firestore');
 const db = firestore();
 
 
+const escapeRegExp = (s) => {
+  return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&');
+}
+
+
+const sortObject = (obj) => {
+  const sortedKeys = Object.keys(obj).sort(function (a, b) {
+    return (obj[b] - obj[a]);
+  })
+  let tmpObj = {}
+  for (const k of sortedKeys) {
+    tmpObj[k] = obj[k]
+  }
+  return tmpObj
+}
+
+
 const assetsPublishedInDateRange = async (date_from, date_to) => {
   const epoch_end = Date.parse(`${date_to}T23:59:59Z`) / 1000
   const collection = await db
@@ -263,6 +280,140 @@ router.get('/cfdaily', async (req, res) => {
   });
 
   res.status(200).json(docs);
+});
+
+
+router.get('/software', async (req, res) => {
+  let collectionRef = db.collection('gallery');
+
+  const collection = await collectionRef.get();
+  let softwareStrings = {};
+  collection.forEach(doc => {
+    const data = doc.data()
+    if (data.software) {
+      if (typeof data.software === 'string' || data.software instanceof String) {
+        softwareStrings[data.software] = softwareStrings[data.software] || 0
+        softwareStrings[data.software]++;
+      } else {
+        for (const s of data.software) {
+          softwareStrings[s] = softwareStrings[s] || 0
+          softwareStrings[s]++;
+        }
+      }
+    }
+  });
+
+  const knownSoftware = {
+    "dcc": {
+      "blender": 0,
+      "maya": 0,
+      "3ds max": 0,
+      "houdini": 0,
+      "cinema 4d": 0,
+      "sketchup": 0,
+      "daz studio": 0,
+      "vred": 0,
+      "rhino": 0,
+      "twinmotion": 0,
+    },
+    "game_engine": {
+      "unity": 0,
+      "unreal": 0,
+      "godot": 0,
+    },
+    "render_engine": {
+      "cycles": 0,
+      "eevee": 0,
+      "redshift": 0,
+      "arnold": 0,
+      "v-ray": 0,
+      "octane": 0,
+      "corona": 0,
+      "keyshot": 0,
+      "mental ray": 0,
+    },
+    "2d": {
+      "photoshop": 0,
+      "lightroom": 0,
+      "illustrator": 0,
+      "gimp": 0,
+      "inkscape": 0,
+      "affinity designer": 0,
+      "affinity photo": 0,
+      "krita": 0,
+    },
+    "other": {
+      "substance painter": 0,
+      "substance designer": 0,
+      "mari": 0,
+      "zbrush": 0,
+      "mudbox": 0,
+      "nuke": 0,
+      "after effects": 0,
+      "premiere": 0,
+      "speedtree": 0,
+      "meshroom": 0,
+      "reality capture": 0,
+    }
+  }
+  const aliases = {
+    "3d studio max": "3ds max",
+    "3dsmax": "3ds max",
+    "3d max": "3ds max",
+    "3dmax": "3ds max",
+    "3ds": "3ds max",
+    "max": "3ds max",
+    "max2019": "3ds max",
+    "c4d": "cinema 4d",
+    "cinema4d": "cinema 4d",
+    "vray": "v-ray",
+    "vray next": "v-ray",
+    "vray3.4": "v-ray",
+    "affinity": "affinity photo",
+    "daz": "daz studio",
+    "daz3d": "daz studio",
+    "daz 3d": "daz studio",
+    "substance": "substance painter",
+    "substance paint": "substance painter",
+    "ps": "photoshop",
+    "photosho": "photoshop",
+  }
+  const software = {}
+  for (const [sRaw, count] of Object.entries(softwareStrings)) {
+    const separators = [',', '&', '/', '+', ';', ' and ', ' with ', ' using ', ' in ']
+    const split = sRaw.toLowerCase().split(new RegExp(escapeRegExp(separators.join('|')), 'g'))
+    for (let s of split) {
+      s = s.trim()
+      if (s === '') continue
+      software[s] = software[s] || 0
+      software[s] += count
+    }
+  }
+
+  const noMatch = {}
+  for (let [s, count] of Object.entries(software)) {
+    let found = false
+    if (Object.keys(aliases).includes(s)) {
+      s = aliases[s]
+    }
+    for (const [category, categorySoftware] of Object.entries(knownSoftware)) {
+      for (const [software, softwareCount] of Object.entries(categorySoftware)) {
+        if (s.includes(software)) {
+          knownSoftware[category][software] += count
+          found = true
+        }
+      }
+    }
+    if (!found) {
+      noMatch[s] = count
+    }
+  }
+
+  for (const [category, categorySoftware] of Object.entries(knownSoftware)) {
+    knownSoftware[category] = sortObject(categorySoftware)
+  }
+
+  res.status(200).json({ knownSoftware, noMatch: sortObject(noMatch) });
 });
 
 module.exports = router;
