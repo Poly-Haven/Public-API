@@ -212,6 +212,7 @@ components:
           type: 1
           date_published: 1597061145
           download_count: 33151
+          files_hash: f55493e46c51f95b51bb5952d0b38d634937f3b2
           authors:
             Rob Tuytel: All
           categories:
@@ -232,6 +233,7 @@ components:
           type: 1
           date_published: 1601489165
           download_count: 33556
+          files_hash: 8746a9a941bebe5743d0a710e11cb91beb225ca6
           authors:
             Rob Tuytel: All
           categories:
@@ -268,6 +270,10 @@ components:
           type: integer
           description: The number of times this asset was downloaded. Useful for sorting by popularity.
           example: 12345
+        files_hash:
+          type: string
+          description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
+          example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -321,6 +327,10 @@ components:
           type: integer
           description: The number of times this asset was downloaded. Useful for sorting by popularity.
           example: 12345
+        files_hash:
+          type: string
+          description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
+          example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -396,6 +406,10 @@ components:
           type: integer
           description: The number of times this asset was downloaded. Useful for sorting by popularity.
           example: 12345
+        files_hash:
+          type: string
+          description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
+          example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -453,6 +467,10 @@ components:
           type: integer
           description: The number of times this asset was downloaded. Useful for sorting by popularity.
           example: 12345
+        files_hash:
+          type: string
+          description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
+          example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
         authors:
           type: object
           description: Who created this asset, and what they did.
