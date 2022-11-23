@@ -1,6 +1,6 @@
-const express = require('express');
-const crypto = require('crypto');
-const router = express.Router();
+const express = require('express')
+const crypto = require('crypto')
+const router = express.Router()
 const hookcord = require('hookcord')
 
 const patreon_tiers = require('../constants/patreon_tiers.json')
@@ -9,7 +9,7 @@ require('dotenv').config()
 
 const bodyParser = require('body-parser')
 
-router.use(bodyParser.text({ type: '*/*' }));
+router.use(bodyParser.text({ type: '*/*' }))
 
 const centsToRank = (c) => {
   if (c <= 300) {
@@ -52,57 +52,61 @@ const grantToken = (data, previousData) => {
 }
 
 router.post('/', async (req, res) => {
-  const webhookSecret = process.env.PATREON_HOOK_SECRET;
-  const hash = crypto.createHmac('md5', webhookSecret).update(req.body).digest('hex');
-  const success = (req.header('x-patreon-signature') === hash);
-  let data = JSON.parse(req.body);
-  data.hook = req.header('x-patreon-event');
+  const webhookSecret = process.env.PATREON_HOOK_SECRET
+  const hash = crypto.createHmac('md5', webhookSecret).update(req.body).digest('hex')
+  const success = req.header('x-patreon-signature') === hash
+  let data = JSON.parse(req.body)
+  data.hook = req.header('x-patreon-event')
   data.timestamp = new Date().toISOString()
 
   if (!success) {
-    console.log('Signature received: ' + req.header('x-patreon-signature'));
-    console.log('Signature generated: ' + hash);
-    console.log('Signature validation status: ' + success);
+    console.log('Signature received: ' + req.header('x-patreon-signature'))
+    console.log('Signature generated: ' + hash)
+    console.log('Signature validation status: ' + success)
 
     res.status(403).json({
-      error: "403 Forbidden",
-      message: "Incorrect secret"
+      error: '403 Forbidden',
+      message: 'Incorrect secret',
     })
     return
   }
 
-  const admin = require('firebase-admin');
+  const admin = require('firebase-admin')
 
   if (!admin.apps.length) {
-    console.log("Firebase init")
+    console.log('Firebase init')
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      })
-    });
+      }),
+    })
   }
 
-  const db = admin.firestore();
+  const db = admin.firestore()
 
-  const docID = Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const docID =
+    Date.now().toString() +
+    Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0')
   db.collection('patreon_hooks').doc(docID).set(data)
 
-  let uid = "";
+  let uid = ''
   try {
-    uid = data.data.relationships.user.data.id;
+    uid = data.data.relationships.user.data.id
   } catch (e) {
     res.status(400).json({
-      error: "400",
-      message: "Couldn't get uid"
+      error: '400',
+      message: "Couldn't get uid",
     })
     return
   }
 
   let patron = {}
   patron.uid = uid
-  patron.name = (data.data.attributes.full_name || "UNKNOWN").trim()
+  patron.name = (data.data.attributes.full_name || 'UNKNOWN').trim()
   patron.joined = data.data.attributes.pledge_relationship_start
   patron.cents = data.data.attributes.currently_entitled_amount_cents
   patron.rank = centsToRank(patron.cents)
@@ -121,10 +125,10 @@ router.post('/', async (req, res) => {
     }
   }
 
-  if (patron.tiers && patron.status === "active_patron") {
+  if (patron.tiers && patron.status === 'active_patron') {
     for (const tier of patron.tiers) {
       if (Object.keys(patreon_tiers).includes(tier)) {
-        if (patreon_tiers[tier].rewards.includes("Sponsor")) {
+        if (patreon_tiers[tier].rewards.includes('Sponsor')) {
           const previousDoc = await db.collection('patrons').doc(uid).get()
           let previousData = null
           if (previousDoc.exists) {
@@ -133,9 +137,13 @@ router.post('/', async (req, res) => {
           const [p, granted] = grantToken(patron, previousData)
           patron = p
           if (granted) {
-            const logID = Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            const logID =
+              Date.now().toString() +
+              Math.floor(Math.random() * 1000)
+                .toString()
+                .padStart(3, '0')
             db.collection('log').doc(logID).set({
-              type: "granttoken",
+              type: 'granttoken',
               timestamp: new Date().toISOString(),
               uuid: patron.uid,
             })
@@ -149,28 +157,24 @@ router.post('/', async (req, res) => {
   db.collection('patrons').doc(uid).set(patron, { merge: true })
 
   // Discord hook
-  const hooksToShare = [
-    'members:pledge:create',
-    'members:pledge:update',
-    'members:pledge:delete'
-  ]
+  const hooksToShare = ['members:pledge:create', 'members:pledge:update', 'members:pledge:delete']
   if (hooksToShare.includes(data.hook)) {
-    let title = "???"
+    let title = '???'
     let color = 0
     let description = ''
     if (data.hook === 'members:pledge:create') {
-      title = `New $${patron.cents / 100} patron!`;
-      color = 10212925;
+      title = `New $${patron.cents / 100} patron!`
+      color = 10212925
     } else if (data.hook === 'members:pledge:update') {
-      title = `Pledge edited to $${patron.cents / 100}`;
-      color = 4307929;
+      title = `Pledge edited to $${patron.cents / 100}`
+      color = 4307929
     } else if (data.hook === 'members:pledge:delete') {
-      title = `$${patron.cents / 100} pledge deleted`;
-      color = 16345172;
+      title = `$${patron.cents / 100} pledge deleted`
+      color = 16345172
     }
 
     if (data.hook !== 'members:pledge:create') {
-      description += `Joined: ${new Date(patron.joined).toLocaleDateString("en-ZA")}`
+      description += `Joined: ${new Date(patron.joined).toLocaleDateString('en-ZA')}`
       if (patron.lifetime_cents) {
         description += `\nLifetime: $${patron.lifetime_cents / 100}`
       }
@@ -179,28 +183,30 @@ router.post('/', async (req, res) => {
     const Hook = new hookcord.Hook()
       .setLink(process.env.DISCORD_PATRON_HOOK)
       .setPayload({
-        embeds: [{
-          title: title,
-          description: description,
-          url: `https://www.patreon.com/user?u=${patron.uid}`,
-          type: 'rich',
-          color: color,
-          "thumbnail": {
-            "url": `https://c8.patreon.com/2/36/${patron.uid}`
+        embeds: [
+          {
+            title: title,
+            description: description,
+            url: `https://www.patreon.com/user?u=${patron.uid}`,
+            type: 'rich',
+            color: color,
+            thumbnail: {
+              url: `https://c8.patreon.com/2/36/${patron.uid}`,
+            },
+            author: {
+              name: patron.name,
+              url: `https://www.patreon.com/user?u=${patron.uid}`,
+            },
           },
-          author: {
-            name: patron.name,
-            url: `https://www.patreon.com/user?u=${patron.uid}`
-          }
-        }]
+        ],
       })
       .fire()
       .catch(console.error)
   }
 
   res.status(200).json({
-    message: "OK"
+    message: 'OK',
   })
-});
+})
 
-module.exports = router;
+module.exports = router

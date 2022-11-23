@@ -1,7 +1,7 @@
-openapi: "3.0.2"
+openapi: '3.0.2'
 info:
   title: Poly Haven API
-  version: "1.0.0"
+  version: '1.0.0'
   description: Provides endpoints for getting lists of assets, categories, and information about individual assets on polyhaven.com. The API is hosted at https://api.polyhaven.com
   license:
     name: AGPL
@@ -19,18 +19,18 @@ paths:
   /types:
     get:
       summary: List of asset types available.
-      description: "We currently publish three types of assets: `hdris`, `textures` and `models`. This endpoint simply returns an array of those types."
+      description: 'We currently publish three types of assets: `hdris`, `textures` and `models`. This endpoint simply returns an array of those types.'
       tags:
         - assets
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: array
                 description: Array of asset types
-                example: ["hdris", "textures", "models"]
+                example: ['hdris', 'textures', 'models']
   /assets:
     get:
       summary: A list of assets, including their individual metadata.
@@ -56,13 +56,13 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/assets"
-        "400":
+                $ref: '#/components/schemas/assets'
+        '400':
           description: Bad request, e.g. unsupported asset type
   /info/{id}:
     get:
@@ -78,18 +78,18 @@ paths:
             type: string
           example: abandoned_factory_canteen_01
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/hdri"
-                  - $ref: "#/components/schemas/texture"
-                  - $ref: "#/components/schemas/model"
-        "400":
+                  - $ref: '#/components/schemas/hdri'
+                  - $ref: '#/components/schemas/texture'
+                  - $ref: '#/components/schemas/model'
+        '400':
           description: Bad request, e.g. missing {id}
-        "404":
+        '404':
           description: No asset found with that ID
   /files/{id}:
     get:
@@ -106,18 +106,18 @@ paths:
             type: string
           example: ceramic_vase_03
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/hdriFiles"
-                  - $ref: "#/components/schemas/textureFiles"
-                  - $ref: "#/components/schemas/modelFiles"
-        "400":
+                  - $ref: '#/components/schemas/hdriFiles'
+                  - $ref: '#/components/schemas/textureFiles'
+                  - $ref: '#/components/schemas/modelFiles'
+        '400':
           description: Bad request, e.g. missing {id}
-        "404":
+        '404':
           description: No asset found with that ID
   /author/{id}:
     get:
@@ -134,15 +134,15 @@ paths:
             type: string
           example: Andreas Mischok
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/author"
-        "400":
+                $ref: '#/components/schemas/author'
+        '400':
           description: Bad request, e.g. missing {id}
-        "404":
+        '404':
           description: No author found with that ID
   /categories/{type}:
     get:
@@ -154,7 +154,7 @@ paths:
         - name: type
           in: path
           required: true
-          description: "One of the supported asset types: `hdris`, `textures`, or `models`."
+          description: 'One of the supported asset types: `hdris`, `textures`, or `models`.'
           schema:
             type: string
             example: hdris
@@ -165,7 +165,7 @@ paths:
             type: string
             example: night,clear
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -195,7 +195,7 @@ paths:
                 overcast: 76
                 night: 31
                 studio: 18
-        "400":
+        '400':
           description: Bad request, e.g. missing or unsupported {type}
 
 components:
@@ -514,7 +514,7 @@ components:
               type: object
               properties:
                 $format:
-                  $ref: "#/components/schemas/file"
+                  $ref: '#/components/schemas/file'
         backplates:
           nullable: true
           type: object
@@ -523,11 +523,11 @@ components:
               type: object
               properties:
                 $format:
-                  $ref: "#/components/schemas/file"
+                  $ref: '#/components/schemas/file'
         colorchart:
-          $ref: "#/components/schemas/optionalFile"
+          $ref: '#/components/schemas/optionalFile'
         tonemapped:
-          $ref: "#/components/schemas/optionalFile"
+          $ref: '#/components/schemas/optionalFile'
     textureFiles:
       type: object
       properties:
@@ -538,7 +538,7 @@ components:
               type: object
               properties:
                 blend:
-                  $ref: "#/components/schemas/fileWithIncludes"
+                  $ref: '#/components/schemas/fileWithIncludes'
         gltf:
           type: object
           properties:
@@ -546,7 +546,7 @@ components:
               type: object
               properties:
                 gltf:
-                  $ref: "#/components/schemas/fileWithIncludes"
+                  $ref: '#/components/schemas/fileWithIncludes'
         $map:
           type: object
           properties:
@@ -554,7 +554,7 @@ components:
               type: object
               properties:
                 $format:
-                  $ref: "#/components/schemas/file"
+                  $ref: '#/components/schemas/file'
     modelFiles:
       type: object
       properties:
@@ -565,7 +565,7 @@ components:
               type: object
               properties:
                 blend:
-                  $ref: "#/components/schemas/fileWithIncludes"
+                  $ref: '#/components/schemas/fileWithIncludes'
         gltf:
           type: object
           properties:
@@ -573,7 +573,7 @@ components:
               type: object
               properties:
                 gltf:
-                  $ref: "#/components/schemas/fileWithIncludes"
+                  $ref: '#/components/schemas/fileWithIncludes'
         fbx:
           type: object
           properties:
@@ -581,7 +581,7 @@ components:
               type: object
               properties:
                 fbx:
-                  $ref: "#/components/schemas/fileWithIncludes"
+                  $ref: '#/components/schemas/fileWithIncludes'
         $map:
           type: object
           properties:
@@ -589,7 +589,7 @@ components:
               type: object
               properties:
                 $format:
-                  $ref: "#/components/schemas/file"
+                  $ref: '#/components/schemas/file'
     file:
       type: object
       properties:
@@ -631,7 +631,7 @@ components:
           description: A list of files that this file depends on and should be included when downloaded, typically textures that the model/texture uses.
           properties:
             $path:
-              $ref: "#/components/schemas/file"
+              $ref: '#/components/schemas/file'
     author:
       type: object
       properties:

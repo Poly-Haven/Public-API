@@ -1,23 +1,21 @@
-const express = require('express');
-const fetch = require("node-fetch");
-const router = express.Router();
-const subMonths = require("date-fns/subMonths")
+const express = require('express')
+const fetch = require('node-fetch')
+const router = express.Router()
+const subMonths = require('date-fns/subMonths')
 
 require('dotenv').config()
 
-const firestore = require('../firestore');
+const firestore = require('../firestore')
 
-const db = firestore();
-
+const db = firestore()
 
 const escapeRegExp = (s) => {
-  return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&');
+  return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&')
 }
-
 
 const sortObject = (obj) => {
   const sortedKeys = Object.keys(obj).sort(function (a, b) {
-    return (obj[b] - obj[a]);
+    return obj[b] - obj[a]
   })
   let tmpObj = {}
   for (const k of sortedKeys) {
@@ -26,21 +24,17 @@ const sortObject = (obj) => {
   return tmpObj
 }
 
-
 const assetsPublishedInDateRange = async (date_from, date_to) => {
   const epoch_end = Date.parse(`${date_to}T23:59:59Z`) / 1000
-  const collection = await db
-    .collection("assets")
-    .where("date_published", "<=", epoch_end)
-    .get();
+  const collection = await db.collection('assets').where('date_published', '<=', epoch_end).get()
 
-  let assets = [];
-  collection.forEach(doc => {
-    assets.push(doc.data());
-  });
+  let assets = []
+  collection.forEach((doc) => {
+    assets.push(doc.data())
+  })
 
   const oneDay = 24 * 60 * 60
-  let epoch = (Date.parse(`${date_from}T23:59:59Z`) / 1000) - oneDay
+  let epoch = Date.parse(`${date_from}T23:59:59Z`) / 1000 - oneDay
   let days = {}
   while (epoch < epoch_end) {
     epoch += oneDay
@@ -53,7 +47,7 @@ const assetsPublishedInDateRange = async (date_from, date_to) => {
     for (const asset of assets) {
       if (asset.date_published <= epoch) {
         const type = Object.keys(days[day])[asset.type]
-        days[day][type]++;
+        days[day][type]++
       }
     }
   }
@@ -61,40 +55,38 @@ const assetsPublishedInDateRange = async (date_from, date_to) => {
   return days
 }
 
-
 router.get('/downloads', async (req, res) => {
-  const slug = req.query.slug;
-  const type = req.query.type;
-  const date_from = req.query.date_from;
-  const date_to = req.query.date_to;
+  const slug = req.query.slug
+  const type = req.query.type
+  const date_from = req.query.date_from
+  const date_to = req.query.date_to
 
-  let collectionRef = db.collection('downloads_daily');
+  let collectionRef = db.collection('downloads_daily')
 
   collectionRef = slug ? collectionRef.where('slug', '==', slug) : collectionRef
   collectionRef = type ? collectionRef.where('type', '==', type) : collectionRef
   collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
   collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
 
-  const collection = await collectionRef.get();
-  let docs = [];
-  collection.forEach(doc => {
-    docs.push(doc.data());
-  });
+  const collection = await collectionRef.get()
+  let docs = []
+  collection.forEach((doc) => {
+    docs.push(doc.data())
+  })
 
-  res.status(200).json(docs);
-});
-
+  res.status(200).json(docs)
+})
 
 router.get('/relativetype', async (req, res) => {
-  const date_from = req.query.date_from;
-  const date_to = req.query.date_to;
+  const date_from = req.query.date_from
+  const date_to = req.query.date_to
 
-  let collectionRef = db.collection('downloads_daily');
+  let collectionRef = db.collection('downloads_daily')
 
   const types = {
-    T0: "hdris",
-    T1: "textures",
-    T2: "models",
+    T0: 'hdris',
+    T1: 'textures',
+    T2: 'models',
   }
 
   collectionRef = collectionRef.where('type', '==', 'TYPE')
@@ -102,11 +94,11 @@ router.get('/relativetype', async (req, res) => {
   collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
   collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
 
-  const collection = await collectionRef.get();
-  let stats = {};
-  collection.forEach(doc => {
+  const collection = await collectionRef.get()
+  let stats = {}
+  collection.forEach((doc) => {
     stats[doc.id] = doc.data()
-  });
+  })
 
   const assetsPublished = await assetsPublishedInDateRange(date_from, date_to)
 
@@ -122,32 +114,26 @@ router.get('/relativetype', async (req, res) => {
     }
     let relative = {}
     for (const [type, value] of Object.entries(downloadsPerAsset)) {
-      relative[type] = value / total * 100
+      relative[type] = (value / total) * 100
     }
     if (Object.keys(relative).length) {
       returnData[day] = relative
     }
   }
 
-  res.status(200).json(returnData);
-});
-
+  res.status(200).json(returnData)
+})
 
 router.get('/relativecategory', async (req, res) => {
+  let collectionRef = db.collection('assets')
 
-  let collectionRef = db.collection('assets');
-
-  const collection = await collectionRef.get();
-  let assets = {};
-  collection.forEach(doc => {
+  const collection = await collectionRef.get()
+  let assets = {}
+  collection.forEach((doc) => {
     assets[doc.id] = doc.data()
-  });
+  })
 
-  const types = [
-    "hdris",
-    "textures",
-    "models",
-  ]
+  const types = ['hdris', 'textures', 'models']
 
   const returnData = {
     hdris: {},
@@ -164,35 +150,31 @@ router.get('/relativecategory', async (req, res) => {
       if (daysPublished < 1) continue
       const downloadsPerDay = asset.download_count / daysPublished
       returnData[t][cat] = returnData[t][cat] || []
-      returnData[t][cat].push(downloadsPerDay);
+      returnData[t][cat].push(downloadsPerDay)
     }
   }
 
   // Then average the downloads/day for each cat
-  const average = (array) => array.reduce((a, b) => a + b) / array.length;
+  const average = (array) => array.reduce((a, b) => a + b) / array.length
   for (const [t, typeData] of Object.entries(returnData)) {
     for (const [c, data] of Object.entries(typeData)) {
       returnData[t][c] = { count: data.length, avg: average(data) }
     }
   }
 
-  res.status(200).json(returnData);
-});
-
+  res.status(200).json(returnData)
+})
 
 router.get('/cfmonth', async (req, res) => {
   // pageViews and bandwidth data for the previous month
 
-  const isoDay = date => date.toISOString().substring(0, 10) // YYYY-MM-DD
+  const isoDay = (date) => date.toISOString().substring(0, 10) // YYYY-MM-DD
 
   const now = Date.now()
   const toDate = isoDay(new Date(now))
   const fromDate = isoDay(subMonths(now, 1))
 
-  const zones = [
-    process.env.CLOUDFLARE_ZONE,
-    process.env.CLOUDFLARE_ZONE_ORG,
-  ]
+  const zones = [process.env.CLOUDFLARE_ZONE, process.env.CLOUDFLARE_ZONE_ORG]
 
   let pageViews = 0
   let bytes = 0
@@ -226,15 +208,15 @@ router.get('/cfmonth', async (req, res) => {
     }
   }
   `
-    const result = await fetch("https://api.cloudflare.com/client/v4/graphql", {
+    const result = await fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-AUTH-EMAIL': process.env.CLOUDFLARE_API_EMAIL,
         authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
       },
-      body: JSON.stringify({ query: query })
-    }).then(r => r.json())
+      body: JSON.stringify({ query: query }),
+    }).then((r) => r.json())
 
     for (const day of result.data.viewer.zones[0].httpRequests1dGroups) {
       pageViews += day.sum.pageViews
@@ -247,22 +229,21 @@ router.get('/cfmonth', async (req, res) => {
     pageviews: pageViews,
     terabytes: bytes / 1000 / 1000 / 1000 / 1000,
     users: users,
-  });
-});
-
+  })
+})
 
 router.get('/cfdaily', async (req, res) => {
-  const date_from = req.query.date_from;
-  const date_to = req.query.date_to;
+  const date_from = req.query.date_from
+  const date_to = req.query.date_to
 
-  let collectionRef = db.collection('cloudflare_analytics');
+  let collectionRef = db.collection('cloudflare_analytics')
 
   collectionRef = date_from ? collectionRef.where('__name__', '>=', date_from) : collectionRef
   collectionRef = date_to ? collectionRef.where('__name__', '<=', date_to) : collectionRef
 
-  const collection = await collectionRef.get();
-  let docs = {};
-  collection.forEach(doc => {
+  const collection = await collectionRef.get()
+  let docs = {}
+  collection.forEach((doc) => {
     const data = doc.data()
     for (const site of Object.values(data)) {
       if (!site.data) continue
@@ -276,107 +257,106 @@ router.get('/cfdaily', async (req, res) => {
         console.error(err)
       }
     }
-    docs[doc.id] = data;
-  });
+    docs[doc.id] = data
+  })
 
-  res.status(200).json(docs);
-});
-
+  res.status(200).json(docs)
+})
 
 router.get('/software', async (req, res) => {
-  let collectionRef = db.collection('gallery');
+  let collectionRef = db.collection('gallery')
 
-  const collection = await collectionRef.get();
-  let softwareStrings = {};
-  collection.forEach(doc => {
+  const collection = await collectionRef.get()
+  let softwareStrings = {}
+  collection.forEach((doc) => {
     const data = doc.data()
     if (data.software) {
       if (typeof data.software === 'string' || data.software instanceof String) {
         softwareStrings[data.software] = softwareStrings[data.software] || 0
-        softwareStrings[data.software]++;
+        softwareStrings[data.software]++
       } else {
         for (const s of data.software) {
           softwareStrings[s] = softwareStrings[s] || 0
-          softwareStrings[s]++;
+          softwareStrings[s]++
         }
       }
     }
-  });
+  })
 
   const knownSoftware = {
-    "dcc": {
-      "blender": 0,
-      "maya": 0,
-      "3ds max": 0,
-      "houdini": 0,
-      "cinema 4d": 0,
-      "sketchup": 0,
-      "daz studio": 0,
-      "vred": 0,
-      "rhino": 0,
-      "twinmotion": 0,
+    dcc: {
+      blender: 0,
+      maya: 0,
+      '3ds max': 0,
+      houdini: 0,
+      'cinema 4d': 0,
+      sketchup: 0,
+      'daz studio': 0,
+      vred: 0,
+      rhino: 0,
+      twinmotion: 0,
     },
-    "game_engine": {
-      "unity": 0,
-      "unreal": 0,
-      "godot": 0,
+    game_engine: {
+      unity: 0,
+      unreal: 0,
+      godot: 0,
     },
-    "render_engine": {
-      "cycles": 0,
-      "eevee": 0,
-      "redshift": 0,
-      "arnold": 0,
-      "v-ray": 0,
-      "octane": 0,
-      "corona": 0,
-      "keyshot": 0,
-      "mental ray": 0,
+    render_engine: {
+      cycles: 0,
+      eevee: 0,
+      redshift: 0,
+      arnold: 0,
+      'v-ray': 0,
+      octane: 0,
+      corona: 0,
+      keyshot: 0,
+      'mental ray': 0,
     },
-    "2d": {
-      "photoshop": 0,
-      "lightroom": 0,
-      "illustrator": 0,
-      "gimp": 0,
-      "inkscape": 0,
-      "affinity designer": 0,
-      "affinity photo": 0,
-      "krita": 0,
+    '2d': {
+      photoshop: 0,
+      lightroom: 0,
+      illustrator: 0,
+      gimp: 0,
+      inkscape: 0,
+      'affinity designer': 0,
+      'affinity photo': 0,
+      krita: 0,
     },
-    "other": {
-      "substance painter": 0,
-      "substance designer": 0,
-      "mari": 0,
-      "zbrush": 0,
-      "mudbox": 0,
-      "nuke": 0,
-      "after effects": 0,
-      "premiere": 0,
-      "speedtree": 0,
-      "meshroom": 0,
-      "reality capture": 0,
-    }
+    other: {
+      'substance painter': 0,
+      'substance designer': 0,
+      mari: 0,
+      zbrush: 0,
+      mudbox: 0,
+      nuke: 0,
+      'after effects': 0,
+      premiere: 0,
+      speedtree: 0,
+      meshroom: 0,
+      'reality capture': 0,
+    },
   }
   const aliases = {
-    "3d studio max": "3ds max",
-    "3dsmax": "3ds max",
-    "3d max": "3ds max",
-    "3dmax": "3ds max",
-    "3ds": "3ds max",
-    "max": "3ds max",
-    "max2019": "3ds max",
-    "c4d": "cinema 4d",
-    "cinema4d": "cinema 4d",
-    "vray": "v-ray",
-    "vray next": "v-ray",
-    "vray3.4": "v-ray",
-    "affinity": "affinity photo",
-    "daz": "daz studio",
-    "daz3d": "daz studio",
-    "daz 3d": "daz studio",
-    "substance": "substance painter",
-    "substance paint": "substance painter",
-    "ps": "photoshop",
-    "photosho": "photoshop",
+    '3d studio max': '3ds max',
+    '3dsmax': '3ds max',
+    '3d max': '3ds max',
+    '3dmax': '3ds max',
+    '3ds': '3ds max',
+    max: '3ds max',
+    max2019: '3ds max',
+    c4d: 'cinema 4d',
+    cinema4d: 'cinema 4d',
+    vray: 'v-ray',
+    'vray next': 'v-ray',
+    'vray3.4': 'v-ray',
+    affinity: 'affinity photo',
+    daz: 'daz studio',
+    daz3d: 'daz studio',
+    'daz 3d': 'daz studio',
+    substance: 'substance painter',
+    'substance paint': 'substance painter',
+    ps: 'photoshop',
+    photosho: 'photoshop',
   }
   const software = {}
   for (const [sRaw, count] of Object.entries(softwareStrings)) {
@@ -413,7 +393,7 @@ router.get('/software', async (req, res) => {
     knownSoftware[category] = sortObject(categorySoftware)
   }
 
-  res.status(200).json({ knownSoftware, noMatch: sortObject(noMatch) });
-});
+  res.status(200).json({ knownSoftware, noMatch: sortObject(noMatch) })
+})
 
-module.exports = router;
+module.exports = router
