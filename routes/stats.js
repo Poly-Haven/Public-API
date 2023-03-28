@@ -2,6 +2,7 @@ const express = require('express')
 const fetch = require('node-fetch')
 const router = express.Router()
 const subMonths = require('date-fns/subMonths')
+const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 
 require('dotenv').config()
 
@@ -394,6 +395,52 @@ router.get('/software', async (req, res) => {
   }
 
   res.status(200).json({ knownSoftware, noMatch: sortObject(noMatch) })
+})
+
+router.get('/searches', async (req, res) => {
+  const types = ['hdris', 'textures', 'models']
+  let collectionRef = db.collection('searches').orderBy('timestamp', 'desc').limit(50000)
+
+  const collection = await collectionRef.get()
+  let searches = []
+  collection.forEach((doc) => {
+    const dd = doc.data()
+    if (dd.search_term.length >= 3 && isNaN(dd.search_term) && types.includes(dd.type)) {
+      searches.push(dd)
+    }
+  })
+
+  const returnData = {
+    hdris: {},
+    textures: {},
+    models: {},
+  }
+  for (const search of searches) {
+    const t = search.type
+    const s = search.search_term.trim().toLowerCase()
+    returnData[t][s] = returnData[t][s] || []
+    returnData[t][s].push(search.results)
+  }
+
+  const average = (array) => array.reduce((a, b) => a + b) / array.length
+  for (const [t, typeData] of Object.entries(returnData)) {
+    for (const [c, data] of Object.entries(typeData)) {
+      returnData[t][c] = { count: data.length, avg: average(data) }
+    }
+  }
+
+  // Filter all but the highest count searches
+  for (const [t, typeData] of Object.entries(returnData)) {
+    const sorted = sortObjBySubObjProp(typeData, 'count')
+    const top = Object.keys(sorted).slice(0, 50)
+    for (const [c, data] of Object.entries(typeData)) {
+      if (!top.includes(c)) {
+        delete returnData[t][c]
+      }
+    }
+  }
+
+  res.status(200).json(returnData)
 })
 
 module.exports = router
