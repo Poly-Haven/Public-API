@@ -403,9 +403,11 @@ router.get('/searches', async (req, res) => {
 
   const collection = await collectionRef.get()
   let searches = []
+  let numSearches = 0
   collection.forEach((doc) => {
     const dd = doc.data()
     if (dd.search_term.length >= 3 && isNaN(dd.search_term) && types.includes(dd.type)) {
+      numSearches++
       searches.push(dd)
     }
   })
@@ -439,6 +441,13 @@ router.get('/searches', async (req, res) => {
       }
     }
   }
+
+  returnData.meta = {
+    total: numSearches,
+    earliestSearch: searches[searches.length - 1].timestamp,
+    latestSearch: searches[0].timestamp,
+  }
+  console.log(returnData.meta)
 
   res.status(200).json(returnData)
 })
