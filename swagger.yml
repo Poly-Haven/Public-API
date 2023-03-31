@@ -582,6 +582,14 @@ components:
               properties:
                 fbx:
                   $ref: '#/components/schemas/fileWithIncludes'
+        usd:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                usd:
+                  $ref: '#/components/schemas/fileWithIncludes'
         $map:
           type: object
           properties:
