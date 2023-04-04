@@ -150,7 +150,9 @@ router.get('/relativecategory', async (req, res) => {
       const daysPublished = secondsPublished / 24 / 60 / 60
       if (daysPublished < 1) continue
       const downloadsPerDay = asset.download_count / daysPublished
-      returnData[t][cat] = returnData[t][cat] || []
+      if (!Object.keys(returnData[t]).includes(cat)) {
+        returnData[t][cat] = []
+      }
       returnData[t][cat].push(downloadsPerDay)
     }
   }
@@ -420,7 +422,9 @@ router.get('/searches', async (req, res) => {
   for (const search of searches) {
     const t = search.type
     const s = search.search_term.trim().toLowerCase()
-    returnData[t][s] = returnData[t][s] || []
+    if (!Object.keys(returnData[t]).includes(s)) {
+      returnData[t][s] = []
+    }
     returnData[t][s].push(search.results)
   }
 
