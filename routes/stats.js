@@ -451,7 +451,6 @@ router.get('/searches', async (req, res) => {
     earliestSearch: searches[searches.length - 1].timestamp,
     latestSearch: searches[0].timestamp,
   }
-  console.log(returnData.meta)
 
   res.status(200).json(returnData)
 })
