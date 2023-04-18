@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
@@ -12,12 +11,7 @@ const db = firestore()
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
   const categories = req.query.categories || req.query.c
-  const search = req.query.search || req.query.s
-  const author = req.query.author || req.query.a
-  const earlyAccessKey = req.query.eakey // DEPRECATED
   const includeUpcoming = req.query.future
-
-  let earlyAccess = includeUpcoming || earlyAccessKey
 
   let collectionRef = db.collection('assets')
 
@@ -57,20 +51,8 @@ router.get('/', async (req, res) => {
   for (const id in docs) {
     if (docs[id].staging) {
       delete docs[id]
-    } else if (!earlyAccess && docs[id].date_published > now) {
+    } else if (!includeUpcoming && docs[id].date_published > now) {
       delete docs[id]
-    } else if (!includeUpcoming && earlyAccess && docs[id].date_published < now) {
-      // Don't include published assets if eakey is present,we just want the early access stuff.
-      delete docs[id]
-    }
-  }
-
-  // Filter Author
-  if (author) {
-    for (const id in docs) {
-      if (!Object.keys(docs[id].authors).includes(author)) {
-        delete docs[id]
-      }
     }
   }
 
@@ -82,26 +64,6 @@ router.get('/', async (req, res) => {
         delete docs[id]
       }
     }
-  }
-
-  // Search
-  if (search) {
-    const Fuse = require('fuse.js')
-
-    doc_values = Object.values(docs)
-    const fuse = new Fuse(doc_values, {
-      keys: ['categories', 'tags', 'name'],
-      includeScore: true,
-    })
-
-    const search_results = fuse.search(search)
-
-    matched_docs = {}
-    for (var sr of search_results) {
-      let doc_id = Object.keys(docs)[sr.refIndex]
-      matched_docs[doc_id] = docs[doc_id]
-    }
-    docs = matched_docs
   }
 
   // Remove unnecessary data
