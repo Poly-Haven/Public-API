@@ -104,6 +104,19 @@ router.get('/', async (req, res) => {
     docs = matched_docs
   }
 
+  // Remove unnecessary data
+  const remove_keys = [
+    'old_id',
+    'reviewers',
+    'scale',
+    'staging', // It's OK to remove this since we delete truthy staging assets above
+  ]
+  for (const id in docs) {
+    for (const key of remove_keys) {
+      delete docs[id][key]
+    }
+  }
+
   res.status(200).json(docs)
 })
 
