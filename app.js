@@ -7,6 +7,18 @@ require('dotenv').config()
 const app = express()
 app.use(cors())
 
+const isDev = process.env.NODE_ENV === 'development'
+// Middleware that logs the request url to the console
+if (isDev) {
+  app.use((req, res, next) => {
+    // Random emoji to make it easier to find in the logs, using the current second as the seed
+    const emojiOptions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸']
+    const emoji = emojiOptions[new Date().getSeconds() % emojiOptions.length]
+    console.log(emoji, req.url)
+    next()
+  })
+}
+
 const swaggerDocument = YAML.load('./swagger.yml')
 app.get('/api-docs/swagger.json', (req, res) => res.json(swaggerDocument))
 
