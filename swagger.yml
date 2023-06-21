@@ -50,11 +50,6 @@ paths:
           schema:
             type: string
           example: brick
-        - name: author
-          in: query
-          description: Filter to assets by a specific author.
-          schema:
-            type: string
       responses:
         '200':
           description: OK
