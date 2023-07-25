@@ -19,6 +19,12 @@ if (isDev) {
   })
 }
 
+// Middleware to add the ToS to every response
+app.use((req, res, next) => {
+  res.setHeader('Terms-Of-Service', 'https://github.com/Poly-Haven/Public-API/blob/master/ToS.md')
+  next()
+})
+
 const swaggerDocument = YAML.load('./swagger.yml')
 app.get('/api-docs/swagger.json', (req, res) => res.json(swaggerDocument))
 

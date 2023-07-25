@@ -6,6 +6,7 @@ info:
   license:
     name: AGPL
     url: https://github.com/Poly-Haven/Public-API/blob/master/LICENSE
+  termsOfService: 'https://github.com/Poly-Haven/Public-API/blob/master/ToS.md'
   contact:
     name: Poly Haven
     url: https://api.polyhaven.com
