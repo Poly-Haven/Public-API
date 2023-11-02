@@ -7,3 +7,5 @@ Provides endpoints for getting lists of assets, categories, and information abou
 Currently live at https://api.polyhaven.com
 
 **[API Documentation](https://redocly.github.io/redoc/?url=https://api.polyhaven.com/api-docs/swagger.json&nocors)**
+
+**[Terms of Service](https://github.com/Poly-Haven/Public-API/blob/master/ToS.md)**
