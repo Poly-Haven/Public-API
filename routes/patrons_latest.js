@@ -6,7 +6,7 @@ const firestore = require('../firestore')
 
 router.get('/', async (req, res) => {
   const db = firestore()
-  const collection = await db.collection('patrons').orderBy('joined', 'desc').limit(30).get()
+  const collection = await db.collection('patrons').orderBy('joined', 'desc').limit(100).get()
 
   let patrons = []
   collection.forEach((doc) => {
