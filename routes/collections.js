@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 
   // Get list of assets in each collection
   for (const id in docs) {
-    const colAssets = await db.collection('assets').where('tags', 'array-contains', `collection: ${id}`).get()
+    const colAssets = await db.collection('assets').where('categories', 'array-contains', `collection: ${id}`).get()
     let assets = []
     colAssets.forEach((doc) => {
       assets.push(doc.id)
