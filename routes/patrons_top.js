@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
   const collection = await db.collection('patrons').orderBy('lifetime_cents', 'desc').limit(30).get()
 
   // These are/were corporate sponsors (not individuals)
-  const ignored = ['Graswald', 'Andrew_D', 'Luma Animation']
+  const ignored = ['UNKNOWN', 'Graswald', 'Andrew_D', 'Luma Animation']
 
   let patrons = []
   collection.forEach((doc) => {
