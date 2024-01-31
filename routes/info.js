@@ -17,7 +17,10 @@ router.get('/:id', async (req, res) => {
   if (!doc.exists) {
     res.status(404).send(`No asset with id ${escape(asset_id)}`)
   } else {
-    res.status(200).json(doc.data())
+    const data = doc.data()
+    // Add thumbnail URL
+    data.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${asset_id}.png?width=256&height=256`
+    res.status(200).json(data)
   }
 })
 

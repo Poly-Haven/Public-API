@@ -79,6 +79,11 @@ router.get('/', async (req, res) => {
     }
   }
 
+  // Add thumbnail URL
+  for (const id in docs) {
+    docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
+  }
+
   res.status(200).json(docs)
 })
 

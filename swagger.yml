@@ -224,6 +224,7 @@ components:
           dimensions:
             - 30000
             - 30000
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256
         aerial_beach_01:
           name: Aerial Beach 01
           type: 1
@@ -246,6 +247,7 @@ components:
           dimensions:
             - 30000
             - 30000
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_beach_01.png?width=256&height=256
     asset:
       type: object
       description: All asset types include this data.
@@ -303,6 +305,10 @@ components:
             - sculpture
             - white
             - fancy
+        thumbnail_url:
+          type: string
+          description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
+          example: https://cdn.polyhaven.com/asset_img/thumbs/ArmChair_01.png?width=256&height=256
     hdri:
       type: object
       description: HDRI data, extends `asset` schema.
@@ -358,6 +364,10 @@ components:
             - fluorescent
             - industrial
             - backplates
+        thumbnail_url:
+          type: string
+          description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
+          example: https://cdn.polyhaven.com/asset_img/thumbs/abandoned_factory_canteen_01.png?width=256&height=256
         whitebalance:
           nullable: true
           type: integer
@@ -439,6 +449,10 @@ components:
             - brown
             - floor
             - pavement
+        thumbnail_url:
+          type: string
+          description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
+          example: https://cdn.polyhaven.com/asset_img/thumbs/brick_floor_003.png?width=256&height=256
         dimensions:
           type: array
           description: An array with the dimensions of this asset on each axis in millimeters.
@@ -500,6 +514,10 @@ components:
             - sculpture
             - white
             - fancy
+        thumbnail_url:
+          type: string
+          description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
+          example: https://cdn.polyhaven.com/asset_img/thumbs/horse_statue_01.png?width=256&height=256
     hdriFiles:
       type: object
       properties:
