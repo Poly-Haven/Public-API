@@ -413,7 +413,12 @@ router.get('/searches', async (req, res) => {
   let numSearches = 0
   collection.forEach((doc) => {
     const dd = doc.data()
-    if (dd.search_term.length >= 3 && isNaN(dd.search_term) && types.includes(dd.type)) {
+    if (
+      dd.search_term !== undefined &&
+      dd.search_term.length >= 3 &&
+      isNaN(dd.search_term) &&
+      types.includes(dd.type)
+    ) {
       numSearches++
       searches.push(dd)
     }
