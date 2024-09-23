@@ -221,6 +221,9 @@ components:
             - road
             - flat
             - cracked
+          max_resolution:
+            - 8192
+            - 8192
           dimensions:
             - 30000
             - 30000
@@ -244,6 +247,9 @@ components:
             - costal
             - ocean
             - seaside
+          max_resolution:
+            - 16384
+            - 16384
           dimensions:
             - 30000
             - 30000
@@ -305,6 +311,12 @@ components:
             - sculpture
             - white
             - fancy
+        max_resolution:
+          type: array
+          description: The highest texture resolution available for this asset, in pixels.
+          example:
+            - 8192
+            - 8192
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
@@ -364,6 +376,12 @@ components:
             - fluorescent
             - industrial
             - backplates
+        max_resolution:
+          type: array
+          description: The highest resolution available for this HDRI, in pixels.
+          example:
+            - 16384
+            - 8192
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
@@ -449,6 +467,12 @@ components:
             - brown
             - floor
             - pavement
+        max_resolution:
+          type: array
+          description: The highest resolution available for this texture, in pixels.
+          example:
+            - 8192
+            - 8192
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
@@ -514,6 +538,21 @@ components:
             - sculpture
             - white
             - fancy
+        max_resolution:
+          type: array
+          description: The highest texture resolution available for this model, in pixels.
+          example:
+            - 8192
+            - 8192
+        lods:
+          type: array
+          description: (optional) A list of LOD triangle counts in order.
+          example:
+            - 20000
+            - 10000
+            - 5000
+            - 2000
+            - 1000
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
