@@ -409,57 +409,45 @@ router.get('/searches', async (req, res) => {
   let collectionRef = db.collection('searches').orderBy('timestamp', 'desc').limit(50000)
 
   const collection = await collectionRef.get()
-  let searches = []
-  let numSearches = 0
-  collection.forEach((doc) => {
-    const dd = doc.data()
-    if (
-      dd.search_term !== undefined &&
-      dd.search_term.length >= 3 &&
-      isNaN(dd.search_term) &&
-      types.includes(dd.type)
-    ) {
-      numSearches++
-      searches.push(dd)
-    }
-  })
 
-  const returnData = {
-    hdris: {},
-    textures: {},
-    models: {},
-  }
+  const searches = collection.docs
+    .map((doc) => doc.data())
+    .filter((dd) => dd.search_term && dd.search_term.length >= 3 && isNaN(dd.search_term) && types.includes(dd.type))
+
+  const returnData = { hdris: {}, textures: {}, models: {} }
+
   for (const search of searches) {
     const t = search.type
     const s = search.search_term.trim().toLowerCase()
-    if (!Object.keys(returnData[t]).includes(s)) {
-      returnData[t][s] = []
+
+    if (!returnData[t][s]) {
+      returnData[t][s] = { count: 0, total: 0 }
     }
-    returnData[t][s].push(search.results)
+    returnData[t][s].count++
+    returnData[t][s].total += search.results
   }
 
-  const average = (array) => array.reduce((a, b) => a + b) / array.length
-  for (const [t, typeData] of Object.entries(returnData)) {
-    for (const [c, data] of Object.entries(typeData)) {
-      returnData[t][c] = { count: data.length, avg: average(data) }
+  for (const type in returnData) {
+    for (const term in returnData[type]) {
+      returnData[type][term].avg = returnData[type][term].total / returnData[type][term].count
+      delete returnData[type][term].total // Clean up
     }
   }
 
-  // Filter all but the highest count searches
-  for (const [t, typeData] of Object.entries(returnData)) {
-    const sorted = sortObjBySubObjProp(typeData, 'count')
-    const top = Object.keys(sorted).slice(0, 50)
-    for (const [c, data] of Object.entries(typeData)) {
-      if (!top.includes(c)) {
-        delete returnData[t][c]
-      }
-    }
+  // Top searches logic...
+  for (const type in returnData) {
+    const sorted = Object.entries(returnData[type])
+      .sort(([, a], [, b]) => b.count - a.count)
+      .slice(0, 50)
+      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+
+    returnData[type] = sorted
   }
 
   returnData.meta = {
-    total: numSearches,
-    earliestSearch: searches[searches.length - 1].timestamp,
-    latestSearch: searches[0].timestamp,
+    total: searches.length,
+    earliestSearch: searches[searches.length - 1]?.timestamp,
+    latestSearch: searches[0]?.timestamp,
   }
 
   res.status(200).json(returnData)
