@@ -109,6 +109,7 @@ router.post('/', async (req, res) => {
   patron.name = (data.data.attributes.full_name || 'UNKNOWN').trim()
   patron.joined = data.data.attributes.pledge_relationship_start
   patron.cents = data.data.attributes.currently_entitled_amount_cents
+  patron.yearly_pledge = data.data.attributes.pledge_cadence === 12
   patron.rank = centsToRank(patron.cents)
   patron.lifetime_cents = data.data.attributes.lifetime_support_cents
   patron.last_charge_date = data.data.attributes.last_charge_date
