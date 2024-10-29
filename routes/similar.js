@@ -23,6 +23,24 @@ router.get('/', (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const asset_id = req.params.id
+
+  if (!asset_id) {
+    res.status(400).send(`No asset with that ID`)
+    return
+  }
+
+  const MAX_ID_LENGTH = 50
+  if (asset_id.length > MAX_ID_LENGTH) {
+    res.status(400).send(`No asset with that ID`)
+    return
+  }
+
+  const validPattern = /^[a-zA-Z0-9_-]+$/
+  if (!validPattern.test(asset_id)) {
+    res.status(400).send(`No asset with that ID`)
+    return
+  }
+
   const num = req.query.num || 6 // Number of similar to return.
 
   let collectionRef = db.collection('assets')
