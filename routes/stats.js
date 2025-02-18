@@ -453,4 +453,67 @@ router.get('/searches', async (req, res) => {
   res.status(200).json(returnData)
 })
 
+router.get('/post_download', async (req, res) => {
+  const returnData = {}
+  const msPerDay = 24 * 60 * 60 * 1000
+  const aMonthAgo = new Date(Date.now() - 31 * msPerDay).toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0]
+  const threeYearsAgo = new Date(Date.now() - 1096 * msPerDay).toISOString().split('T')[0]
+  const twelveMonthsAgo = new Date(Date.now() - 366 * msPerDay).toISOString().split('T')[0]
+
+  // MonthlyDownloads
+  let collectionRef = db.collection('downloads_daily')
+  collectionRef = collectionRef.where('slug', '==', 'ALL')
+  collectionRef = collectionRef.where('type', '==', 'ALL')
+  collectionRef = collectionRef.where('day', '>=', aMonthAgo)
+  let collection = await collectionRef.get()
+  let numMonthlyDownloads = 0
+  collection.forEach((doc) => {
+    numMonthlyDownloads += doc.data().downloads
+  })
+  returnData.numMonthlyDownloads = numMonthlyDownloads
+
+  // First get finances, we'll need them later
+  collectionRef = db.collection('finances')
+  collection = await collectionRef.get()
+  let finances = {}
+  collection.forEach((doc) => {
+    finances[doc.id] = doc.data()
+  })
+
+  // Monthly Web Hosting Fees
+  let yearlyWebHostingFees = 0
+  let zarPerUsd = 0
+  const last12Months = Object.keys(finances).sort().slice(-12)
+  for (const month of last12Months) {
+    const expenses = finances[month].expense
+    yearlyWebHostingFees += expenses['Web Hosting'] || 0
+    zarPerUsd = finances[month].rates['USD']
+  }
+  const averageMonthlyWebHostingFees = yearlyWebHostingFees / 12
+  returnData.averageMonthlyWebHostingFees = averageMonthlyWebHostingFees / zarPerUsd
+
+  // 3-year expenses
+  const last3Years = Object.keys(finances).sort().slice(-36)
+  let totalExpenses = 0
+  for (const month of last3Years) {
+    const expenses = finances[month].expense
+    let monthlyExpenses = 0
+    for (const [category, amount] of Object.entries(expenses)) {
+      monthlyExpenses += amount
+      totalExpenses += amount
+    }
+  }
+  returnData.averageMonthlyExpenses = totalExpenses / zarPerUsd / 36
+
+  // Assets published in 3 years (should be 266)
+  collection = await db
+    .collection('assets')
+    .where('date_published', '>', Date.parse(`${threeYearsAgo}T23:59:59Z`) / 1000)
+    .get()
+  returnData.averageAssetsPerMonth = collection.size / 36
+
+  res.status(200).json(returnData)
+})
+
 module.exports = router
