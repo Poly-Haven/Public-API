@@ -9,8 +9,21 @@ router.get('/', async (req, res) => {
   const db = firestore()
   const collection = await db.collection('patrons').where('status', '==', 'active_patron').get()
   let data = {}
+  const oneYearAgo = new Date()
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
   collection.forEach((doc) => {
-    data[doc.id] = doc.data()
+    const docData = doc.data()
+    if (docData.last_charge_date > oneYearAgo.toISOString()) {
+      // active_patron is not reliable for old data, so we check last_charge_date as well
+      if (docData.lifetime_cents > 0) {
+        // Some accounts are caught in limbo and are not really active
+        if (docData.cents > 0) {
+          // Typically failed payments or blocked accounts
+          docData.key = doc.id
+          data[doc.id] = docData
+        }
+      }
+    }
   })
 
   const sortedKeys = Object.keys(data).sort((a, b) => data[a].joined.localeCompare(data[b].joined))
