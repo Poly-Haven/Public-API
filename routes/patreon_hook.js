@@ -116,7 +116,8 @@ router.post('/', async (req, res) => {
   patron.last_charge_status = data.data.attributes.last_charge_status
   patron.next_charge_date = data.data.attributes.next_charge_date
   patron.status = data.data.attributes.patron_status
-  patron.last_edited = Date.now()
+  patron.last_edited = new Date().toISOString() // Legacy Warning: May be epoch instead of ISO string
+  patron.last_hook = data.hook // TODO check if members who delete their account are still tracked as active patrons (hook = "members:delete")
   const entitled_tiers = data.data.relationships.currently_entitled_tiers.data
   if (entitled_tiers.length > 0) {
     // When a user deletes their pledge, entitled_tiers is empty, even though they are entitled for the rest of the month they paid for. So we don't set their tiers if this is the case.
