@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const shuffleArray = require('../utils/shuffleArray')
 
 const firestore = require('../firestore')
 
@@ -26,6 +27,16 @@ router.get('/', async (req, res) => {
       vault.unlocked = milestones[vault.milestone_id].achieved || false
     }
   })
+
+  // Get list of assets in each vault
+  for (const id in vaults) {
+    const colAssets = await db.collection('assets').where('categories', 'array-contains', `vault: ${id}`).get()
+    let assets = []
+    colAssets.forEach((doc) => {
+      assets.push(doc.id)
+    })
+    vaults[id].assets = shuffleArray(assets).slice(0, 15)
+  }
 
   res.status(200).json(vaults)
 })

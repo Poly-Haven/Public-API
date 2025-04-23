@@ -1,17 +1,10 @@
 const express = require('express')
 const router = express.Router()
+const shuffleArray = require('../utils/shuffleArray')
 
 const firestore = require('../firestore')
 
 const db = firestore()
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i], array[j]] = [array[j], array[i]]
-  }
-  return array
-}
 
 router.get('/', async (req, res) => {
   const collection = await db.collection('collections').orderBy('date_published', 'desc').get()
