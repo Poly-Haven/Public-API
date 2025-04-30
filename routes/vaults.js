@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
   let vaults = {}
   colVaults.forEach((doc) => {
     vaults[doc.id] = doc.data()
+    vaults[doc.id].id = doc.id
   })
 
   const colMilestones = await db.collection('milestones').get()
@@ -35,7 +36,7 @@ router.get('/', async (req, res) => {
     colAssets.forEach((doc) => {
       assets.push(doc.id)
     })
-    vaults[id].assets = shuffleArray(assets).slice(0, 15)
+    vaults[id].assets = shuffleArray(assets)
   }
 
   // Sort vaults by milestone.target

@@ -33,6 +33,9 @@ router.get('/', async (req, res) => {
     }
   })
 
+  // Fix inconsistency between our record and Patreon, possibly caused by stale data or API issues.
+  count -= 3
+
   // Sort by target
   milestones.sort((a, b) => {
     if (a.target < b.target) return -1
