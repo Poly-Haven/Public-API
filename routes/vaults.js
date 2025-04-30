@@ -38,7 +38,20 @@ router.get('/', async (req, res) => {
     vaults[id].assets = shuffleArray(assets).slice(0, 15)
   }
 
-  res.status(200).json(vaults)
+  // Sort vaults by milestone.target
+  const sortedVaults = Object.values(vaults).sort((a, b) => {
+    if (a.milestone && b.milestone) {
+      return a.milestone.target - b.milestone.target
+    } else if (a.milestone) {
+      return -1
+    } else if (b.milestone) {
+      return 1
+    } else {
+      return 0
+    }
+  })
+
+  res.status(200).json(sortedVaults)
 })
 
 module.exports = router
