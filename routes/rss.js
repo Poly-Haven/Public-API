@@ -28,9 +28,15 @@ router.get('/', async (req, res) => {
           title: 'Poly Haven Assets',
           link: 'https://polyhaven.com',
           description: 'Latest assets from Poly Haven',
+          'atom:link': {
+            '@_href': `https://api.polyhaven.com/rss`,
+            '@_rel': 'self',
+            '@_type': 'application/rss+xml',
+          },
           item: sortedAssets.map((id) => ({
             title: assets[id].name,
             link: `https://polyhaven.com/a/${id}`,
+            guid: id,
             description: `<![CDATA[<a href="https://polyhaven.com/a/${id}"><img src="https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256" alt="${
               assets[id].name
             }" /></a> Download this free ${assetTypeNames[assets[id].type]} from Poly Haven]]>`,
