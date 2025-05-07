@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const shuffleArray = require('../utils/shuffleArray')
+const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 
 const firestore = require('../firestore')
 
@@ -26,6 +27,8 @@ router.get('/', async (req, res) => {
     if (vault.milestone_id && milestones[vault.milestone_id]) {
       vault.milestone = milestones[vault.milestone_id]
       vault.unlocked = milestones[vault.milestone_id].achieved || false
+      vault.target = milestones[vault.milestone_id].target || 0
+      delete vault.milestone.target
     }
   })
 
@@ -40,17 +43,7 @@ router.get('/', async (req, res) => {
   }
 
   // Sort vaults by milestone.target
-  const sortedVaults = Object.values(vaults).sort((a, b) => {
-    if (a.milestone && b.milestone) {
-      return a.milestone.target - b.milestone.target
-    } else if (a.milestone) {
-      return -1
-    } else if (b.milestone) {
-      return 1
-    } else {
-      return 0
-    }
-  })
+  const sortedVaults = sortObjBySubObjProp(vaults, 'target', true)
 
   res.status(200).json(sortedVaults)
 })

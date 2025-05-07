@@ -1,6 +1,6 @@
-const sortObjBySubObjProp = (obj, key) => {
+const sortObjBySubObjProp = (obj, key, reverse = false) => {
   const sortedKeys = Object.keys(obj).sort(function (a, b) {
-    return obj[b][key] - obj[a][key]
+    return reverse ? obj[a][key] - obj[b][key] : obj[b][key] - obj[a][key]
   })
   let tmpObj = {}
   for (const k of sortedKeys) {
