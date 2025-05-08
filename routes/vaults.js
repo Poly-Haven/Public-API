@@ -37,6 +37,9 @@ router.get('/', async (req, res) => {
     const colAssets = await db.collection('assets').where('categories', 'array-contains', `vault: ${id}`).get()
     let assets = []
     colAssets.forEach((doc) => {
+      if (doc.data().staging) {
+        return
+      }
       assets.push(doc.id)
     })
     vaults[id].assets = shuffleArray(assets)
