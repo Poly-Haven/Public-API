@@ -14,12 +14,11 @@ router.get('/', async (req, res) => {
     milestones.push(data)
   })
 
-  const colPatrons = db.collection('patrons').where('status', '==', 'active_patron')
-  const numPatrons = await colPatrons.get()
+  const patrons = await db.collection('patrons').where('status', '==', 'active_patron').get()
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
   let count = 0
-  numPatrons.forEach((doc) => {
+  patrons.forEach((doc) => {
     const docData = doc.data()
     if (docData.last_charge_date > oneYearAgo.toISOString()) {
       // active_patron is not reliable for old data, so we check last_charge_date as well
