@@ -600,6 +600,14 @@ components:
               properties:
                 gltf:
                   $ref: '#/components/schemas/fileWithIncludes'
+        mtlx:
+          type: object
+          properties:
+            $resolution:
+              type: object
+              properties:
+                mtlx:
+                  $ref: '#/components/schemas/fileWithIncludes'
         $map:
           type: object
           properties:
