@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
     milestones.push(data)
   })
 
+  // Get the number of active patrons
   const patrons = await db.collection('patrons').where('status', '==', 'active_patron').get()
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
@@ -31,9 +32,19 @@ router.get('/', async (req, res) => {
       }
     }
   })
-
   // Fix inconsistency between our record and Patreon, possibly caused by stale data or API issues.
   count -= 3
+
+  // Get number of early access assets
+  let numEaAssets = 0
+  const now = Math.floor(Date.now() / 1000)
+  const colAssets = await db.collection('assets').get()
+  colAssets.forEach((doc) => {
+    const data = doc.data()
+    if (!data.staging && data.date_published > now) {
+      numEaAssets++
+    }
+  })
 
   // Sort by target
   milestones.sort((a, b) => {
@@ -42,7 +53,7 @@ router.get('/', async (req, res) => {
     return 0
   })
 
-  res.status(200).json({ milestones, numPatrons: count })
+  res.status(200).json({ milestones, numPatrons: count, numEaAssets: numEaAssets })
 })
 
 module.exports = router
