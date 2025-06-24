@@ -46,18 +46,11 @@ router.get('/', async (req, res) => {
 
   const data = doc.data()
 
-  // Process all keys in parallel
-  const promises = Object.keys(data).map(async (key) => {
+  // Process keys sequentially instead of in parallel
+  for (const key of Object.keys(data)) {
     const progress = await fetchTranslationProgress(key)
-    return { key, progress }
-  })
-
-  const results = await Promise.all(promises)
-
-  // Update data with results
-  results.forEach(({ key, progress }) => {
     data[key].progress = progress
-  })
+  }
 
   res.status(200).json(data)
 })
