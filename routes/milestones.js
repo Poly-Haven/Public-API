@@ -14,26 +14,14 @@ router.get('/', async (req, res) => {
     milestones.push(data)
   })
 
-  // Get the number of active patrons
-  const patrons = await db.collection('patrons').where('status', '==', 'active_patron').get()
-  const oneYearAgo = new Date()
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
-  let count = 0
-  patrons.forEach((doc) => {
-    const docData = doc.data()
-    if (docData.last_charge_date > oneYearAgo.toISOString()) {
-      // active_patron is not reliable for old data, so we check last_charge_date as well
-      if (docData.lifetime_cents > 0) {
-        // Some accounts are caught in limbo and are not really active
-        if (docData.cents > 0) {
-          // Typically failed payments or blocked accounts
-          count++
-        }
-      }
-    }
-  })
-  // Fix inconsistency between our record and Patreon, possibly caused by stale data or API issues.
-  count -= 3
+  // Get the number of active patrons (highest value in last 24 hours)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const patronCounts = await db.collection('patron_count').where('date', '>=', yesterday.toISOString()).get()
+  const count = patronCounts.docs.reduce((max, doc) => {
+    const c = doc.data().count
+    return c > max ? c : max
+  }, 0)
 
   // Get number of early access assets
   let numEaAssets = 0
@@ -53,7 +41,7 @@ router.get('/', async (req, res) => {
     return 0
   })
 
-  res.status(200).json({ milestones, numPatrons: count, numEaAssets: numEaAssets })
+  res.status(200).json({ numPatrons: count, numEaAssets: numEaAssets, milestones })
 })
 
 module.exports = router
