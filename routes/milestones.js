@@ -14,14 +14,24 @@ router.get('/', async (req, res) => {
     milestones.push(data)
   })
 
-  // Get the number of active patrons (highest value in last 24 hours)
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  const patronCounts = await db.collection('patron_count').where('date', '>=', yesterday.toISOString()).get()
-  const count = patronCounts.docs.reduce((max, doc) => {
-    const c = doc.data().count
-    return c > max ? c : max
-  }, 0)
+  // Get the number of active patrons (highest value today)
+  let count = 0
+  const date = new Date()
+  const thisMonth = new Date(date.getFullYear(), date.getMonth(), 2).toISOString().slice(0, 7)
+  const lastMonth = new Date(date.getFullYear(), date.getMonth() - 1, 2).toISOString().slice(0, 7)
+  const colPatronCounts = db.collection('patron_counts')
+  let doc = await colPatronCounts.doc(thisMonth).get()
+  if (!doc) {
+    // If no data for this month yet, use last month
+    doc = await colPatronCounts.doc(lastMonth).get()
+  }
+  const data = doc.data()
+  if (data) {
+    const latestDay = Object.keys(data).sort((a, b) => parseInt(b) - parseInt(a))[0]
+    count = Math.max(...Object.values(data[latestDay]))
+  } else {
+    console.error(`No patron count data for ${thisMonth} or ${lastMonth}`)
+  }
 
   // Get number of early access assets
   let numEaAssets = 0
