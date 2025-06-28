@@ -506,7 +506,7 @@ router.get('/post_download', async (req, res) => {
   }
   returnData.averageMonthlyExpenses = totalExpenses / zarPerUsd / 36
 
-  // Assets published in 3 years (should be 266)
+  // Assets published in 3 years
   collection = await db
     .collection('assets')
     .where('date_published', '>', Date.parse(`${threeYearsAgo}T23:59:59Z`) / 1000)
@@ -514,6 +514,27 @@ router.get('/post_download', async (req, res) => {
   returnData.averageAssetsPerMonth = collection.size / 36
 
   res.status(200).json(returnData)
+})
+
+router.get('/patron_count', async (req, res) => {
+  const collection = await db.collection('patron_counts').get()
+  const summary = {}
+
+  collection.forEach((doc) => {
+    const month = doc.id
+    const monthData = doc.data()
+    const monthSummary = {}
+
+    for (const day in monthData) {
+      const dayData = monthData[day]
+      const values = Object.values(dayData)
+      monthSummary[day] = values.length ? Math.max(...values) : 0
+    }
+
+    summary[month] = monthSummary
+  })
+
+  res.status(200).json(summary)
 })
 
 module.exports = router
