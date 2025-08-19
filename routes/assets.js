@@ -2,11 +2,11 @@ const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
 
-const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
 
 const asset_types = require('../asset_types.json')
 
-const db = firestore()
+const db = cachedFirestore()
 
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
