@@ -2,7 +2,9 @@ const firestore = require('../firestore')
 
 // Cache for collections
 const collectionsCache = new Map()
+const pendingRequests = new Map() // Track ongoing requests to prevent duplicate fetches
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
+// const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
 // Helper function to check if cache is valid
@@ -15,19 +17,29 @@ function cleanupExpiredCache() {
   const now = Date.now()
   let removedCount = 0
 
+  // Create a list of collections to remove to avoid modifying map during iteration
+  const collectionsToRemove = []
+
   for (const [collectionName, cacheEntry] of collectionsCache.entries()) {
-    if (now - cacheEntry.timestamp >= CACHE_TTL) {
-      collectionsCache.delete(collectionName)
-      removedCount++
+    // Don't remove cache entries that have pending requests
+    if (!pendingRequests.has(collectionName) && now - cacheEntry.timestamp >= CACHE_TTL) {
+      collectionsToRemove.push(collectionName)
     }
   }
 
-  // If still too many collections cached, remove oldest ones
+  // Remove expired entries
+  for (const collectionName of collectionsToRemove) {
+    collectionsCache.delete(collectionName)
+    removedCount++
+  }
+
+  // If still too many collections cached, remove oldest ones (but not those with pending requests)
   if (collectionsCache.size > MAX_CACHED_COLLECTIONS) {
     const entries = Array.from(collectionsCache.entries())
-    entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+      .filter(([collectionName]) => !pendingRequests.has(collectionName))
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)
 
-    const toRemove = collectionsCache.size - MAX_CACHED_COLLECTIONS
+    const toRemove = Math.min(entries.length, collectionsCache.size - MAX_CACHED_COLLECTIONS)
     for (let i = 0; i < toRemove; i++) {
       collectionsCache.delete(entries[i][0])
       removedCount++
@@ -36,18 +48,11 @@ function cleanupExpiredCache() {
 
   if (removedCount > 0) {
     console.log(
-      `[CACHE CLEANUP] Removed ${removedCount} expired collection caches. Active caches: ${collectionsCache.size}`
+      `[CACHE CLEANUP] Removed ${removedCount} expired collection caches. Active caches: ${collectionsCache.size}, Pending requests: ${pendingRequests.size}`
     )
   }
-}
-
-// Run cleanup every 10 minutes
+} // Run cleanup every 10 minutes
 setInterval(cleanupExpiredCache, 10 * 60 * 1000)
-
-// Helper function to check if cache is valid
-function isCacheValid(cacheEntry) {
-  return cacheEntry && Date.now() - cacheEntry.timestamp < CACHE_TTL
-}
 
 // Helper function to get cached collection
 async function getCachedCollection(collectionName) {
@@ -58,26 +63,46 @@ async function getCachedCollection(collectionName) {
     return cacheEntry.data
   }
 
+  // Check if there's already a pending request for this collection
+  if (pendingRequests.has(collectionName)) {
+    console.log(`[${collectionName.toUpperCase()} CACHE WAIT] Waiting for ongoing request`)
+    return await pendingRequests.get(collectionName)
+  }
+
   console.log(`[${collectionName.toUpperCase()} CACHE MISS] Fetching fresh collection`)
 
-  const db = firestore()
-  const collection = await db.collection(collectionName).get()
+  // Create a promise for this request and store it to prevent duplicate requests
+  const fetchPromise = (async () => {
+    try {
+      const db = firestore()
+      const collection = await db.collection(collectionName).get()
 
-  // Convert to the same format as the original code expects
-  let docs = {}
-  collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
-  })
+      // Convert to the same format as the original code expects
+      let docs = {}
+      collection.forEach((doc) => {
+        docs[doc.id] = doc.data()
+      })
 
-  // Cache the result
-  collectionsCache.set(collectionName, {
-    data: docs,
-    timestamp: Date.now(),
-  })
+      // Cache the result (double-check cache hasn't been populated by another request)
+      if (!isCacheValid(collectionsCache.get(collectionName))) {
+        collectionsCache.set(collectionName, {
+          data: docs,
+          timestamp: Date.now(),
+        })
+        console.log(`[${collectionName.toUpperCase()} CACHE STORE] Cached ${Object.keys(docs).length} documents`)
+      }
 
-  console.log(`[${collectionName.toUpperCase()} CACHE STORE] Cached ${Object.keys(docs).length} documents`)
+      return docs
+    } finally {
+      // Always clean up the pending request
+      pendingRequests.delete(collectionName)
+    }
+  })()
 
-  return docs
+  // Store the promise so other concurrent requests can wait for it
+  pendingRequests.set(collectionName, fetchPromise)
+
+  return await fetchPromise
 }
 
 // Mock collection reference that applies filters in memory
