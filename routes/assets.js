@@ -8,10 +8,87 @@ const asset_types = require('../asset_types.json')
 
 const db = firestore()
 
+// Simple in-memory cache
+const cache = new Map()
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
+const MAX_CACHE_SIZE = 1000 // Maximum number of cache entries
+const CLEANUP_INTERVAL = 10 * 60 * 1000 // 10 minutes
+
+let lastCleanup = Date.now()
+
+// Helper function to generate cache key
+function getCacheKey(asset_type, categories, includeUpcoming) {
+  // Normalize categories by sorting them to ensure consistent keys
+  const normalizedCategories = categories
+    ? categories
+        .split(',')
+        .map((c) => c.trim())
+        .sort()
+        .join(',')
+    : 'all'
+
+  return `${asset_type || 'all'}_${normalizedCategories}_${Boolean(includeUpcoming)}`
+}
+
+// Helper function to check if cache entry is valid
+function isCacheValid(entry) {
+  return entry && Date.now() - entry.timestamp < CACHE_TTL
+}
+
+// Cleanup expired cache entries to prevent memory leaks
+function cleanupExpiredCache() {
+  const now = Date.now()
+  let removedCount = 0
+
+  for (const [key, entry] of cache.entries()) {
+    if (now - entry.timestamp >= CACHE_TTL) {
+      cache.delete(key)
+      removedCount++
+    }
+  }
+
+  // If cache is still too large, remove oldest entries
+  if (cache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(cache.entries())
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+
+    const toRemove = cache.size - MAX_CACHE_SIZE
+    for (let i = 0; i < toRemove; i++) {
+      cache.delete(entries[i][0])
+      removedCount++
+    }
+  }
+
+  if (removedCount > 0) {
+    console.log(`[CACHE CLEANUP] Removed ${removedCount} expired entries. Cache size: ${cache.size}`)
+  }
+}
+
+// Helper function to check if cleanup should run
+function shouldCleanup() {
+  return Date.now() - lastCleanup > CLEANUP_INTERVAL
+}
+
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
   const categories = req.query.categories || req.query.c
   const includeUpcoming = req.query.future
+
+  // Check cache first
+  const cacheKey = getCacheKey(asset_type, categories, includeUpcoming)
+  let cachedEntry
+
+  try {
+    cachedEntry = cache.get(cacheKey)
+    if (isCacheValid(cachedEntry)) {
+      console.log(`[CACHE HIT] Serving cached data for key: ${cacheKey}`)
+      return res.status(200).json(cachedEntry.data)
+    }
+  } catch (error) {
+    console.warn(`[CACHE ERROR] Failed to read cache for key: ${cacheKey}`, error)
+  }
+
+  console.log(`[CACHE MISS] Fetching fresh data for key: ${cacheKey}`)
 
   let collectionRef = db.collection('assets')
 
@@ -82,6 +159,23 @@ router.get('/', async (req, res) => {
   // Add thumbnail URL
   for (const id in docs) {
     docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
+  }
+
+  // Cache the result
+  try {
+    cache.set(cacheKey, {
+      data: docs,
+      timestamp: Date.now(),
+    })
+    console.log(`[CACHE STORE] Cached data for key: ${cacheKey} (${Object.keys(docs).length} assets)`)
+  } catch (error) {
+    console.warn(`[CACHE ERROR] Failed to store cache for key: ${cacheKey}`, error)
+  }
+
+  // Only cleanup periodically, not on every request
+  if (shouldCleanup()) {
+    cleanupExpiredCache()
+    lastCleanup = Date.now()
   }
 
   res.status(200).json(docs)
