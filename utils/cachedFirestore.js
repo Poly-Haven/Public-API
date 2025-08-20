@@ -3,7 +3,7 @@ const firestore = require('../firestore')
 // Cache for collections
 const collectionsCache = new Map()
 const pendingRequests = new Map() // Track ongoing requests to prevent duplicate fetches
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 // const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
