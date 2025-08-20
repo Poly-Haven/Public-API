@@ -2,11 +2,11 @@ const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
 
-const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
 
 const asset_types = require('../asset_types.json')
 
-const db = firestore()
+const db = cachedFirestore()
 
 router.get('/', (req, res) => {
   res.status(400).send(`Please format your request as /categories/[type]`)
