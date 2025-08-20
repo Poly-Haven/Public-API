@@ -2,9 +2,9 @@ const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
 
-const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
 
-const db = firestore()
+const db = cachedFirestore()
 
 const sortObjByValue = (obj) => {
   const sortedKeys = Object.keys(obj).sort(function (a, b) {
@@ -45,18 +45,17 @@ router.get('/:id', async (req, res) => {
 
   let collectionRef = db.collection('assets')
 
-  const doc = await collectionRef.doc(asset_id).get()
-  if (!doc.exists) {
-    res.status(404).send(`No asset with id ${escape(asset_id)}`)
-    return
-  }
-  this_asset = doc.data()
-
   const collection = await collectionRef.get()
   let docs = {}
   collection.forEach((doc) => {
     docs[doc.id] = doc.data()
   })
+
+  if (!docs[asset_id]) {
+    res.status(404).send(`No asset with id ${escape(asset_id)}`)
+    return
+  }
+  this_asset = docs[asset_id]
 
   // Filter unpublished
   const now = Math.floor(Date.now() / 1000)
@@ -96,4 +95,5 @@ router.get('/:id', async (req, res) => {
   res.status(200).json(similar)
 })
 
+module.exports = router
 module.exports = router
