@@ -7,17 +7,18 @@ require('dotenv').config()
 const app = express()
 app.use(cors())
 
+let debugRequests = false
 const isDev = process.env.NODE_ENV === 'development'
 // Middleware that logs the request url to the console
-if (isDev) {
-  app.use((req, res, next) => {
+app.use((req, res, next) => {
+  if (debugRequests || isDev) {
     // Random emoji to make it easier to find in the logs, using the current second as the seed
     const emojiOptions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸']
     const emoji = emojiOptions[new Date().getSeconds() % emojiOptions.length]
     console.log(emoji, req.url)
-    next()
-  })
-}
+  }
+  next()
+})
 
 // Middleware to add the ToS to every response
 app.use((req, res, next) => {
@@ -27,6 +28,39 @@ app.use((req, res, next) => {
 
 const swaggerDocument = YAML.load('./swagger.yml')
 app.get('/api-docs/swagger.json', (req, res) => res.json(swaggerDocument))
+
+// Debug toggle endpoint
+app.post('/debug/:state', (req, res) => {
+  const authHeader = req.headers.authorization
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null
+
+  if (token !== process.env.DL_KEY) {
+    res.status(403).json({
+      error: '403 Forbidden',
+      message: 'Incorrect key',
+    })
+    return
+  }
+
+  const { state } = req.params
+  if (state === 'on') {
+    debugRequests = true
+  } else if (state === 'off') {
+    debugRequests = false
+  } else {
+    res.status(400).json({
+      error: '400 Bad Request',
+      message: 'Invalid state. Use "on" or "off"',
+    })
+    return
+  }
+
+  res.json({
+    debug: debugRequests,
+    message: `Request logging ${debugRequests ? 'enabled' : 'disabled'}`,
+    node: process.env.NODE_ID || 'UNKNOWN',
+  })
+})
 
 const routeDir = './routes/'
 fs.readdir(routeDir, (err, files) => {
