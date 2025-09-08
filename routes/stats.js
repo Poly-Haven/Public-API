@@ -157,6 +157,15 @@ router.get('/relativecategory', async (req, res) => {
     }
   }
 
+  // Filter out categories with less than 3 assets
+  for (const [t, typeData] of Object.entries(returnData)) {
+    for (const [c, data] of Object.entries(typeData)) {
+      if (data.length < 3) {
+        delete returnData[t][c]
+      }
+    }
+  }
+
   // Then average the downloads/day for each cat
   const average = (array) => array.reduce((a, b) => a + b) / array.length
   for (const [t, typeData] of Object.entries(returnData)) {
