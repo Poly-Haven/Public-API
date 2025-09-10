@@ -11,7 +11,16 @@ router.get('/', async (req, res) => {
   collection.forEach((doc) => {
     docs[doc.id] = doc.data()
   })
-  res.status(200).json(docs)
+
+  // Shuffle the sponsors
+  const entries = Object.entries(docs)
+  for (let i = entries.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[entries[i], entries[j]] = [entries[j], entries[i]]
+  }
+  const shuffledDocs = Object.fromEntries(entries)
+
+  res.status(200).json(shuffledDocs)
 })
 
 module.exports = router
