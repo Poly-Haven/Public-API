@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
   let patrons = []
   for (const p of sortedKeys) {
     if (!data[p].anon) {
-      const name = data[p].display_name || data[p].name
+      const name = (data[p].display_name || data[p].name).trim().replace(/[\u00AD\u200B\u200C\u200D\uFEFF]/g, '') // Remove soft hyphens and zero-width spaces
       if (disallowed.some((fn) => fn(name))) {
         continue
       }
