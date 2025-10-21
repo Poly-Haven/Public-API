@@ -65,14 +65,38 @@ app.post('/debug/:state', (req, res) => {
 const routeDir = './routes/'
 fs.readdir(routeDir, (err, files) => {
   files.forEach((file) => {
-    fn = file.split('.')[0]
-    if (fn === 'tmp' && process.env.NODE_ENV !== 'development') return
-    const r = require(routeDir + fn)
-    try {
-      app.use('/' + fn, r)
-    } catch (err) {
-      console.log('Failed to register endpoint', fn)
-      console.log(err)
+    const filePath = routeDir + file
+    const stats = fs.statSync(filePath)
+
+    if (stats.isFile() && file.endsWith('.js')) {
+      // Handle regular route files
+      fn = file.split('.')[0]
+      if (fn === 'tmp' && process.env.NODE_ENV !== 'development') return
+      const r = require(filePath)
+      try {
+        app.use('/' + fn, r)
+      } catch (err) {
+        console.log('Failed to register endpoint', fn)
+        console.log(err)
+      }
+    } else if (stats.isDirectory()) {
+      // Handle subdirectories (like v2/)
+      const subDir = filePath + '/'
+      fs.readdir(subDir, (err, subFiles) => {
+        if (err) return
+        subFiles.forEach((subFile) => {
+          if (subFile.endsWith('.js')) {
+            const subFn = subFile.split('.')[0]
+            const r = require(subDir + subFile)
+            try {
+              app.use('/' + file + '/' + subFn, r)
+            } catch (err) {
+              console.log('Failed to register endpoint', file + '/' + subFn)
+              console.log(err)
+            }
+          }
+        })
+      })
     }
   })
 })
