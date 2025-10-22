@@ -1,13 +1,9 @@
-const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
 const asset_types = require('../../asset_types.json')
 
 const cachedFirestore = require('../../utils/cachedFirestore')
 const db = cachedFirestore()
-
-const firestore = require('../../firestore')
-const uncacheddb = firestore()
 
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
@@ -54,6 +50,7 @@ router.get('/', async (req, res) => {
   }
 
   // For patrons, we need to check if they have a sufficient tier and that it's active
+  // TODO
   // if (keyData.patron_uid) {
 
   let collectionRef = db.collection('assets')
@@ -67,7 +64,7 @@ router.get('/', async (req, res) => {
   } else if (asset_type) {
     return res.status(400).json({
       error: '400 Bad Request',
-      message: `Unsupported asset type: ${asset_type}. Must be: ${Object.keys(asset_types).join('/')}`,
+      message: `Unsupported asset type. Must be: ${Object.keys(asset_types).join('/')}`,
     })
   }
 
