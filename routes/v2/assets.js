@@ -1,17 +1,60 @@
 const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
+const asset_types = require('../../asset_types.json')
 
-const cachedFirestore = require('../utils/cachedFirestore')
-
-const asset_types = require('../asset_types.json')
-
+const cachedFirestore = require('../../utils/cachedFirestore')
 const db = cachedFirestore()
+
+const firestore = require('../../firestore')
+const uncacheddb = firestore()
 
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
   const categories = req.query.categories || req.query.c
-  const includeUpcoming = req.query.future
+
+  // Key must be provided
+  const authHeader = req.headers.authorization
+  if (!authHeader) {
+    return res.status(403).json({
+      error: '403 Forbidden',
+      message: 'Please provide an API key in the Authorization header',
+    })
+  }
+
+  // Validate API key
+  const apiKey = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
+  const allowedKeyChars = 'abcdef0123456789'
+  if (apiKey.length !== 64 || [...apiKey].some((c) => !allowedKeyChars.includes(c))) {
+    return res.status(403).json({
+      error: '403 Forbidden',
+      message: 'Invalid API key format',
+    })
+  }
+  let keyDoc = await db.collection('api_keys').doc(apiKey).get()
+  if (!keyDoc.exists) {
+    return res.status(403).json({
+      error: '403 Forbidden',
+      message: 'Invalid API key',
+    })
+  }
+  const keyData = keyDoc.data()
+  if (keyData.status !== 'active') {
+    return res.status(403).json({
+      error: '403 Forbidden',
+      message: 'API key is not active',
+    })
+  }
+
+  let includeUpcoming = false
+
+  // For Superhive customers, we always include early access
+  if (keyData.superhive_uid) {
+    includeUpcoming = true
+  }
+
+  // For patrons, we need to check if they have a sufficient tier and that it's active
+  // if (keyData.patron_uid) {
 
   let collectionRef = db.collection('assets')
 
@@ -22,11 +65,10 @@ router.get('/', async (req, res) => {
       collectionRef = collectionRef.where('type', '==', typeIndex)
     }
   } else if (asset_type) {
-    res.status(400).send(
-      `Unsupported asset type: ${escape(asset_type)}.
-      Must be: ${Object.keys(asset_types).join('/')}`
-    )
-    return
+    return res.status(400).json({
+      error: '400 Bad Request',
+      message: `Unsupported asset type: ${asset_type}. Must be: ${Object.keys(asset_types).join('/')}`,
+    })
   }
 
   // Categories (1/2)
@@ -84,7 +126,10 @@ router.get('/', async (req, res) => {
     docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
   }
 
-  res.status(200).json(docs)
+  return res.status(200).json({
+    message: 'OK',
+    data: docs,
+  })
 })
 
 module.exports = router
