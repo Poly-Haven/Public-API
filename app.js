@@ -101,6 +101,9 @@ fs.readdir(routeDir, (err, files) => {
   })
 })
 
+// Superhive webhook endpoint
+app.use('/v2/superhive_' + process.env.SUPERHIVE_KEY, require('./superhive_hook'))
+
 app.get('/', (req, res) => {
   res.status(200).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
