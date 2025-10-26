@@ -21,7 +21,7 @@ jobs:
             cd ~/api
             git pull
             npm ci
-            pm2 restart app --time
+            pm2 reload app --time --update-env
       - name: Deploy API5
         uses: appleboy/ssh-action@v0.1.2
         with:
@@ -32,4 +32,4 @@ jobs:
             cd ~/api
             git pull
             npm ci
-            pm2 restart app --time
+            pm2 reload app --time --update-env
