@@ -11,6 +11,8 @@ const bodyParser = require('body-parser')
 
 router.use(bodyParser.text({ type: '*/*' }))
 
+let lastHook = null
+
 const centsToRank = (c) => {
   if (c <= 300) {
     return 1
@@ -165,6 +167,14 @@ router.post('/', async (req, res) => {
     let color = 0
     let description = ''
     if (data.hook === 'members:pledge:create') {
+      // For some reason we always get two of these. Remember the last one and ignore this one if it's a duplicate.
+      if (lastHook === `${patron.uid}__${data.hook}__${patron.cents}`) {
+        console.log(`Duplicate ${data.hook} hook, ignoring.`)
+        res.status(200).json({
+          message: 'OK',
+        })
+        return
+      }
       title = `New $${patron.cents / 100} patron!`
       color = 10212925
     } else if (data.hook === 'members:pledge:update') {
@@ -181,6 +191,8 @@ router.post('/', async (req, res) => {
         description += `\nLifetime: $${patron.lifetime_cents / 100}`
       }
     }
+
+    lastHook = `${patron.uid}__${data.hook}__${patron.cents}`
 
     const Hook = new hookcord.Hook()
       .setLink(process.env.DISCORD_PATRON_HOOK)
