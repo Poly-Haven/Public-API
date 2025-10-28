@@ -168,7 +168,6 @@ router.post('/', async (req, res) => {
     let description = ''
     if (data.hook === 'members:pledge:create') {
       // For some reason we always get two of these. Remember the last one and ignore this one if it's a duplicate.
-      console.log(`Last hook: ${lastHook}, this hook: ${patron.uid}__${data.hook}__${patron.cents}`)
       if (lastHook === `${patron.uid}__${data.hook}__${patron.cents}`) {
         console.log(`Duplicate ${data.hook} hook, ignoring.`)
         res.status(200).json({
@@ -194,7 +193,6 @@ router.post('/', async (req, res) => {
     }
 
     lastHook = `${patron.uid}__${data.hook}__${patron.cents}`
-    console.log(`Setting lastHook to ${lastHook}`)
 
     const Hook = new hookcord.Hook()
       .setLink(process.env.DISCORD_PATRON_HOOK)
