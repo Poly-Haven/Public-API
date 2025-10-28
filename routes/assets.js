@@ -33,7 +33,6 @@ router.get('/', async (req, res) => {
   let categories_arr = []
   if (categories) {
     // Firestore only supports using one 'array-contains' check. So we filter for the last one, and then will manually filter the rest later.
-    // TODO Reduce Firestore reads by first getting assets according to least-used category. Will need to separately track which categories are least used, maybe with cloud function.
     categories_arr = categories.split(',').map((c) => c.trim())
     const last_cat = categories_arr.pop()
     collectionRef = collectionRef.where('categories', 'array-contains', last_cat)
