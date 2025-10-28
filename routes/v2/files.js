@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const cachedFirestore = require('../../utils/cachedFirestore')
+const validateKey = require('../../utils/validateKey')
 const db = cachedFirestore()
 
 router.get('/', (req, res) => {
@@ -11,15 +12,6 @@ router.get('/', (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const asset_id = req.params.id
-
-  // Key must be provided
-  const authHeader = req.headers.authorization
-  if (!authHeader) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Please provide an API key in the Authorization header',
-    })
-  }
 
   if (!asset_id) {
     return res.status(400).json({
@@ -37,39 +29,15 @@ router.get('/:id', async (req, res) => {
   }
 
   // Validate API key
-  const apiKey = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
-  const allowedKeyChars = 'abcdef0123456789'
-  if (apiKey.length !== 64 || [...apiKey].some((c) => !allowedKeyChars.includes(c))) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Invalid API key format',
-    })
-  }
-  let keyDoc = await db.collection('api_keys').doc(apiKey).get()
-  if (!keyDoc.exists) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Invalid API key',
-    })
-  }
-  const keyData = keyDoc.data()
-  if (keyData.status !== 'active') {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'API key is not active',
+  const keyValidation = await validateKey(req)
+  if (!keyValidation.valid) {
+    return res.status(keyValidation.error.status).json({
+      error: keyValidation.error.error,
+      message: keyValidation.error.message,
     })
   }
 
-  let includeUpcoming = false
-
-  // For Superhive customers, we always include early access
-  if (keyData.superhive_uid) {
-    includeUpcoming = true
-  }
-
-  // For patrons, we need to check if they have a sufficient tier and that it's active
-  // TODO
-  // if (keyData.patron_uid) {
+  const { includeUpcoming, keyData } = keyValidation
 
   const filesDoc = await db.collection('files').doc(asset_id).get()
   if (!filesDoc.exists) {

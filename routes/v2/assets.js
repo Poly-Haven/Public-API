@@ -3,55 +3,23 @@ const router = express.Router()
 const asset_types = require('../../asset_types.json')
 
 const cachedFirestore = require('../../utils/cachedFirestore')
+const validateKey = require('../../utils/validateKey')
 const db = cachedFirestore()
 
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
   const categories = req.query.categories || req.query.c
 
-  // Key must be provided
-  const authHeader = req.headers.authorization
-  if (!authHeader) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Please provide an API key in the Authorization header',
-    })
-  }
-
   // Validate API key
-  const apiKey = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
-  const allowedKeyChars = 'abcdef0123456789'
-  if (apiKey.length !== 64 || [...apiKey].some((c) => !allowedKeyChars.includes(c))) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Invalid API key format',
-    })
-  }
-  let keyDoc = await db.collection('api_keys').doc(apiKey).get()
-  if (!keyDoc.exists) {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'Invalid API key',
-    })
-  }
-  const keyData = keyDoc.data()
-  if (keyData.status !== 'active') {
-    return res.status(403).json({
-      error: '403 Forbidden',
-      message: 'API key is not active',
+  const keyValidation = await validateKey(req)
+  if (!keyValidation.valid) {
+    return res.status(keyValidation.error.status).json({
+      error: keyValidation.error.error,
+      message: keyValidation.error.message,
     })
   }
 
-  let includeUpcoming = false
-
-  // For Superhive customers, we always include early access
-  if (keyData.superhive_uid) {
-    includeUpcoming = true
-  }
-
-  // For patrons, we need to check if they have a sufficient tier and that it's active
-  // TODO
-  // if (keyData.patron_uid) {
+  const { includeUpcoming, keyData } = keyValidation
 
   let collectionRef = db.collection('assets')
 
