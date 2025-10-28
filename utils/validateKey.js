@@ -54,6 +54,7 @@ const validateKey = async (req) => {
         error: '403 Forbidden',
         message: 'API key is not active',
       },
+      keyData,
     }
   }
 

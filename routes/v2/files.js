@@ -34,6 +34,9 @@ router.get('/:id', async (req, res) => {
     return res.status(keyValidation.error.status).json({
       error: keyValidation.error.error,
       message: keyValidation.error.message,
+      meta: {
+        keyData: keyValidation.keyData,
+      },
     })
   }
 
@@ -54,6 +57,10 @@ router.get('/:id', async (req, res) => {
     return res.status(403).json({
       error: '403 Forbidden',
       message: 'Asset is in staging',
+      meta: {
+        includeUpcoming,
+        keyData,
+      },
     })
   }
   const now = Math.floor(Date.now() / 1000)
@@ -61,12 +68,20 @@ router.get('/:id', async (req, res) => {
     return res.status(403).json({
       error: '403 Forbidden',
       message: 'Asset is in early access',
+      meta: {
+        includeUpcoming,
+        keyData,
+      },
     })
   }
 
   return res.status(200).json({
     message: 'OK',
     data: filesDoc.data(),
+    meta: {
+      includeUpcoming,
+      keyData,
+    },
   })
 })
 

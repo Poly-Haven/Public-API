@@ -16,6 +16,9 @@ router.get('/', async (req, res) => {
     return res.status(keyValidation.error.status).json({
       error: keyValidation.error.error,
       message: keyValidation.error.message,
+      meta: {
+        keyData: keyValidation.keyData,
+      },
     })
   }
 
@@ -93,6 +96,10 @@ router.get('/', async (req, res) => {
   return res.status(200).json({
     message: 'OK',
     data: docs,
+    meta: {
+      includeUpcoming,
+      keyData,
+    },
   })
 })
 
