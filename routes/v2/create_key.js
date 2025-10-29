@@ -61,11 +61,12 @@ router.post('/', async (req, res) => {
     })
   }
 
-  data.access_token = access_token
+  // Create a separate reference ID for easier lookup and debugging
+  data.ref = crypto.randomBytes(6).toString('hex')
 
-  console.log('Creating new API key:', data.access_token)
+  console.log('Creating new API key, ref:', data.ref)
 
-  await db.collection('api_keys').doc(data.access_token).set(data)
+  await db.collection('api_keys').doc(access_token).set(data)
 
   res.status(200).json({
     data: data,
