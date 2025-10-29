@@ -5,7 +5,7 @@ require('dotenv').config()
 
 router.use(express.json())
 
-router.post('/', async (req, res) => {
+router.get('/', async (req, res) => {
   /*
   Expected data:
   {
