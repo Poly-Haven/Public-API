@@ -49,13 +49,17 @@ router.post('/', async (req, res) => {
   */
 
   const db = admin.firestore()
-  const data = req.body
-  data.timestamp = new Date().toISOString()
-  data.access_token_created = false
-  await db.collection('superhive_hooks').add(data)
+  const document = {}
+  document.hook = req.body
+  document.access_token_created = false
+  document.req_headers = req.headers
+  document.method = req.method
+  document.received_at = new Date().toISOString()
+  document.ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress
+  await db.collection('superhive_hooks').add(document)
 
   res.status(200).json({
-    data: data,
+    document,
     message: 'OK',
   })
 })
