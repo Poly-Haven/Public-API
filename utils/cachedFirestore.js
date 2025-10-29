@@ -59,7 +59,7 @@ async function getCachedCollection(collectionName) {
   const cacheEntry = collectionsCache.get(collectionName)
 
   if (isCacheValid(cacheEntry)) {
-    console.log(`[${collectionName.toUpperCase()} CACHE HIT] Serving cached collection`)
+    // console.log(`[${collectionName.toUpperCase()} CACHE HIT] Serving cached collection`)
     return cacheEntry.data
   }
 
@@ -181,6 +181,60 @@ function cachedFirestore() {
         where: (field, operator, value) => {
           const cachedRef = new CachedCollectionReference(collectionName)
           return cachedRef.where(field, operator, value)
+        },
+        doc: (docId) => {
+          return {
+            get: async () => {
+              const cachedData = await getCachedCollection(collectionName)
+              const docData = cachedData[docId]
+
+              if (docData) {
+                return {
+                  id: docId,
+                  exists: true,
+                  data: () => docData,
+                }
+              } else {
+                // Document not found in cache, check directly from Firestore
+                console.log(
+                  `[${collectionName.toUpperCase()} DOC MISS] Document ${docId} not in cache, checking Firestore directly`
+                )
+                try {
+                  const db = firestore()
+                  const docSnapshot = await db.collection(collectionName).doc(docId).get()
+
+                  if (docSnapshot.exists) {
+                    const freshDocData = docSnapshot.data()
+                    // Update the cache with the new document
+                    const cacheEntry = collectionsCache.get(collectionName)
+                    if (cacheEntry) {
+                      cacheEntry.data[docId] = freshDocData
+                      console.log(`[${collectionName.toUpperCase()} DOC CACHE] Added document ${docId} to cache`)
+                    }
+
+                    return {
+                      id: docId,
+                      exists: true,
+                      data: () => freshDocData,
+                    }
+                  } else {
+                    return {
+                      id: docId,
+                      exists: false,
+                      data: () => null,
+                    }
+                  }
+                } catch (error) {
+                  console.error(`[${collectionName.toUpperCase()} DOC ERROR] Failed to fetch document ${docId}:`, error)
+                  return {
+                    id: docId,
+                    exists: false,
+                    data: () => null,
+                  }
+                }
+              }
+            },
+          }
         },
       }
     },

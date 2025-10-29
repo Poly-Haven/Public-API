@@ -1,17 +1,28 @@
-const escape = require('escape-html')
 const express = require('express')
 const router = express.Router()
+const asset_types = require('../../asset_types.json')
 
-const cachedFirestore = require('../utils/cachedFirestore')
-
-const asset_types = require('../asset_types.json')
-
+const cachedFirestore = require('../../utils/cachedFirestore')
+const validateKey = require('../../utils/validateKey')
 const db = cachedFirestore()
 
 router.get('/', async (req, res) => {
   const asset_type = req.query.type || req.query.t
   const categories = req.query.categories || req.query.c
-  const includeUpcoming = req.query.future
+
+  // Validate API key
+  const keyValidation = await validateKey(req)
+  if (!keyValidation.valid) {
+    return res.status(keyValidation.error.status).json({
+      error: keyValidation.error.error,
+      message: keyValidation.error.message,
+      meta: {
+        keyData: keyValidation.keyData,
+      },
+    })
+  }
+
+  const { includeUpcoming, keyData } = keyValidation
 
   let collectionRef = db.collection('assets')
 
@@ -22,11 +33,10 @@ router.get('/', async (req, res) => {
       collectionRef = collectionRef.where('type', '==', typeIndex)
     }
   } else if (asset_type) {
-    res.status(400).send(
-      `Unsupported asset type: ${escape(asset_type)}.
-      Must be: ${Object.keys(asset_types).join('/')}`
-    )
-    return
+    return res.status(400).json({
+      error: '400 Bad Request',
+      message: `Unsupported asset type. Must be: ${Object.keys(asset_types).join('/')}`,
+    })
   }
 
   // Categories (1/2)
@@ -83,7 +93,14 @@ router.get('/', async (req, res) => {
     docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
   }
 
-  res.status(200).json(docs)
+  return res.status(200).json({
+    message: 'OK',
+    data: docs,
+    meta: {
+      includeUpcoming,
+      keyData,
+    },
+  })
 })
 
 module.exports = router
