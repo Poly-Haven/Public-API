@@ -13,7 +13,11 @@ router.use(bodyParser.text({ type: '*/*' }))
 
 let lastHook = null
 
-const centsToRank = (c) => {
+const centsToRank = (cents, yearly_pledge) => {
+  let c = cents
+  if (yearly_pledge) {
+    c = c / 12
+  }
   if (c <= 300) {
     return 1
   } else if (c <= 500) {
@@ -112,7 +116,7 @@ router.post('/', async (req, res) => {
   patron.joined = data.data.attributes.pledge_relationship_start
   patron.cents = data.data.attributes.currently_entitled_amount_cents
   patron.yearly_pledge = data.data.attributes.pledge_cadence === 12
-  patron.rank = centsToRank(patron.cents)
+  patron.rank = centsToRank(patron.cents, patron.yearly_pledge)
   patron.lifetime_cents = data.data.attributes.lifetime_support_cents
   patron.last_charge_date = data.data.attributes.last_charge_date
   patron.last_charge_status = data.data.attributes.last_charge_status
