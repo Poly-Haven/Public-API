@@ -7,6 +7,37 @@ const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 // const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
+function getCacheStats() {
+  let cachedDocuments = 0
+
+  for (const cacheEntry of collectionsCache.values()) {
+    cachedDocuments += Object.keys(cacheEntry.data).length
+  }
+
+  return {
+    collections: collectionsCache.size,
+    pendingRequests: pendingRequests.size,
+    cachedDocuments,
+  }
+}
+
+function clearCache() {
+  const before = getCacheStats()
+  collectionsCache.clear()
+  const after = getCacheStats()
+
+  console.log(
+    `[CACHE CLEAR] Flushed ${before.collections} collection caches containing ${before.cachedDocuments} documents. Pending requests: ${before.pendingRequests}`
+  )
+
+  return {
+    clearedCollections: before.collections,
+    clearedDocuments: before.cachedDocuments,
+    pendingRequests: before.pendingRequests,
+    remainingCollections: after.collections,
+  }
+}
+
 // Helper function to check if cache is valid
 function isCacheValid(cacheEntry) {
   return cacheEntry && Date.now() - cacheEntry.timestamp < CACHE_TTL
@@ -242,5 +273,8 @@ function cachedFirestore() {
     ...originalDb,
   }
 }
+
+cachedFirestore.clearCache = clearCache
+cachedFirestore.getCacheStats = getCacheStats
 
 module.exports = cachedFirestore
