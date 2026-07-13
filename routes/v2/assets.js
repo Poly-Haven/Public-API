@@ -93,6 +93,11 @@ router.get('/', async (req, res) => {
     docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
   }
 
+  // Signal early-access status to clients (e.g. the Blender add-on) that can't
+  // otherwise tell whether their key is a paid/early-access one. Rides this
+  // already-per-key endpoint so it stays out of the globally-cached /news/blender.
+  res.set('x-ph-early-access', includeUpcoming ? 'true' : 'false')
+
   return res.status(200).json({
     message: 'OK',
     data: docs,
