@@ -205,6 +205,7 @@ components:
       example:
         aerial_asphalt_01:
           name: Aerial Asphalt 01
+          description: Free 8K aerial-view texture of cracked, weathered asphalt, tileable for outdoor road/pavement surfaces.
           type: 1
           date_published: 1597061145
           download_count: 33151
@@ -217,10 +218,18 @@ components:
             - floor
             - road
             - man made
+          category: Roads & Pavements/Asphalt/Cracked Asphalt
+          category_id: 3f0b1a5e-8c2d-5a91-9e3f-1b6d4c7a2e58
           tags:
             - road
             - flat
             - cracked
+          attributes:
+            surface_use: floor
+            man_made: true
+            outdoor: true
+            condition:
+              - weathered
           max_resolution:
             - 8192
             - 8192
@@ -230,6 +239,7 @@ components:
           thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256
         aerial_beach_01:
           name: Aerial Beach 01
+          description: Free 16K aerial-view texture of wavy coastal beach sand, tileable for natural outdoor terrain.
           type: 1
           date_published: 1601489165
           download_count: 33556
@@ -241,12 +251,18 @@ components:
             - sand
             - outdoor
             - natural
+          category: Ground/Sand & Dunes/Beach Sand
+          category_id: 6a2e4d19-7f53-5b0c-8e64-2d9a1c3f5b76
           tags:
             - beach
             - wavy
             - costal
             - ocean
             - seaside
+          attributes:
+            surface_use: terrain
+            man_made: false
+            outdoor: true
           max_resolution:
             - 16384
             - 16384
@@ -262,6 +278,10 @@ components:
           type: string
           description: The human-readable/display name.
           example: Horse Statue 01
+        description:
+          type: string
+          description: A short, human-written summary of the asset.
+          example: Free 8K model of a decorative white porcelain horse statue with a fancy, ornamental sculpted finish.
         type:
           type: integer
           description: The asset type. HDRIs = 0, textures = 1, models =2.
@@ -294,10 +314,19 @@ components:
           example: false
         categories:
           type: array
-          description: A string array of categories that this asset belongs to.
+          deprecated: true
+          description: 'Deprecated: a legacy string array of pseudo-tag categories. Replaced by `category`/`category_id`, a single taxonomy path per asset. Still returned for backwards compatibility alongside the new fields; both systems run in parallel with no removal date currently planned for this one.'
           example:
             - props
             - decorative
+        category:
+          type: string
+          description: This asset's location in Poly Haven's single-path category taxonomy (one path per asset, comparable to a Blender asset browser catalog). This is the actively-maintained replacement for the deprecated `categories` array.
+          example: Leisure/Sports/Balls
+        category_id:
+          type: string
+          description: A stable UUID identifying the `category` path above. Prefer this over the `category` string if you need to reliably detect category renames/moves.
+          example: ba452b18-0442-5d9d-b0b6-2f001f956f6d
         tags:
           type: array
           description: A string array of tags for this asset to help with search matches.
@@ -311,6 +340,14 @@ components:
             - sculpture
             - white
             - fancy
+        attributes:
+          type: object
+          description: A map of structured facets for this asset. Available keys vary by asset type (see the `hdri`/`texture`/`model` schemas below); any facet that's false/empty/unset is omitted entirely rather than included with a falsy value, so treat a missing key as its default (e.g. a missing `rigged` means "not rigged").
+          example:
+            condition: worn
+            material:
+              - leather
+              - rubber
         max_resolution:
           type: array
           description: The highest texture resolution available for this asset, in pixels.
@@ -329,6 +366,10 @@ components:
           type: string
           description: The human-readable/display name.
           example: Abandoned Factory Canteen 01
+        description:
+          type: string
+          description: A short, human-written summary of the asset.
+          example: Free, unclipped 16K HDRI of an abandoned factory canteen, indoor fluorescent lighting with backplates included.
         type:
           type: integer
           description: The asset type, for HDRIs this is 0.
@@ -361,12 +402,21 @@ components:
           example: false
         categories:
           type: array
-          description: A string array of categories that this asset belongs to.
+          deprecated: true
+          description: 'Deprecated: a legacy string array of pseudo-tag categories. Replaced by `category`/`category_id`, a single taxonomy path per asset. Still returned for backwards compatibility alongside the new fields; both systems run in parallel with no removal date currently planned for this one.'
           example:
             - indoor
             - urban
             - low contrast
             - natural light
+        category:
+          type: string
+          description: This asset's location in Poly Haven's single-path category taxonomy. HDRIs are organized by environment. This is the actively-maintained replacement for the deprecated `categories` array.
+          example: Streets & Town/Rooftops & Balconies/City Rooftops
+        category_id:
+          type: string
+          description: A stable UUID identifying the `category` path above. Prefer this over the `category` string if you need to reliably detect category renames/moves.
+          example: 8133f881-e55d-5c6c-a360-99dbf7204ee5
         tags:
           type: array
           description: A string array of tags for this asset to help with search matches.
@@ -376,6 +426,49 @@ components:
             - fluorescent
             - industrial
             - backplates
+        attributes:
+          type: object
+          description: A map of structured HDRI facets. Any facet that's false/empty/unset is omitted entirely rather than included with a falsy value, so treat a missing key as its default.
+          properties:
+            time_of_day:
+              type: string
+              description: Time of day this HDRI was captured.
+              example: dusk
+            weather:
+              type: string
+              description: Weather/cloud conditions.
+              example: partly_cloudy
+            light_type:
+              type: string
+              description: Whether the lighting is natural or artificial.
+              example: natural
+            contrast:
+              type: string
+              description: Relative dynamic range/contrast of the scene.
+              example: low
+            season:
+              type: string
+              description: Season the HDRI was captured in, if applicable/known.
+              example: winter
+            indoor:
+              type: boolean
+              description: Whether this HDRI was captured indoors.
+            open_sky:
+              type: boolean
+              description: Whether the sky is visible/open in this HDRI.
+              example: true
+            pure_sky:
+              type: boolean
+              description: Whether this is a clean sky-only HDRI, with no ground/horizon elements.
+            backplates:
+              type: boolean
+              description: Whether backplates are available for this HDRI (mirrors the top-level `backplates` field below).
+          example:
+            time_of_day: dusk
+            weather: partly_cloudy
+            light_type: natural
+            contrast: low
+            open_sky: true
         max_resolution:
           type: array
           description: The highest resolution available for this HDRI, in pixels.
@@ -418,6 +511,10 @@ components:
           type: string
           description: The human-readable/display name.
           example: Brick Floor 003
+        description:
+          type: string
+          description: A short, human-written summary of the asset.
+          example: Free 8K texture of a clean, tileable red brick floor for indoor/outdoor use.
         type:
           type: integer
           description: The asset type, for textures this is 1.
@@ -451,7 +548,8 @@ components:
           example: false
         categories:
           type: array
-          description: A string array of categories that this asset belongs to.
+          deprecated: true
+          description: 'Deprecated: a legacy string array of pseudo-tag categories. Replaced by `category`/`category_id`, a single taxonomy path per asset. Still returned for backwards compatibility alongside the new fields; both systems run in parallel with no removal date currently planned for this one.'
           example:
             - floor
             - brick
@@ -460,6 +558,14 @@ components:
             - indoor
             - clean
             - wall
+        category:
+          type: string
+          description: This asset's location in Poly Haven's single-path category taxonomy. Textures are organized material-first. This is the actively-maintained replacement for the deprecated `categories` array.
+          example: Concrete/Cast Walls & Floors/Exposed Aggregate
+        category_id:
+          type: string
+          description: A stable UUID identifying the `category` path above. Prefer this over the `category` string if you need to reliably detect category renames/moves.
+          example: 70d3bf8f-46b0-5250-a419-61cbf068f448
         tags:
           type: array
           description: A string array of tags for this asset to help with search matches.
@@ -467,6 +573,35 @@ components:
             - brown
             - floor
             - pavement
+        attributes:
+          type: object
+          description: A map of structured texture facets. Any facet that's false/empty/unset is omitted entirely rather than included with a falsy value, so treat a missing key as its default.
+          properties:
+            surface_use:
+              type: string
+              description: The typical surface this texture is used for.
+              example: floor
+            man_made:
+              type: boolean
+              description: Whether this is a man-made (rather than natural) material.
+              example: true
+            outdoor:
+              type: boolean
+              description: Whether this texture is typically found outdoors.
+              example: true
+            condition:
+              type: array
+              description: Wear/condition descriptors for this texture.
+              example:
+                - weathered
+                - worn
+          example:
+            surface_use: floor
+            man_made: true
+            outdoor: true
+            condition:
+              - weathered
+              - worn
         max_resolution:
           type: array
           description: The highest resolution available for this texture, in pixels.
@@ -489,6 +624,10 @@ components:
           type: string
           description: The human-readable/display name.
           example: Horse Statue 01
+        description:
+          type: string
+          description: A short, human-written summary of the asset.
+          example: Free 8K model of a decorative white porcelain horse statue with a fancy, ornamental sculpted finish.
         type:
           type: integer
           description: The asset type, for models this is 2.
@@ -521,10 +660,19 @@ components:
           example: false
         categories:
           type: array
-          description: A string array of categories that this asset belongs to.
+          deprecated: true
+          description: 'Deprecated: a legacy string array of pseudo-tag categories. Replaced by `category`/`category_id`, a single taxonomy path per asset. Still returned for backwards compatibility alongside the new fields; both systems run in parallel with no removal date currently planned for this one.'
           example:
             - props
             - decorative
+        category:
+          type: string
+          description: This asset's location in Poly Haven's single-path category taxonomy. Models are organized by object kind/function. This is the actively-maintained replacement for the deprecated `categories` array.
+          example: Leisure/Sports/Balls
+        category_id:
+          type: string
+          description: A stable UUID identifying the `category` path above. Prefer this over the `category` string if you need to reliably detect category renames/moves.
+          example: ba452b18-0442-5d9d-b0b6-2f001f956f6d
         tags:
           type: array
           description: A string array of tags for this asset to help with search matches.
@@ -538,6 +686,28 @@ components:
             - sculpture
             - white
             - fancy
+        attributes:
+          type: object
+          description: A map of structured model facets. Any facet that's false/empty/unset is omitted entirely rather than included with a falsy value, so treat a missing key as its default (e.g. a missing `rigged` means the model is not rigged).
+          properties:
+            condition:
+              type: string
+              description: Wear/condition descriptor for this model.
+              example: worn
+            material:
+              type: array
+              description: The primary material(s) this model is made of.
+              example:
+                - leather
+                - rubber
+            rigged:
+              type: boolean
+              description: Whether this model includes a rig/armature.
+          example:
+            condition: worn
+            material:
+              - leather
+              - rubber
         max_resolution:
           type: array
           description: The highest texture resolution available for this model, in pixels.
