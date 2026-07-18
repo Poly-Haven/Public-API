@@ -8,29 +8,31 @@ By accessing and using the Poly Haven Public API ("the API", available at api.po
 
 2. API Use and Restrictions
 
-2.1. Eligible Users: The API is available for use by individuals and organizations for non-commercial purposes, free of charge.
+2.1. Free for Everyone: The API is free to access and use by anyone - individuals, organizations, and companies alike - for any purpose, including commercial use, at no charge. There is no non-commercial restriction and no commercial license requirement for basic API access.
 
-2.2. Permitted Use: Users are allowed to access and utilize the API to obtain data and assets hosted on Poly Haven solely for non-commercial and reasonable use.
+2.2. Permitted Use: Users are allowed to access and utilize the API to obtain data and assets hosted on Poly Haven, and to build on that data in their own software, websites, services, or products, including for commercial and for-profit purposes.
 
-2.3. Prohibited Activities: Use of the API for the purpose of commercial profit is strictly prohibited. Rehosting the API data or using the API to build or host a website, service, or software for financial gain is prohibited. This includes any situation where you, either directly or indirectly, gain funds from the use of the API or the data acquired through it. If you would like to obtain a license for commercial use, please contact us - we generally give these out freely for legitimate use cases.
+2.3. No Commercial Upsell: Poly Haven will never require payment, a license, or a key in order to access the API or the data it serves. Using the API to generate revenue, directly or indirectly, is explicitly permitted and does not require any special agreement with Poly Haven.
 
-2.4. Requirements: When using the API inside your software, website or service, all API calls must be made with a unique "Referer" header or user-agent what matches your software name, such that we can track all the requests from your app together.
+2.4. Requirements: When using the API inside your software, website or service, all API calls must be made with a unique "Referer" header or user-agent that matches your software name, such that we can track all the requests from your app together.
 
-2.5. Attribution: Use of this API inside your software, website or service requires that you provide attribution to Poly Haven as the source of the content, in a location that is visible directly next to the content itself.
+2.5. Attribution: This clause applies only to use of the live API service - it does not apply to the CC0 assets themselves once downloaded or self-hosted. CC0 assets carry no attribution requirement whatsoever, now or ever. However, if you use the live API inside your software, website, or service to surface Poly Haven content, you must display a visible "Powered by Poly Haven" credit near where that content is presented. This credit must be lightweight (a simple credit line or logo) and must not state or imply that your product is made by, owned by, or officially endorsed by Poly Haven.
 
 2.6. Acceptable Use Policy: Engaging in any activity that disrupts, interferes with, or degrades the performance of the API or the experience of other users is prohibited. This includes, but is not limited to, denial-of-service attacks, spamming, or any other form of malicious behavior.
 
-1. Ownership and Intellectual Property
+2.7. Optional Support for Production Use: Companies whose products or services depend heavily on the API in production may optionally choose to directly fund that usage through a bespoke arrangement with Poly Haven, which can include things like a signed Provenance Attestation manifest or a Bulk Snapshot. This is entirely optional directed funding for the commons, not a requirement to use the API, and it does not change any of the terms above. See https://polyhaven.com/corporate for details, or contact us to discuss.
+
+3. Ownership and Intellectual Property
 
 3.1. Poly Haven retains all rights, title, and interest in the API, including all associated data and content.
 
 3.2. Users acknowledge that the data provided through the API are subject to copyright, trademark, and other intellectual property rights held by Poly Haven or their respective owners.
 
-1. API Availability and Modifications
+4. API Availability and Modifications
 
 4.1. Poly Haven reserves the right to modify, suspend, or terminate the API or any part of it, temporarily or permanently, without prior notice.
 
-4.2. Poly Haven is not liable for any interruptions, errors, or unavailability of the API.
+4.2. Poly Haven is not liable for any interruptions, errors, or unavailability of the API. The API is provided on an "as available" basis, without any service-level or uptime guarantee.
 
 5. Limitation of Liability
 
