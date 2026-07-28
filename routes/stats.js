@@ -25,6 +25,21 @@ const sortObject = (obj) => {
   return tmpObj
 }
 
+// downloads_daily is ~2.9M documents and grows by ~2.3k/day, ~91% of it type=ASSET.
+// Left unguarded, `/stats/downloads` with no parameters scans the whole collection
+// on a public unauthenticated endpoint, and Cloudflare's cache key includes the
+// query string, so a junk parameter bypasses the edge cache entirely. Every known
+// caller already passes `type`.
+const DOWNLOAD_TYPES = ['ALL', 'TYPE', 'TYPE_FORMAT', 'TYPE_RES', 'ASSET']
+
+// ALL and TYPE are ~1 and ~3 documents/day, so all of history is only a few
+// thousand documents — cheap to serve, and useful for long-range charts.
+const UNCAPPED_DOWNLOAD_TYPES = ['ALL', 'TYPE']
+const MAX_RANGE_DAYS = 400
+
+const isDay = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s)
+const dayOffset = (day, days) => new Date(Date.parse(`${day}T00:00:00Z`) + days * 86400000).toISOString().split('T')[0]
+
 const assetsPublishedInDateRange = async (date_from, date_to) => {
   const epoch_end = Date.parse(`${date_to}T23:59:59Z`) / 1000
   const collection = await db.collection('assets').where('date_published', '<=', epoch_end).get()
@@ -59,8 +74,43 @@ const assetsPublishedInDateRange = async (date_from, date_to) => {
 router.get('/downloads', async (req, res) => {
   const slug = req.query.slug
   const type = req.query.type
-  const date_from = req.query.date_from
-  const date_to = req.query.date_to
+  let date_from = req.query.date_from
+  let date_to = req.query.date_to
+
+  const badRequest = (message) => res.status(400).json({ error: '400 Bad Request', message })
+
+  if (!DOWNLOAD_TYPES.includes(type)) {
+    return badRequest(`type is required, and must be one of: ${DOWNLOAD_TYPES.join(', ')}`)
+  }
+  // type=ASSET is 2.6M of the 2.9M documents, so it is never served unfiltered.
+  if (type === 'ASSET' && !slug) {
+    return badRequest('slug is required when type=ASSET')
+  }
+  for (const [name, value] of [
+    ['date_from', date_from],
+    ['date_to', date_to],
+  ]) {
+    if (value !== undefined && !isDay(value)) {
+      return badRequest(`${name} must be a YYYY-MM-DD date`)
+    }
+  }
+  if (date_from && date_to && date_from > date_to) {
+    return badRequest('date_from must not be after date_to')
+  }
+  // A slug pins the query to one series (~1 document/day), so only an unpinned
+  // query over one of the wider types needs a ceiling on its date range.
+  if (!slug && !UNCAPPED_DOWNLOAD_TYPES.includes(type)) {
+    // Fill in whichever bound is missing first, so that supplying only one of
+    // them can't sidestep the span check below.
+    date_to = date_to || new Date().toISOString().split('T')[0]
+    date_from = date_from || dayOffset(date_to, -MAX_RANGE_DAYS)
+    if (date_from < dayOffset(date_to, -MAX_RANGE_DAYS)) {
+      return badRequest(
+        `date range must be at most ${MAX_RANGE_DAYS} days for type=${type} without a slug. ` +
+          `Request a narrower range, or pass a slug.`
+      )
+    }
+  }
 
   let collectionRef = db.collection('downloads_daily')
 
