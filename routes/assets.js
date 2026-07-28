@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const cachedFirestore = require('../utils/cachedFirestore')
+const { applyFilters } = require('../utils/assetFilters')
 
 const asset_types = require('../asset_types.json')
 
@@ -63,6 +64,14 @@ router.get('/', async (req, res) => {
         delete docs[id]
       }
     }
+  }
+
+  // New single-path category system: ?category= (inclusive of descendants, canonical or slug path),
+  // ?collection=, ?vault=, and any attribute key for this type (e.g. ?weather=clear&indoor=true).
+  const { unresolved } = applyFilters(docs, req.query, asset_type)
+  if (unresolved) {
+    res.status(400).send(`Unknown category: ${escape(String(req.query.category || req.query.cat))}`)
+    return
   }
 
   // Remove unnecessary data

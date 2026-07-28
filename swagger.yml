@@ -47,10 +47,43 @@ paths:
           example: textures
         - name: categories
           in: query
-          description: A comma-separated list of categories to filter by. Only assets that match all categories specified will be included. Use the `/categories` endpoint to get a list of available categories.
+          description: (Legacy) A comma-separated list of categories to filter by. Only assets that match all categories specified will be included. Use the `/categories` endpoint to get a list of available categories.
           schema:
             type: string
           example: brick
+        - name: category
+          in: query
+          description: >-
+            Filter by the single-path category taxonomy. Accepts either the canonical path
+            (`Brick & Block/Clay Brick`) or the URL slug path (`brick-block/clay-brick`).
+            Matching is **inclusive**: a parent category also returns everything nested beneath it.
+            Use the `/taxonomy` endpoint to get the full tree.
+          schema:
+            type: string
+          example: brick-block/clay-brick
+        - name: collection
+          in: query
+          description: Filter to assets belonging to a collection (see `/collections`).
+          schema:
+            type: string
+          example: the_shed
+        - name: vault
+          in: query
+          description: Filter to assets belonging to a vault (see `/vaults`).
+          schema:
+            type: string
+          example: beach
+        - name: attributes
+          in: query
+          description: >-
+            Any attribute key valid for the requested type may be used as its own query parameter,
+            e.g. `?weather=clear`, `?indoor=true`, `?material=wood,metal`. Multiple comma-separated
+            values are OR'd together; different attributes are AND'd. Boolean attributes are only
+            stored when true, so an absent value counts as false.
+            See `/taxonomy/{type}` for the attribute schema of each type.
+          schema:
+            type: string
+          example: weather=clear
       responses:
         '200':
           description: OK
@@ -59,7 +92,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/assets'
         '400':
-          description: Bad request, e.g. unsupported asset type
+          description: Bad request, e.g. unsupported asset type or unknown category
   /info/{id}:
     get:
       summary: Information about an individual asset specified by its unique ID.
@@ -140,9 +173,107 @@ paths:
           description: Bad request, e.g. missing {id}
         '404':
           description: No author found with that ID
+  /taxonomy:
+    get:
+      summary: The single-path category taxonomy for every asset type, plus the attribute schema.
+      description: >-
+        Each asset belongs to exactly **one** category, given as a path such as
+        `Coast & Water/Beaches/Sandy Beaches` (the asset's `category` field). This endpoint returns
+        that taxonomy as a tree per asset type.
+
+
+        Every node carries a stable `id` (a UUID that survives renames and reorders — safe to use as
+        a Blender catalog id), its canonical `path`, a URL-safe `slugPath`, a human `description`,
+        and its `children`.
+
+
+        Categories describe **what an asset is**. Qualities like weather, condition or material are
+        separate *attributes* (`asset.attributes`), whose schema is returned alongside the tree.
+      tags:
+        - assets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  types:
+                    type: object
+                    description: Category tree, keyed by asset type.
+                  attributes:
+                    type: object
+                    description: Attribute schema, keyed by asset type.
+  /taxonomy/{type}:
+    get:
+      summary: The category taxonomy and attribute schema for a single asset type.
+      tags:
+        - assets
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: 'One of the supported asset types: `hdris`, `textures`, or `models`.'
+          schema:
+            type: string
+            example: hdris
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  categories:
+                    type: array
+                    description: Top-level category nodes, each with nested `children`.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        path:
+                          type: string
+                        slugPath:
+                          type: string
+                        id:
+                          type: string
+                        description:
+                          type: string
+                        children:
+                          type: array
+                          items:
+                            type: object
+                  attributes:
+                    type: object
+              example:
+                type: hdris
+                categories:
+                  - name: Coast & Water
+                    slug: coast-water
+                    path: Coast & Water
+                    slugPath: coast-water
+                    id: f30d179e-f9a7-57eb-b5d2-f9d71ad39458
+                    description: Outdoor scenes by the sea or inland water.
+                    children:
+                      - name: Beaches
+                        slug: beaches
+                        path: Coast & Water/Beaches
+                        slugPath: coast-water/beaches
+                        id: 0f2a1e2c-0000-0000-0000-000000000000
+                        description: Sandy and mixed shorelines.
+                        children: []
+        '400':
+          description: Bad request, e.g. unsupported asset type
   /categories/{type}:
     get:
-      summary: A list of available categories.
+      summary: (Legacy) A list of available categories.
       description: The list of categories also show the number of assets inside them. If `all` is passed as the {type}, then rather than returning categories, it simply returns a list of the asset types instead, with their asset counts.
       tags:
         - assets

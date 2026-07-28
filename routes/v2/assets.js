@@ -4,6 +4,7 @@ const asset_types = require('../../asset_types.json')
 
 const cachedFirestore = require('../../utils/cachedFirestore')
 const validateKey = require('../../utils/validateKey')
+const { applyFilters } = require('../../utils/assetFilters')
 const db = cachedFirestore()
 
 router.get('/', async (req, res) => {
@@ -73,6 +74,16 @@ router.get('/', async (req, res) => {
         delete docs[id]
       }
     }
+  }
+
+  // New single-path category system: ?category= (inclusive of descendants, canonical or slug path),
+  // ?collection=, ?vault=, and any attribute key for this type (e.g. ?weather=clear&indoor=true).
+  const { unresolved } = applyFilters(docs, req.query, asset_type)
+  if (unresolved) {
+    return res.status(400).json({
+      error: '400 Bad Request',
+      message: `Unknown category: ${req.query.category || req.query.cat}`,
+    })
   }
 
   // Remove unnecessary data
