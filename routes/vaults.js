@@ -4,8 +4,11 @@ const shuffleArray = require('../utils/shuffleArray')
 const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 
 const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
+const { matchesVault } = require('../utils/assetFilters')
 
 const db = firestore()
+const cachedDb = cachedFirestore()
 
 router.get('/', async (req, res) => {
   const colVaults = await db.collection('vaults').get()
@@ -32,17 +35,23 @@ router.get('/', async (req, res) => {
     }
   })
 
-  // Get list of assets in each vault
-  for (const id in vaults) {
-    const colAssets = await db.collection('assets').where('categories', 'array-contains', `vault: ${id}`).get()
-    let assets = []
-    colAssets.forEach((doc) => {
-      if (doc.data().staging) {
-        return
+  // Membership comes from the first-class `vault` field (falling back to the legacy "vault: <id>"
+  // category string). One pass over the cached assets instead of a query per vault.
+  const allAssets = await cachedDb.collection('assets').get()
+  const byVault = {}
+  allAssets.forEach((doc) => {
+    const asset = doc.data()
+    if (asset.staging) return
+    for (const id in vaults) {
+      if (matchesVault(asset, id)) {
+        byVault[id] = byVault[id] || []
+        byVault[id].push(doc.id)
       }
-      assets.push(doc.id)
-    })
-    vaults[id].assets = shuffleArray(assets)
+    }
+  })
+
+  for (const id in vaults) {
+    vaults[id].assets = shuffleArray(byVault[id] || [])
   }
 
   // Sort vaults by milestone.target
