@@ -7,8 +7,11 @@ const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 require('dotenv').config()
 
 const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
 
 const db = firestore()
+// For whole-collection reads of `assets`, which several routes here sweep on every request.
+const cachedDb = cachedFirestore()
 
 const escapeRegExp = (s) => {
   return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&')
@@ -176,7 +179,7 @@ router.get('/relativetype', async (req, res) => {
 })
 
 router.get('/relativecategory', async (req, res) => {
-  let collectionRef = db.collection('assets')
+  let collectionRef = cachedDb.collection('assets')
 
   const collection = await collectionRef.get()
   let assets = {}
@@ -512,7 +515,15 @@ router.get('/searches', async (req, res) => {
   res.status(200).json(returnData)
 })
 
-router.get('/post_download', async (req, res) => {
+// /post_download takes no parameters and hands the same few numbers to every caller, yet computing
+// it costs well over a thousand document reads. polyhaven.com asks for it once per asset page, so a
+// full site build used to trigger thousands of identical recomputations. Cache the result, and
+// collapse concurrent misses into a single computation so a build cannot stampede a cold cache.
+const POST_DOWNLOAD_TTL = 10 * 60 * 1000
+let postDownloadCache = null
+let postDownloadPending = null
+
+const computePostDownload = async () => {
   const returnData = {}
   const msPerDay = 24 * 60 * 60 * 1000
   const aMonthAgo = new Date(Date.now() - 31 * msPerDay).toISOString().split('T')[0]
@@ -565,14 +576,45 @@ router.get('/post_download', async (req, res) => {
   }
   returnData.averageMonthlyExpenses = totalExpenses / zarPerUsd / 36
 
-  // Assets published in 3 years
-  collection = await db
-    .collection('assets')
-    .where('date_published', '>', Date.parse(`${threeYearsAgo}T23:59:59Z`) / 1000)
-    .get()
-  returnData.averageAssetsPerMonth = collection.size / 36
+  // Assets published in 3 years.
+  // Counted from the shared assets cache rather than queried, since this alone was over a thousand
+  // document reads per call. Note cachedFirestore only understands == and array-contains, so the
+  // date comparison has to happen here rather than in a where().
+  const publishedAfter = Date.parse(`${threeYearsAgo}T23:59:59Z`) / 1000
+  collection = await cachedDb.collection('assets').get()
+  let recentAssets = 0
+  collection.forEach((doc) => {
+    if (doc.data().date_published > publishedAfter) {
+      recentAssets++
+    }
+  })
+  returnData.averageAssetsPerMonth = recentAssets / 36
 
-  res.status(200).json(returnData)
+  return returnData
+}
+
+router.get('/post_download', async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=3600')
+
+  if (postDownloadCache && Date.now() - postDownloadCache.time < POST_DOWNLOAD_TTL) {
+    res.status(200).json(postDownloadCache.data)
+    return
+  }
+
+  if (!postDownloadPending) {
+    postDownloadPending = computePostDownload().finally(() => {
+      postDownloadPending = null
+    })
+  }
+
+  try {
+    const data = await postDownloadPending
+    postDownloadCache = { data, time: Date.now() }
+    res.status(200).json(data)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send('Failed to calculate post-download stats')
+  }
 })
 
 router.get('/patron_count', async (req, res) => {

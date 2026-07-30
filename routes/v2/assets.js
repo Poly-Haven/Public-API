@@ -49,22 +49,20 @@ router.get('/', async (req, res) => {
     collectionRef = collectionRef.where('categories', 'array-contains', last_cat)
   }
 
-  // Get data and convert to an object we can work with further
+  // Get data and convert to an object we can work with further.
+  // doc.data() returns the live cached object, so copy each one before touching it, dropping the
+  // fields we do not serve and adding the thumbnail in the same pass. Editing them in place used to
+  // strip old_id, reviewers and scale out of the shared cache for every other route.
   const collection = await collectionRef.get()
+  const now = Math.floor(Date.now() / 1000)
   let docs = {}
   collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
+    const { old_id, reviewers, scale, staging, ...asset } = doc.data()
+    if (staging) return
+    if (!includeUpcoming && asset.date_published > now) return
+    asset.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${doc.id}.png?width=256&height=256`
+    docs[doc.id] = asset
   })
-
-  // Filter unpublished
-  const now = Math.floor(Date.now() / 1000)
-  for (const id in docs) {
-    if (docs[id].staging) {
-      delete docs[id]
-    } else if (!includeUpcoming && docs[id].date_published > now) {
-      delete docs[id]
-    }
-  }
 
   // Categories (2/2)
   // Filter out the remaining assets that aren't in all specifed categories
@@ -84,24 +82,6 @@ router.get('/', async (req, res) => {
       error: '400 Bad Request',
       message: `Unknown category: ${req.query.category || req.query.cat}`,
     })
-  }
-
-  // Remove unnecessary data
-  const remove_keys = [
-    'old_id',
-    'reviewers',
-    'scale',
-    'staging', // It's OK to remove this since we delete truthy staging assets above
-  ]
-  for (const id in docs) {
-    for (const key of remove_keys) {
-      delete docs[id][key]
-    }
-  }
-
-  // Add thumbnail URL
-  for (const id in docs) {
-    docs[id].thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256`
   }
 
   // Signal early-access status to clients (e.g. the Blender add-on) that can't

@@ -88,12 +88,12 @@ router.get('/:id', async (req, res) => {
 
   similar = {}
   for (const s of similar_slugs) {
-    similar[s] = docs[s]
-    similar[s].similarity = similarities[s]
+    // Copy before adding similarity. doc.data() hands back the live cached object, so writing to it
+    // leaks this request's score into every other route that reads the cached assets collection.
+    similar[s] = { ...docs[s], similarity: similarities[s] }
   }
 
   res.status(200).json(similar)
 })
 
-module.exports = router
 module.exports = router

@@ -136,6 +136,9 @@ async function getCachedCollection(collectionName) {
   return await fetchPromise
 }
 
+const SUPPORTED_OPERATORS = ['==', 'array-contains']
+const SUPPORTED_TEXT = SUPPORTED_OPERATORS.join(', ')
+
 // Mock collection reference that applies filters in memory
 class CachedCollectionReference {
   constructor(collectionName) {
@@ -144,8 +147,28 @@ class CachedCollectionReference {
   }
 
   where(field, operator, value) {
+    // Filters are applied in memory below, and only these two operators are implemented. Anything
+    // else used to match nothing at all and silently return an empty result, so fail loudly instead.
+    if (!SUPPORTED_OPERATORS.includes(operator)) {
+      throw new Error(
+        `cachedFirestore does not support the '${operator}' operator (used on '${field}' of '${this.collectionName}'). ` +
+          `Supported: ${SUPPORTED_TEXT}. Filter in memory after .get(), or use the direct client.`
+      )
+    }
     this.filters.push({ field, operator, value })
     return this
+  }
+
+  orderBy() {
+    throw new Error(
+      `cachedFirestore does not implement orderBy (on '${this.collectionName}'). Sort in memory after .get().`
+    )
+  }
+
+  limit() {
+    throw new Error(
+      `cachedFirestore does not implement limit (on '${this.collectionName}'). Slice in memory after .get().`
+    )
   }
 
   async get() {
@@ -212,6 +235,17 @@ function cachedFirestore() {
         where: (field, operator, value) => {
           const cachedRef = new CachedCollectionReference(collectionName)
           return cachedRef.where(field, operator, value)
+        },
+        // Not implemented, but say so clearly rather than failing with "not a function".
+        orderBy: () => {
+          throw new Error(
+            `cachedFirestore does not implement orderBy (on '${collectionName}'). Sort in memory after .get(), or use the direct firestore client.`
+          )
+        },
+        limit: () => {
+          throw new Error(
+            `cachedFirestore does not implement limit (on '${collectionName}'). Slice in memory after .get(), or use the direct firestore client.`
+          )
         },
         doc: (docId) => {
           return {

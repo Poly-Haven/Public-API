@@ -2,8 +2,11 @@ const express = require('express')
 const router = express.Router()
 
 const firestore = require('../firestore')
+const cachedFirestore = require('../utils/cachedFirestore')
 
 const db = firestore()
+// Only the full assets sweep below goes through the shared cache.
+const cachedDb = cachedFirestore()
 
 router.get('/', async (req, res) => {
   const colMilestones = await db.collection('milestones').get()
@@ -36,7 +39,7 @@ router.get('/', async (req, res) => {
   // Get number of early access assets
   let numEaAssets = 0
   const now = Math.floor(Date.now() / 1000)
-  const colAssets = await db.collection('assets').get()
+  const colAssets = await cachedDb.collection('assets').get()
   colAssets.forEach((doc) => {
     const data = doc.data()
     if (!data.staging && data.date_published > now) {

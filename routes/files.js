@@ -34,6 +34,9 @@ router.get('/:id', async (req, res) => {
   if (!doc.exists) {
     res.status(404).send(`No asset with id ${escape(asset_id)}`)
   } else {
+    // File lists only change on publish, and publishing purges the CDN. Set only on success so a
+    // 404 for an asset that is about to exist does not get pinned at the edge.
+    res.set('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
     res.status(200).json(doc.data())
   }
 })

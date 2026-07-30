@@ -37,6 +37,9 @@ router.get('/:id', async (req, res) => {
     const data = doc.data()
     // Add thumbnail URL
     data.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${asset_id}.png?width=256&height=256`
+    // Asset data only changes on publish, and publishing purges the CDN. Set only on success so a
+    // 404 for an asset that is about to exist does not get pinned at the edge.
+    res.set('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
     res.status(200).json(data)
   }
 })

@@ -2,8 +2,9 @@ const express = require('express')
 const router = express.Router()
 
 const simpleData = async (type) => {
-  const firestore = require('../firestore')
-  const db = firestore()
+  // Reads the whole assets collection filtered by type, so use the shared cache.
+  const cachedFirestore = require('../utils/cachedFirestore')
+  const db = cachedFirestore()
 
   let collection = await db.collection('assets').where('type', '==', type).get()
   let docs = {}
