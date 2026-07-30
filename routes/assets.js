@@ -66,9 +66,15 @@ router.get('/', async (req, res) => {
 
   // New single-path category system: ?category= (inclusive of descendants, canonical or slug path),
   // ?collection=, ?vault=, and any attribute key for this type (e.g. ?weather=clear&indoor=true).
-  const { unresolved } = applyFilters(docs, req.query, asset_type)
+  const { unresolved, invalidAttribute } = applyFilters(docs, req.query, asset_type)
   if (unresolved) {
     res.status(400).send(`Unknown category: ${escape(String(req.query.category || req.query.cat))}`)
+    return
+  }
+  if (invalidAttribute) {
+    const { key, value, allowed, hint } = invalidAttribute
+    const detail = hint ? ` (${escape(hint)})` : allowed ? `. Expected one of: ${allowed.join(', ')}` : ''
+    res.status(400).send(`Unknown ${allowed || !hint ? 'value' : 'filter'} for ${escape(key)}: ${escape(value)}${detail}`)
     return
   }
 

@@ -77,9 +77,12 @@ paths:
           in: query
           description: >-
             Any attribute key valid for the requested type may be used as its own query parameter,
-            e.g. `?weather=clear`, `?indoor=true`, `?material=wood,metal`. Multiple comma-separated
-            values are OR'd together; different attributes are AND'd. Boolean attributes are only
-            stored when true, so an absent value counts as false.
+            e.g. `?weather=clear`, `?environment=outdoor`, `?material=wood,metal`. Multiple
+            comma-separated values are OR'd together, and different attributes are AND'd.
+            An unrecognised value returns 400 rather than silently matching everything.
+            Boolean attributes are stored only when true, so an absent value counts as false. Every
+            attribute whose false side is meaningful in its own right is an enum instead, where an
+            absent value means "not assessed" and matches nothing.
             See `/taxonomy/{type}` for the attribute schema of each type.
           schema:
             type: string
@@ -349,16 +352,16 @@ components:
             - floor
             - road
             - man made
-          category: Roads & Pavements/Asphalt/Cracked Asphalt
-          category_id: 3f0b1a5e-8c2d-5a91-9e3f-1b6d4c7a2e58
+          category: Asphalt & Bitumen/Asphalt/Cracked Asphalt
+          category_id: ae6df066-2cbf-5772-9092-3cd86ed6394e
           tags:
             - road
             - flat
             - cracked
           attributes:
             surface_use: floor
-            man_made: true
-            outdoor: true
+            origin: man_made
+            setting: outdoor
             condition:
               - weathered
           max_resolution:
@@ -382,8 +385,8 @@ components:
             - sand
             - outdoor
             - natural
-          category: Ground/Sand & Dunes/Beach Sand
-          category_id: 6a2e4d19-7f53-5b0c-8e64-2d9a1c3f5b76
+          category: Ground & Terrain/Sand/Beach & Coastal Sand
+          category_id: 2bed9a9d-8f5f-5f1f-815c-e33cfa63bf69
           tags:
             - beach
             - wavy
@@ -391,9 +394,10 @@ components:
             - ocean
             - seaside
           attributes:
-            surface_use: terrain
-            man_made: false
-            outdoor: true
+            surface_use: ground
+            origin: natural
+            setting: outdoor
+            aerial: true
           max_resolution:
             - 16384
             - 16384
@@ -581,25 +585,29 @@ components:
               type: string
               description: Season the HDRI was captured in, if applicable/known.
               example: winter
-            indoor:
-              type: boolean
-              description: Whether this HDRI was captured indoors.
-            open_sky:
-              type: boolean
-              description: Whether the sky is visible/open in this HDRI.
-              example: true
+            environment:
+              type: string
+              enum: [indoor, outdoor]
+              description: Where the HDRI was captured. Studio shots are `indoor`. Replaces the former boolean `indoor`.
+              example: outdoor
+            sky_view:
+              type: string
+              enum: [open, obstructed]
+              description: How much open sky is visible. Omitted entirely for indoor captures, where it does not apply. Replaces the former boolean `open_sky`.
+              example: open
             pure_sky:
               type: boolean
               description: Whether this is a clean sky-only HDRI, with no ground/horizon elements.
             backplates:
               type: boolean
-              description: Whether backplates are available for this HDRI (mirrors the top-level `backplates` field below).
+              description: Whether backplates are available for this HDRI. Always written together with the top-level `backplates` field below, so the two cannot disagree.
           example:
             time_of_day: dusk
             weather: partly_cloudy
             light_type: natural
             contrast: low
-            open_sky: true
+            environment: outdoor
+            sky_view: open
         max_resolution:
           type: array
           description: The highest resolution available for this HDRI, in pixels.
@@ -712,24 +720,29 @@ components:
               type: string
               description: The typical surface this texture is used for.
               example: floor
-            man_made:
-              type: boolean
-              description: Whether this is a man-made (rather than natural) material.
-              example: true
-            outdoor:
-              type: boolean
-              description: Whether this texture is typically found outdoors.
-              example: true
+            origin:
+              type: string
+              enum: [man_made, natural]
+              description: Whether the material is manufactured/built/worked or naturally occurring. Replaces the former boolean `man_made`.
+              example: man_made
+            setting:
+              type: string
+              enum: [indoor, outdoor, either]
+              description: Where the material is typically found. `either` for materials equally at home in both. Omitted when it has not been assessed. Replaces the former boolean `outdoor`.
+              example: outdoor
             condition:
               type: array
-              description: Wear/condition descriptors for this texture.
+              description: Wear/condition descriptors for this texture. An empty/absent array means pristine.
               example:
                 - weathered
                 - worn
+            aerial:
+              type: boolean
+              description: Captured from the air by drone, so at a far larger scale than a ground scan.
           example:
             surface_use: floor
-            man_made: true
-            outdoor: true
+            origin: man_made
+            setting: outdoor
             condition:
               - weathered
               - worn
@@ -822,9 +835,10 @@ components:
           description: A map of structured model facets. Any facet that's false/empty/unset is omitted entirely rather than included with a falsy value, so treat a missing key as its default (e.g. a missing `rigged` means the model is not rigged).
           properties:
             condition:
-              type: string
-              description: Wear/condition descriptor for this model.
-              example: worn
+              type: array
+              description: Wear/condition descriptors for this model. An empty/absent array means pristine. Was a single string before the attribute rework.
+              example:
+                - worn
             material:
               type: array
               description: The primary material(s) this model is made of.
@@ -834,8 +848,15 @@ components:
             rigged:
               type: boolean
               description: Whether this model includes a rig/armature.
+            lods:
+              type: boolean
+              description: Whether this model ships with level-of-detail variants. Always written together with the top-level `lods` field, so the two cannot disagree.
+            geonodes:
+              type: boolean
+              description: Whether this model includes a geometry-nodes setup. Always written together with the top-level `geonodes` field.
           example:
-            condition: worn
+            condition:
+              - worn
             material:
               - leather
               - rubber
@@ -846,14 +867,20 @@ components:
             - 8192
             - 8192
         lods:
-          type: array
-          description: (optional) A list of LOD triangle counts in order.
-          example:
-            - 20000
-            - 10000
-            - 5000
-            - 2000
-            - 1000
+          type: boolean
+          deprecated: true
+          description: >-
+            (optional) Whether this model ships with level-of-detail variants. Previously documented
+            as an array of triangle counts, which no code ever wrote. Mirrors `attributes.lods`,
+            which is where new clients should read it.
+          example: true
+        geonodes:
+          type: boolean
+          deprecated: true
+          description: >-
+            (optional) Whether this model includes a geometry-nodes setup. Mirrors
+            `attributes.geonodes`, which is where new clients should read it.
+          example: true
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.

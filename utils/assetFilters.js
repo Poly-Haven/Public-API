@@ -62,37 +62,121 @@ const attributeKeys = (assetType) => {
 
 const asBool = (v) => v === true || v === 'true' || v === '1' || v === 1
 
-/** Pull recognised attribute filters out of a query object. Returns { key: [values] }. */
+/** Attribute keys this rework renamed away, with what replaced them. */
+const RETIRED_KEYS = { indoor: 'environment', open_sky: 'sky_view', man_made: 'origin', outdoor: 'setting' }
+
+/** The reserved query value that selects the empty side of an array attribute (e.g. pristine). */
+const EMPTY_VALUE = 'none'
+const EMPTY_ALIASES = ['none', 'pristine']
+
+/**
+ * Every spec declared for a key. One key can be declared by more than one type, so when the request
+ * does not pin a type this returns all of them rather than whichever happens to come first - taking
+ * the first match meant a value valid for models could be rejected using the textures vocabulary.
+ */
+const attributeSpecs = (assetType, key) => {
+  if (assetType && assetType !== 'all' && attributeSchema.types[assetType]) {
+    const spec = attributeSchema.types[assetType][key]
+    return spec ? [spec] : []
+  }
+  return Object.values(attributeSchema.types)
+    .map((spec) => spec[key])
+    .filter(Boolean)
+}
+
+/**
+ * Which branch a filter takes has to come from the schema rather than from the shape of the
+ * requested value, otherwise `?condition=false` reads as a boolean test against a string[] and
+ * quietly matches every asset.
+ */
+const attributeSpec = (assetType, key) => attributeSpecs(assetType, key)[0] || null
+
+/** Values a filter will accept for a key, so a typo is a 400 rather than a silent empty page. */
+const allowedValues = (assetType, key) => {
+  const specs = attributeSpecs(assetType, key)
+  if (!specs.length) return null
+  const out = new Set()
+  for (const spec of specs) {
+    if (spec.type === 'boolean') {
+      out.add('true').add('false')
+      continue
+    }
+    if (!Array.isArray(spec.enum) || !spec.enum.length) return null // free-form, nothing to check
+    for (const v of spec.enum) out.add(String(v).toLowerCase())
+    if (spec.type === 'string[]') for (const v of EMPTY_ALIASES) out.add(v)
+  }
+  return out.size ? [...out] : null
+}
+
+/**
+ * Pull recognised attribute filters out of a query object.
+ * Returns { filters: { key: [values] }, invalid: [{ key, value, allowed, hint }] }.
+ */
 const parseAttributeFilters = (query, assetType) => {
   const allowed = new Set(attributeKeys(assetType))
   const filters = {}
+  const invalid = []
   for (const [key, value] of Object.entries(query || {})) {
-    if (!allowed.has(key) || value === undefined || value === '') continue
+    if (value === undefined || value === '') continue
+
+    if (!allowed.has(key)) {
+      // An unrecognised KEY used to be dropped silently, which returned the whole asset type and
+      // read as "no filter applied". That is exactly what a renamed key would now do, so the four
+      // retired names and any key belonging to a different type are reported instead of ignored.
+      if (RETIRED_KEYS[key]) {
+        invalid.push({ key, value: String(value), allowed: null, hint: `renamed to '${RETIRED_KEYS[key]}'` })
+      } else if (attributeSpecs(null, key).length) {
+        invalid.push({ key, value: String(value), allowed: null, hint: `not an attribute of '${assetType}'` })
+      }
+      continue // anything else is an unrelated query param (t, future, sort, ...)
+    }
+
     const values = String(value)
       .split(',')
       .map((v) => v.trim().toLowerCase())
       .filter(Boolean)
-    if (values.length) filters[key] = values
+    if (!values.length) continue
+    const permitted = allowedValues(assetType, key)
+    if (permitted) {
+      for (const v of values) if (!permitted.includes(v)) invalid.push({ key, value: v, allowed: permitted, hint: null })
+    }
+    filters[key] = values
   }
-  return filters
+  return { filters, invalid }
 }
 
-const matchesAttributes = (asset, filters) => {
+const matchesAttributes = (asset, filters, assetType) => {
   const attrs = asset.attributes || {}
   for (const [key, wanted] of Object.entries(filters)) {
     const actual = attrs[key]
-    // Booleans are stored only when true, so an absent value means false.
-    if (wanted.every((w) => w === 'true' || w === 'false')) {
-      const isTrue = asBool(actual)
-      if (!wanted.includes(String(isTrue))) return false
+    const type = (attributeSpec(assetType, key) || {}).type
+
+    if (type === 'boolean') {
+      // A boolean is only ever stored when true, so absent means false. That is sound here because
+      // every attribute whose false side is a thing in its own right is an enum instead.
+      if (!wanted.includes(String(asBool(actual)))) return false
       continue
     }
+    if (type === 'string[]') {
+      // Tolerate a scalar as well as an array: models.condition was a single string until the
+      // attribute rework, so this keeps working whichever order the deploy and the data migration
+      // happen in. Costs nothing once every document has been migrated.
+      const list = Array.isArray(actual) ? actual : actual === undefined || actual === null || actual === '' ? [] : [actual]
+      // The empty side is otherwise unaskable, which left the 35 pristine models unreachable.
+      if (!list.length) {
+        if (!wanted.some((w) => EMPTY_ALIASES.includes(w))) return false
+        continue
+      }
+      if (!list.some((a) => wanted.includes(String(a).toLowerCase()))) return false
+      continue
+    }
+    // enum and enum|null: absent means never assessed, which matches nothing.
+    if (actual === undefined || actual === null) return false
     if (Array.isArray(actual)) {
       if (!actual.some((a) => wanted.includes(String(a).toLowerCase()))) return false
-    } else {
-      if (actual === undefined || actual === null) return false
-      if (!wanted.includes(String(actual).toLowerCase())) return false
+      continue
     }
+    if (!wanted.includes(String(actual).toLowerCase())) return false
   }
   return true
 }
@@ -107,19 +191,24 @@ const matchesVault = (asset, id) =>
 
 /**
  * Apply every new-system filter to a { id: asset } map, deleting non-matches in place.
- * Returns { category } — the resolved canonical path, or null — so callers can 400 on a bad value.
+ * Returns { category } - the resolved canonical path, or null - plus `unresolved` for an unknown
+ * category and `invalidAttribute` for an unknown attribute value, so callers can 400 on either.
  */
 const applyFilters = (docs, query, assetType) => {
   const requestedCategory = query.category || query.cat
   const canonical = resolveCategory(assetType, requestedCategory)
-  const attrFilters = parseAttributeFilters(query, assetType)
+  const { filters: attrFilters, invalid } = parseAttributeFilters(query, assetType)
   const collection = query.collection
   const vault = query.vault
 
+  if (requestedCategory && !canonical) return { category: null, unresolved: true, invalidAttribute: null }
+  // An unrecognised value used to fall through and return the full list, which reads as "no filter
+  // applied" rather than "you asked for something that does not exist".
+  if (invalid.length) return { category: canonical, unresolved: false, invalidAttribute: invalid[0] }
+
   if (!requestedCategory && !Object.keys(attrFilters).length && !collection && !vault) {
-    return { category: canonical, unresolved: false }
+    return { category: canonical, unresolved: false, invalidAttribute: null }
   }
-  if (requestedCategory && !canonical) return { category: null, unresolved: true }
 
   for (const id in docs) {
     const a = docs[id]
@@ -135,9 +224,9 @@ const applyFilters = (docs, query, assetType) => {
       delete docs[id]
       continue
     }
-    if (!matchesAttributes(a, attrFilters)) delete docs[id]
+    if (!matchesAttributes(a, attrFilters, assetType)) delete docs[id]
   }
-  return { category: canonical, unresolved: false }
+  return { category: canonical, unresolved: false, invalidAttribute: null }
 }
 
 module.exports = {
@@ -149,4 +238,5 @@ module.exports = {
   parseAttributeFilters,
   matchesAttributes,
   attributeKeys,
+  attributeSpec,
 }
