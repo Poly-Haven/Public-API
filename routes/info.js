@@ -34,7 +34,10 @@ router.get('/:id', async (req, res) => {
   if (!doc.exists) {
     res.status(404).send(`No asset with id ${escape(asset_id)}`)
   } else {
-    const data = doc.data()
+    // reviewers is internal review metadata and has no business in a public response. /assets and
+    // /v2/assets have always stripped it, this endpoint just never did. Destructured rather than
+    // deleted so the doc is never mutated, in case this route ever moves onto the shared cache.
+    const { reviewers, ...data } = doc.data()
     // Add thumbnail URL
     data.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${asset_id}.png?width=256&height=256`
     // Asset data only changes on publish, and publishing purges the CDN. Set only on success so a
