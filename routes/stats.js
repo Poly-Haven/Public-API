@@ -8,10 +8,14 @@ require('dotenv').config()
 
 const firestore = require('../firestore')
 const cachedFirestore = require('../utils/cachedFirestore')
+const attributeSchema = require('../attributes.json')
+const { resolveCategory } = require('../utils/assetFilters')
 
 const db = firestore()
 // For whole-collection reads of `assets`, which several routes here sweep on every request.
 const cachedDb = cachedFirestore()
+
+const TYPE_NAMES = ['hdris', 'textures', 'models']
 
 const escapeRegExp = (s) => {
   return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&')
@@ -228,6 +232,120 @@ router.get('/relativecategory', async (req, res) => {
   }
 
   res.status(200).json(returnData)
+})
+
+/**
+ * Popularity of the single-path taxonomy: aggregates per category node and per attribute value.
+ *
+ * The successor to /relativecategory, which is keyed by the legacy multi-value `categories` array.
+ * Both are served in parallel until nothing reads the old one any more.
+ *
+ * Category counts are INCLUSIVE, matching how the library browses: an asset in
+ * "Nature/Trees/Oaks" counts towards "Nature", "Nature/Trees" and "Nature/Trees/Oaks". `direct` is
+ * how many sit exactly on that node, so the pair shows where in a branch the assets actually live.
+ * Only nodes with at least one asset appear - an empty category has no popularity to report.
+ *
+ * `avg` is the mean of each asset's lifetime downloads per day, the same measure the old chart
+ * used, so numbers stay comparable across the transition.
+ *
+ * Attribute buckets mirror what the library can actually filter by, so a chart point maps onto a
+ * real query. Booleans report both sides (absent means false); enums report only the values that
+ * were assessed, and each attribute's `assessed` against the type's entry in `totals` says how much
+ * of the type the chart covers. A multi-value attribute counts an asset once per value it carries,
+ * so its buckets deliberately sum to more than `assessed`.
+ *
+ * Reads `assets` through cachedFirestore, the same 10-minute whole-collection cache /assets and
+ * /relativecategory already share, so this route adds no Firestore reads of its own.
+ */
+router.get('/taxonomy', async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=3600')
+
+  const collection = await cachedDb.collection('assets').get()
+  const now = Date.now() / 1000
+
+  const byType = () => ({ hdris: {}, textures: {}, models: {} })
+  const categories = byType()
+  const attributes = byType()
+  const totals = { hdris: 0, textures: 0, models: 0 }
+
+  // Every bucket accumulates a downloads/day sum, turned into a mean at the end.
+  const bump = (bucket, key, dpd) => {
+    const b = (bucket[key] = bucket[key] || { count: 0, sum: 0 })
+    b.count++
+    b.sum += dpd
+    return b
+  }
+
+  for (const [type, spec] of Object.entries(attributeSchema.types)) {
+    if (!attributes[type]) continue
+    for (const [key, def] of Object.entries(spec)) {
+      attributes[type][key] = { type: def.type, enum: def.enum || null, assessed: 0, values: {} }
+    }
+  }
+
+  collection.forEach((doc) => {
+    const asset = doc.data()
+    const type = TYPE_NAMES[asset.type]
+    if (!type || asset.staging) return
+    if (asset.date_published > now) return // not published yet
+    const days = (now - asset.date_published) / 86400
+    // A brand new asset's downloads/day is dominated by its launch spike, so it would land far off
+    // the top of the chart and drag its category's mean with it.
+    if (days < 1) return
+    const dpd = (asset.download_count || 0) / days
+
+    totals[type]++
+
+    // Categories, rolled up the path. Validated against the taxonomy so a stale or hand-edited
+    // path cannot invent a chart point for a category that does not exist.
+    const path = typeof asset.category === 'string' ? asset.category : ''
+    if (path && resolveCategory(type, path) === path) {
+      const parts = path.split('/')
+      for (let i = 1; i <= parts.length; i++) {
+        const node = bump(categories[type], parts.slice(0, i).join('/'), dpd)
+        if (i === parts.length) node.direct = (node.direct || 0) + 1
+      }
+    }
+
+    // Attributes
+    const attrs = asset.attributes || {}
+    for (const [key, agg] of Object.entries(attributes[type])) {
+      const value = attrs[key]
+      if (agg.type === 'boolean') {
+        // Only ever stored when true, so absent means false - and false is a real answer here,
+        // which is the whole point of comparing the two sides.
+        bump(agg.values, value === true || value === 'true' ? 'true' : 'false', dpd)
+        agg.assessed++
+        continue
+      }
+      if (agg.type === 'string[]') {
+        const list = Array.isArray(value) ? value : value === undefined || value === null || value === '' ? [] : [value]
+        // The empty side is a value the library can filter for (?condition=none), so it gets a
+        // bucket rather than being dropped as unassessed.
+        if (!list.length) bump(agg.values, 'none', dpd)
+        else for (const v of new Set(list.map((x) => String(x)))) bump(agg.values, v, dpd)
+        agg.assessed++
+        continue
+      }
+      // enum and enum|null: absent or null means never assessed, and there is nothing to plot.
+      if (value === undefined || value === null || value === '') continue
+      bump(agg.values, String(value), dpd)
+      agg.assessed++
+    }
+  })
+
+  const finalise = (bucket) => {
+    for (const b of Object.values(bucket)) {
+      b.avg = b.sum / b.count
+      delete b.sum
+    }
+  }
+  for (const type of TYPE_NAMES) {
+    finalise(categories[type])
+    for (const agg of Object.values(attributes[type])) finalise(agg.values)
+  }
+
+  res.status(200).json({ totals, categories, attributes })
 })
 
 router.get('/cfmonth', async (req, res) => {
