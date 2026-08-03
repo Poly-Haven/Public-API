@@ -10,27 +10,13 @@ const firestore = require('../firestore')
 const cachedFirestore = require('../utils/cachedFirestore')
 const attributeSchema = require('../attributes.json')
 const { resolveCategory } = require('../utils/assetFilters')
+const softwareMatcher = require('../utils/softwareMatcher')
 
 const db = firestore()
 // For whole-collection reads of `assets`, which several routes here sweep on every request.
 const cachedDb = cachedFirestore()
 
 const TYPE_NAMES = ['hdris', 'textures', 'models']
-
-const escapeRegExp = (s) => {
-  return s.replace(/[.*+?^${}()[\]\\]/g, '\\$&')
-}
-
-const sortObject = (obj) => {
-  const sortedKeys = Object.keys(obj).sort(function (a, b) {
-    return obj[b] - obj[a]
-  })
-  let tmpObj = {}
-  for (const k of sortedKeys) {
-    tmpObj[k] = obj[k]
-  }
-  return tmpObj
-}
 
 // downloads_daily is ~2.9M documents and grows by ~2.3k/day, ~91% of it type=ASSET.
 // Left unguarded, `/stats/downloads` with no parameters scans the whole collection
@@ -446,142 +432,209 @@ router.get('/cfdaily', async (req, res) => {
   res.status(200).json(docs)
 })
 
-router.get('/software', async (req, res) => {
-  let collectionRef = db.collection('gallery')
+/**
+ * What our audience actually makes things with, from the `software` field on gallery submissions.
+ *
+ * Counted per artwork rather than per mention, so every number is a share of artworks and the chart
+ * can say "X% of people who told us their 3D app used Blender". An artwork naming Blender twice
+ * counts once; one naming Blender and Cycles counts towards both, in different categories.
+ *
+ * Shares are taken against a per-category denominator - `assessed`, the artworks that named at
+ * least one product in that category - not against all artworks. Someone who only wrote "Photoshop"
+ * has told us nothing about which 3D app they use, and including them would quietly deflate every
+ * share in the `dcc` category.
+ *
+ * The timeline is by calendar year, which is about the finest bucket ~200 artworks a year supports.
+ * Each bucket carries its own `assessed` so a thin year can be recognised as thin rather than read
+ * as a real swing.
+ *
+ * Answers the catalog does not recognise are returned in `unrecognised` rather than dropped - it is
+ * the worklist for extending the catalog, and it is the only way to notice a product becoming
+ * popular before anyone thinks to add it.
+ */
+const SOFTWARE_TTL = 30 * 60 * 1000
+let softwareCache = null
+let softwarePending = null
 
-  const collection = await collectionRef.get()
-  let softwareStrings = {}
+const computeSoftware = async () => {
+  const collection = await db.collection('gallery').get()
+
+  // Pass one: strict matching, keeping the unmatched segments for a second look.
+  const artworks = []
+  let total = 0
+  let withSoftware = 0
   collection.forEach((doc) => {
     const data = doc.data()
-    if (data.software) {
-      if (typeof data.software === 'string' || data.software instanceof String) {
-        softwareStrings[data.software] = softwareStrings[data.software] || 0
-        softwareStrings[data.software]++
-      } else {
-        for (const s of data.software) {
-          softwareStrings[s] = softwareStrings[s] || 0
-          softwareStrings[s]++
-        }
-      }
-    }
+    if (data.approval_pending) return
+    total++
+    if (!data.software || !data.software.length) return
+    withSoftware++
+    const { found, leftovers } = softwareMatcher.parse(data.software)
+    artworks.push({
+      period: data.date_added ? String(new Date(data.date_added).getUTCFullYear()) : null,
+      month: data.date_added ? new Date(data.date_added).toISOString().slice(0, 7) : null,
+      found,
+      leftovers,
+    })
   })
 
-  const knownSoftware = {
-    dcc: {
-      blender: 0,
-      maya: 0,
-      '3ds max': 0,
-      houdini: 0,
-      'cinema 4d': 0,
-      sketchup: 0,
-      'daz studio': 0,
-      vred: 0,
-      rhino: 0,
-      twinmotion: 0,
-    },
-    game_engine: {
-      unity: 0,
-      unreal: 0,
-      godot: 0,
-    },
-    render_engine: {
-      cycles: 0,
-      eevee: 0,
-      redshift: 0,
-      arnold: 0,
-      'v-ray': 0,
-      octane: 0,
-      corona: 0,
-      keyshot: 0,
-      'mental ray': 0,
-    },
-    '2d': {
-      photoshop: 0,
-      lightroom: 0,
-      illustrator: 0,
-      gimp: 0,
-      inkscape: 0,
-      'affinity designer': 0,
-      'affinity photo': 0,
-      krita: 0,
-    },
-    other: {
-      'substance painter': 0,
-      'substance designer': 0,
-      mari: 0,
-      zbrush: 0,
-      mudbox: 0,
-      nuke: 0,
-      'after effects': 0,
-      premiere: 0,
-      speedtree: 0,
-      meshroom: 0,
-      'reality capture': 0,
-    },
+  // Provisional counts, so a truncated segment can be settled by what the corpus actually favours.
+  const strictCounts = {}
+  for (const a of artworks) {
+    for (const key of a.found) strictCounts[key] = (strictCounts[key] || 0) + 1
   }
-  const aliases = {
-    '3d studio max': '3ds max',
-    '3dsmax': '3ds max',
-    '3d max': '3ds max',
-    '3dx max': '3ds max',
-    '3dmax': '3ds max',
-    '3ds': '3ds max',
-    max: '3ds max',
-    max2019: '3ds max',
-    c4d: 'cinema 4d',
-    cinema4d: 'cinema 4d',
-    vray: 'v-ray',
-    'v ray': 'v-ray',
-    'vray next': 'v-ray',
-    'vray3.4': 'v-ray',
-    affinity: 'affinity photo',
-    daz: 'daz studio',
-    daz3d: 'daz studio',
-    dazstudio: 'daz studio',
-    'daz 3d': 'daz studio',
-    'daz 3d studio': 'daz studio',
-    'daz3d studio': 'daz studio',
-    substance: 'substance painter',
-    'substance paint': 'substance painter',
-    ps: 'photoshop',
-    photosho: 'photoshop',
-  }
-  const software = {}
-  for (const [sRaw, count] of Object.entries(softwareStrings)) {
-    const separators = [',', '&', '/', '+', ';', ' and ', ' with ', ' using ', ' in ']
-    const split = sRaw.toLowerCase().split(new RegExp(escapeRegExp(separators.join('|')), 'g'))
-    for (let s of split) {
-      s = s.trim()
-      if (s === '') continue
-      software[s] = software[s] || 0
-      software[s] += count
+
+  // Pass two: fold resolved truncations in, and collect what is still unrecognised.
+  const unrecognised = {}
+  let unrecognisedMentions = 0
+  for (const a of artworks) {
+    for (const leftover of a.leftovers) {
+      const key = softwareMatcher.resolve(leftover, strictCounts)
+      if (key) {
+        a.found.add(key)
+        continue
+      }
+      unrecognised[leftover.segment] = (unrecognised[leftover.segment] || 0) + 1
+      unrecognisedMentions++
     }
   }
 
-  const noMatch = {}
-  for (let [s, count] of Object.entries(software)) {
-    let found = false
-    if (Object.keys(aliases).includes(s)) {
-      s = aliases[s]
+  const { software: defs, categories: categoryDefs } = softwareMatcher.catalog
+  const categoryOf = (key) => defs[key].category
+
+  const software = {}
+  const categories = {}
+  for (const [id, def] of Object.entries(categoryDefs)) {
+    categories[id] = { ...def, assessed: 0 }
+  }
+
+  const timeline = {}
+  const pairs = {}
+  let recognised = 0
+
+  for (const a of artworks) {
+    if (!a.found.size) continue
+    recognised++
+
+    const period = a.period
+    if (period && !timeline[period]) {
+      timeline[period] = { period, artworks: 0, categories: {} }
     }
-    for (const [category, categorySoftware] of Object.entries(knownSoftware)) {
-      for (const [software, softwareCount] of Object.entries(categorySoftware)) {
-        if (s.includes(software)) {
-          knownSoftware[category][software] += count
-          found = true
-        }
+    if (period) timeline[period].artworks++
+
+    // Which categories this one artwork spoke to, so each is counted once towards `assessed`.
+    const spoken = new Set()
+    for (const key of a.found) {
+      const category = categoryOf(key)
+      spoken.add(category)
+
+      const s = (software[key] = software[key] || {
+        label: defs[key].label,
+        category,
+        count: 0,
+        share: 0,
+        first: null,
+        last: null,
+      })
+      s.count++
+      if (a.month) {
+        if (!s.first || a.month < s.first) s.first = a.month
+        if (!s.last || a.month > s.last) s.last = a.month
+      }
+
+      if (period) {
+        const bucket = (timeline[period].categories[category] = timeline[period].categories[category] || {
+          assessed: 0,
+          counts: {},
+        })
+        bucket.counts[key] = (bucket.counts[key] || 0) + 1
       }
     }
-    if (!found) {
-      noMatch[s] = count
+
+    for (const category of spoken) {
+      categories[category].assessed++
+      if (period) timeline[period].categories[category].assessed++
+    }
+
+    // Co-occurrence, for "what is this usually paired with". Symmetric, so either side can be the
+    // one you pick in the chart.
+    const list = [...a.found]
+    for (const x of list) {
+      for (const y of list) {
+        if (x === y) continue
+        pairs[x] = pairs[x] || {}
+        pairs[x][y] = (pairs[x][y] || 0) + 1
+      }
     }
   }
 
-  for (const [category, categorySoftware] of Object.entries(knownSoftware)) {
-    knownSoftware[category] = sortObject(categorySoftware)
+  for (const s of Object.values(software)) {
+    const assessed = categories[s.category].assessed
+    s.share = assessed ? s.count / assessed : 0
   }
 
-  res.status(200).json({ knownSoftware, noMatch: sortObject(noMatch) })
+  // A single pairing is a coincidence, and keeping them all roughly triples the size of this
+  // response for rows no chart would ever draw.
+  for (const [key, partners] of Object.entries(pairs)) {
+    const kept = Object.entries(partners).filter(([, n]) => n >= 2)
+    if (!kept.length) delete pairs[key]
+    else pairs[key] = Object.fromEntries(kept.sort((a, b) => b[1] - a[1]))
+  }
+
+  const months = artworks.map((a) => a.month).filter(Boolean)
+  const thisYear = String(new Date().getUTCFullYear())
+
+  return {
+    meta: {
+      artworks: total,
+      withSoftware,
+      recognised,
+      coverage: withSoftware ? recognised / withSoftware : 0,
+      unrecognisedMentions,
+      first: months.length ? months.reduce((a, b) => (a < b ? a : b)) : null,
+      last: months.length ? months.reduce((a, b) => (a > b ? a : b)) : null,
+    },
+    categories,
+    software: Object.fromEntries(Object.entries(software).sort((a, b) => b[1].count - a[1].count)),
+    // Ascending, so the chart can plot it as given. The newest bucket is flagged rather than
+    // dropped - it is real data, it just is not a whole year yet.
+    timeline: Object.keys(timeline)
+      .sort()
+      .map((p) => ({ ...timeline[p], partial: p === thisYear })),
+    pairs,
+    // Only repeated ones: the tail is a long list of typos each seen once, and it buries the
+    // handful of genuinely missing products worth acting on.
+    unrecognised: Object.fromEntries(
+      Object.entries(unrecognised)
+        .filter(([, n]) => n >= 2)
+        .sort((a, b) => b[1] - a[1])
+    ),
+  }
+}
+
+router.get('/software', async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=3600')
+
+  if (softwareCache && Date.now() - softwareCache.time < SOFTWARE_TTL) {
+    return res.status(200).json(softwareCache.data)
+  }
+
+  // Sweeping the whole `gallery` collection is ~1.9k document reads, and the answer is identical for
+  // every caller, so concurrent misses share one computation rather than each starting their own.
+  if (!softwarePending) {
+    softwarePending = computeSoftware().finally(() => {
+      softwarePending = null
+    })
+  }
+
+  try {
+    const data = await softwarePending
+    softwareCache = { data, time: Date.now() }
+    res.status(200).json(data)
+  } catch (e) {
+    console.error(e)
+    res.status(500).send('Failed to calculate software stats')
+  }
 })
 
 router.get('/searches', async (req, res) => {

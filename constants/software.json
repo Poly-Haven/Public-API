@@ -1,0 +1,149 @@
+{
+  "_comment": "`label` names the category in a dropdown; `noun` is the same thing worded to drop into a sentence ('artworks that named a render engine'), because title-casing does not survive being lowercased mid-caption.",
+  "categories": {
+    "dcc": { "label": "3D Software", "noun": "3D app" },
+    "render": { "label": "Render Engine", "noun": "render engine" },
+    "realtime": { "label": "Realtime & Game Engines", "noun": "game engine or realtime renderer" },
+    "texturing": { "label": "Texturing & Sculpting", "noun": "texturing or sculpting tool" },
+    "gen": { "label": "Asset Creation", "noun": "asset creation tool" },
+    "2d": { "label": "Image Editing", "noun": "image editor" },
+    "comp": { "label": "Compositing & Video", "noun": "compositing or video tool" }
+  },
+  "software": {
+    "blender": { "label": "Blender", "category": "dcc", "match": ["blender"] },
+    "3ds max": {
+      "label": "3ds Max",
+      "category": "dcc",
+      "match": ["3dsmax", "3dmax", "3dstudiomax", "3ds"],
+      "token": ["max"]
+    },
+    "maya": { "label": "Maya", "category": "dcc", "match": ["maya"] },
+    "cinema 4d": { "label": "Cinema 4D", "category": "dcc", "match": ["cinema4d", "cibema4d", "c4d"] },
+    "houdini": { "label": "Houdini", "category": "dcc", "match": ["houdini"] },
+    "sketchup": { "label": "SketchUp", "category": "dcc", "match": ["sketchup"], "token": ["skp"] },
+    "daz studio": { "label": "Daz Studio", "category": "dcc", "match": ["dazstudio", "daz3d"], "token": ["daz"] },
+    "modo": { "label": "Modo", "category": "dcc", "token": ["modo"] },
+    "lightwave": { "label": "LightWave", "category": "dcc", "match": ["lightwave"] },
+    "softimage": { "label": "Softimage", "category": "dcc", "match": ["softimage"] },
+    "rhino": { "label": "Rhino", "category": "dcc", "match": ["rhino"] },
+    "revit": { "label": "Revit", "category": "dcc", "match": ["revit"] },
+    "autocad": { "label": "AutoCAD", "category": "dcc", "match": ["autocad"] },
+    "fusion 360": { "label": "Fusion 360", "category": "dcc", "match": ["fusion360"] },
+    "solidworks": { "label": "SolidWorks", "category": "dcc", "match": ["solidworks"] },
+    "sketchfab": { "label": "Sketchfab", "category": "dcc", "match": ["sketchfab"] },
+
+    "cycles": { "label": "Cycles", "category": "render", "match": ["cycles", "cycley"] },
+    "eevee": { "label": "Eevee", "category": "render", "match": ["eevee"] },
+    "v-ray": { "label": "V-Ray", "category": "render", "match": ["vray"] },
+    "corona": { "label": "Corona", "category": "render", "match": ["corona", "crona"], "token": ["coro"] },
+    "arnold": { "label": "Arnold", "category": "render", "match": ["arnold"] },
+    "redshift": { "label": "Redshift", "category": "render", "match": ["redshift"] },
+    "octane": { "label": "Octane", "category": "render", "match": ["octane"], "token": ["oc"] },
+    "keyshot": { "label": "KeyShot", "category": "render", "match": ["keyshot"] },
+    "mental ray": { "label": "Mental Ray", "category": "render", "match": ["mentalray"] },
+    "fstorm": { "label": "FStorm", "category": "render", "match": ["fstorm"] },
+    "maxwell": { "label": "Maxwell", "category": "render", "match": ["maxwell"] },
+    "iray": { "label": "Iray", "category": "render", "match": ["iray"] },
+    "prorender": { "label": "Radeon ProRender", "category": "render", "match": ["radeonpro", "prorender"] },
+    "finalrender": { "label": "finalRender", "category": "render", "match": ["finalrender"] },
+    "guerilla": { "label": "Guerilla Render", "category": "render", "match": ["guerilla", "guerrilla"] },
+    "maverick": { "label": "Maverick Render", "category": "render", "match": ["maverickrender"] },
+    "clarisse": { "label": "Clarisse", "category": "render", "match": ["clarisse"] },
+    "luxcore": { "label": "LuxCoreRender", "category": "render", "match": ["luxcore", "luxrender"] },
+
+    "unreal": { "label": "Unreal Engine", "category": "realtime", "match": ["unreal"], "token": ["ue4", "ue5"] },
+    "cryengine": { "label": "CryEngine", "category": "realtime", "match": ["cryengine"] },
+    "unity": { "label": "Unity", "category": "realtime", "match": ["unity"] },
+    "godot": { "label": "Godot", "category": "realtime", "match": ["godot"] },
+    "twinmotion": { "label": "Twinmotion", "category": "realtime", "match": ["twinmotion"] },
+    "enscape": { "label": "Enscape", "category": "realtime", "match": ["enscape"] },
+    "d5 render": { "label": "D5 Render", "category": "realtime", "match": ["d5render"], "token": ["d5"] },
+    "lumion": { "label": "Lumion", "category": "realtime", "match": ["lumion"] },
+    "marmoset": { "label": "Marmoset Toolbag", "category": "realtime", "match": ["marmoset", "toolbag"] },
+    "vred": { "label": "VRED", "category": "realtime", "match": ["vred"] },
+    "source 2": { "label": "Source 2", "category": "realtime", "match": ["source2", "hammer"] },
+
+    "substance painter": {
+      "label": "Substance Painter",
+      "category": "texturing",
+      "match": ["substancepainter", "substance3dpainter", "substancepaint", "subtance"],
+      "token": ["substance"]
+    },
+    "substance designer": {
+      "label": "Substance Designer",
+      "category": "texturing",
+      "match": ["substancedesigner", "substance3ddesigner"]
+    },
+    "substance sampler": {
+      "label": "Substance Sampler",
+      "category": "texturing",
+      "match": ["substancesampler", "substancealchemist"]
+    },
+    "mari": { "label": "Mari", "category": "texturing", "token": ["mari"] },
+    "quixel mixer": { "label": "Quixel Mixer", "category": "texturing", "match": ["quixelmixer", "mixer"] },
+    "3d-coat": { "label": "3D-Coat", "category": "texturing", "match": ["3dcoat"] },
+    "zbrush": { "label": "ZBrush", "category": "texturing", "match": ["zbrush"] },
+    "mudbox": { "label": "Mudbox", "category": "texturing", "match": ["mudbox"] },
+    "materialize": { "label": "Materialize", "category": "texturing", "match": ["materialize"] },
+    "xnormal": { "label": "xNormal", "category": "texturing", "match": ["xnormal"] },
+    "armorpaint": { "label": "ArmorPaint", "category": "texturing", "match": ["armorpaint"] },
+    "nomad sculpt": { "label": "Nomad Sculpt", "category": "texturing", "match": ["nomadsculpt"] },
+
+    "marvelous designer": {
+      "label": "Marvelous Designer",
+      "category": "gen",
+      "match": ["marvelousdesigner", "marvelousdesign", "marvelous"]
+    },
+    "clo3d": { "label": "CLO3D", "category": "gen", "match": ["clo3d"] },
+    "speedtree": { "label": "SpeedTree", "category": "gen", "match": ["speedtree"] },
+    "plantfactory": { "label": "PlantFactory", "category": "gen", "match": ["plantfactory", "plantcatalog"] },
+    "gaea": { "label": "Gaea", "category": "gen", "match": ["gaea"] },
+    "world creator": { "label": "World Creator", "category": "gen", "match": ["worldcreator"] },
+    "world machine": { "label": "World Machine", "category": "gen", "match": ["worldmachine"] },
+    "forest pack": { "label": "Forest Pack", "category": "gen", "match": ["forestpack", "railclone"] },
+    "embergen": { "label": "EmberGen", "category": "gen", "match": ["embergen"] },
+    "makehuman": { "label": "MakeHuman", "category": "gen", "match": ["makehuman"] },
+    "megascans": {
+      "label": "Quixel Megascans",
+      "category": "gen",
+      "match": ["megascans", "quixelbridge", "quixel", "quixle"]
+    },
+    "poliigon": { "label": "Poliigon", "category": "gen", "match": ["poliigon", "poligon"] },
+    "hdr light studio": { "label": "HDR Light Studio", "category": "gen", "match": ["hdrlightstudio"] },
+    "realitycapture": { "label": "RealityCapture", "category": "gen", "match": ["realitycapture"] },
+    "metashape": { "label": "Metashape", "category": "gen", "match": ["metashape", "photoscan"] },
+    "meshroom": { "label": "Meshroom", "category": "gen", "match": ["meshroom"] },
+    "polycam": { "label": "Polycam", "category": "gen", "match": ["polycam"] },
+    "mecabricks": { "label": "Mecabricks", "category": "gen", "match": ["mecabricks"] },
+
+    "photoshop": {
+      "label": "Photoshop",
+      "category": "2d",
+      "match": ["photoshop", "adobephotoshop"],
+      "token": ["ps", "psd", "pscs"]
+    },
+    "lightroom": { "label": "Lightroom", "category": "2d", "match": ["lightroom"] },
+    "illustrator": { "label": "Illustrator", "category": "2d", "match": ["illustrator"] },
+    "gimp": { "label": "GIMP", "category": "2d", "token": ["gimp"] },
+    "inkscape": { "label": "Inkscape", "category": "2d", "match": ["inkscape"] },
+    "affinity photo": { "label": "Affinity Photo", "category": "2d", "match": ["affinityphoto"], "token": ["affinity"] },
+    "affinity designer": { "label": "Affinity Designer", "category": "2d", "match": ["affinitydesigner"] },
+    "krita": { "label": "Krita", "category": "2d", "match": ["krita"] },
+    "photopea": { "label": "Photopea", "category": "2d", "match": ["photopea"] },
+    "darktable": { "label": "Darktable", "category": "2d", "match": ["darktable"] },
+    "picasa": { "label": "Picasa", "category": "2d", "match": ["picasa"] },
+
+    "nuke": { "label": "Nuke", "category": "comp", "token": ["nuke"] },
+    "after effects": {
+      "label": "After Effects",
+      "category": "comp",
+      "match": ["aftereffects"],
+      "token": ["ae"]
+    },
+    "premiere": { "label": "Premiere", "category": "comp", "match": ["premiere"] },
+    "davinci resolve": { "label": "DaVinci Resolve", "category": "comp", "match": ["davinci"], "token": ["resolve"] },
+    "fusion": { "label": "Fusion", "category": "comp", "token": ["fusion"] },
+    "hitfilm": { "label": "HitFilm", "category": "comp", "match": ["hitfilm"] },
+    "natron": { "label": "Natron", "category": "comp", "match": ["natron"] }
+  }
+}
