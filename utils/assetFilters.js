@@ -65,9 +65,8 @@ const asBool = (v) => v === true || v === 'true' || v === '1' || v === 1
 /** Attribute keys this rework renamed away, with what replaced them. */
 const RETIRED_KEYS = { indoor: 'environment', open_sky: 'sky_view', man_made: 'origin', outdoor: 'setting' }
 
-/** The reserved query value that selects the empty side of an array attribute (e.g. pristine). */
-const EMPTY_VALUE = 'none'
-const EMPTY_ALIASES = ['none', 'pristine']
+// There is no reserved value for "empty" any more. An absent multi-value attribute means the asset
+// was never assessed for it, exactly like an absent enum - "no wear or dirt" is the `clean` tag.
 
 /**
  * Every spec declared for a key. One key can be declared by more than one type, so when the request
@@ -103,7 +102,6 @@ const allowedValues = (assetType, key) => {
     }
     if (!Array.isArray(spec.enum) || !spec.enum.length) return null // free-form, nothing to check
     for (const v of spec.enum) out.add(String(v).toLowerCase())
-    if (spec.type === 'string[]') for (const v of EMPTY_ALIASES) out.add(v)
   }
   return out.size ? [...out] : null
 }
@@ -162,11 +160,9 @@ const matchesAttributes = (asset, filters, assetType) => {
       // attribute rework, so this keeps working whichever order the deploy and the data migration
       // happen in. Costs nothing once every document has been migrated.
       const list = Array.isArray(actual) ? actual : actual === undefined || actual === null || actual === '' ? [] : [actual]
-      // The empty side is otherwise unaskable, which left the 35 pristine models unreachable.
-      if (!list.length) {
-        if (!wanted.some((w) => EMPTY_ALIASES.includes(w))) return false
-        continue
-      }
+      // Absent means never assessed, so it matches nothing - the same rule the enum branch uses.
+      // "No wear or dirt" is not absence, it is the `clean` tag.
+      if (!list.length) return false
       if (!list.some((a) => wanted.includes(String(a).toLowerCase()))) return false
       continue
     }

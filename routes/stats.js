@@ -320,10 +320,10 @@ router.get('/taxonomy', async (req, res) => {
       }
       if (agg.type === 'string[]') {
         const list = Array.isArray(value) ? value : value === undefined || value === null || value === '' ? [] : [value]
-        // The empty side is a value the library can filter for (?condition=none), so it gets a
-        // bucket rather than being dropped as unassessed.
-        if (!list.length) bump(agg.values, 'none', dpd)
-        else for (const v of new Set(list.map((x) => String(x)))) bump(agg.values, v, dpd)
+        // Empty is not a value - it means the asset was never assessed for this attribute, the same
+        // as an absent enum. "No wear or dirt" is the `clean` tag, so it arrives as a real value.
+        if (!list.length) continue
+        for (const v of new Set(list.map((x) => String(x)))) bump(agg.values, v, dpd)
         agg.assessed++
         continue
       }
