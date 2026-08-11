@@ -4,7 +4,8 @@ const asset_types = require('../../asset_types.json')
 
 const cachedFirestore = require('../../utils/cachedFirestore')
 const validateKey = require('../../utils/validateKey')
-const { applyFilters } = require('../../utils/assetFilters')
+const { applyFilters, vaultIdOf } = require('../../utils/assetFilters')
+const { upcomingVaultIds } = require('../../utils/vaultStatus')
 const db = cachedFirestore()
 
 router.get('/', async (req, res) => {
@@ -55,10 +56,14 @@ router.get('/', async (req, res) => {
   // strip old_id, reviewers and scale out of the shared cache for every other route.
   const collection = await collectionRef.get()
   const now = Math.floor(Date.now() / 1000)
+  // Assets in a vault that hasn't been announced stay out of every listing. Unlike the date check
+  // this is not an early-access gate - no key opts in, because nobody is meant to see these yet.
+  const hiddenVaults = await upcomingVaultIds()
   let docs = {}
   collection.forEach((doc) => {
     const { old_id, reviewers, scale, staging, ...asset } = doc.data()
     if (staging) return
+    if (hiddenVaults.size && hiddenVaults.has(vaultIdOf(asset))) return
     if (!includeUpcoming && asset.date_published > now) return
     asset.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${doc.id}.png?width=256&height=256`
     docs[doc.id] = asset

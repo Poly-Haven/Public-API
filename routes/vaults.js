@@ -6,6 +6,7 @@ const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 const firestore = require('../firestore')
 const cachedFirestore = require('../utils/cachedFirestore')
 const { matchesVault } = require('../utils/assetFilters')
+const { vaultStatus } = require('../utils/vaultStatus')
 
 const db = firestore()
 const cachedDb = cachedFirestore()
@@ -14,6 +15,10 @@ router.get('/', async (req, res) => {
   const colVaults = await db.collection('vaults').get()
   let vaults = {}
   colVaults.forEach((doc) => {
+    // Upcoming vaults exist so their assets can be uploaded before the vault is announced. They
+    // have no public existence yet, so they never reach this response - and because /vaults is
+    // what the website 404s unknown vault pages against, that also keeps /vaults/<id> hidden.
+    if (vaultStatus(doc.data()) === 'upcoming') return
     vaults[doc.id] = doc.data()
     vaults[doc.id].id = doc.id
   })
@@ -33,6 +38,9 @@ router.get('/', async (req, res) => {
       vault.target = milestones[vault.milestone_id].target || 0
       delete vault.milestone.target
     }
+    // A vault whose milestone_id is missing or dangling would otherwise have no target at all,
+    // which sorts as NaN below and renders as "NaN patrons to go" on the website.
+    if (typeof vault.target !== 'number') vault.target = 0
   })
 
   // Membership comes from the first-class `vault` field (falling back to the legacy "vault: <id>"

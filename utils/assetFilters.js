@@ -186,6 +186,18 @@ const matchesVault = (asset, id) =>
   asset.vault === id || (Array.isArray(asset.categories) && asset.categories.includes(`vault: ${id}`))
 
 /**
+ * Which vault an asset belongs to, or null. An asset released when its vault was unlocked keeps
+ * the id, so this answers "which vault produced this", not "is this locked".
+ */
+const vaultIdOf = (asset) => {
+  if (asset && asset.vault) return asset.vault
+  for (const cat of (asset && asset.categories) || []) {
+    if (typeof cat === 'string' && cat.startsWith('vault: ')) return cat.split(': ')[1]
+  }
+  return null
+}
+
+/**
  * Apply every new-system filter to a { id: asset } map, deleting non-matches in place.
  * Returns { category } - the resolved canonical path, or null - plus `unresolved` for an unknown
  * category and `invalidAttribute` for an unknown attribute value, so callers can 400 on either.
@@ -231,6 +243,7 @@ module.exports = {
   matchesCategory,
   matchesCollection,
   matchesVault,
+  vaultIdOf,
   parseAttributeFilters,
   matchesAttributes,
   attributeKeys,
