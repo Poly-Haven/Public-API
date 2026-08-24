@@ -546,7 +546,7 @@ components:
             - natural light
         category:
           type: string
-          description: This asset's location in Poly Haven's single-path category taxonomy. HDRIs are organized by environment. This is the actively-maintained replacement for the deprecated `categories` array.
+          description: This asset's location in Poly Haven's single-path category taxonomy. HDRIs are organized by environment, except edited pure-sky variants (ground removed), which have no location and are grouped under the top-level `Pure Skies` category instead. This is the actively-maintained replacement for the deprecated `categories` array.
           example: Streets & Town/Rooftops & Balconies/City Rooftops
         category_id:
           type: string
@@ -595,9 +595,6 @@ components:
               enum: [open, obstructed]
               description: How much open sky is visible. Omitted entirely for indoor captures, where it does not apply. Replaces the former boolean `open_sky`.
               example: open
-            pure_sky:
-              type: boolean
-              description: Whether this is a clean sky-only HDRI, with no ground/horizon elements.
             backplates:
               type: boolean
               description: Whether backplates are available for this HDRI. Always written together with the top-level `backplates` field below, so the two cannot disagree.
