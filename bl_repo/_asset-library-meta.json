@@ -2,7 +2,7 @@
   "api_versions": {
     "v1": {
       "url": "_v1/asset-index.json",
-      "hash": "SHA256:9027b97cf7e4f6e71fd568b438115f03f781a8b78ad726b45ac86a7ac16f6273"
+      "hash": "SHA256:d9caa27071c4bf2d3d4ff4567b54852d7d70237c76c9f722c0df78e87a65236e"
     }
   },
   "name": "Poly Haven Online",
