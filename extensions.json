@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "blocklist": [],
+  "assetlib_auth_method": "PER_LIBRARY",
+  "data": [
+    {
+      "schema_version": "1.0.0",
+      "id": "poly_haven",
+      "version": "1.0.0",
+      "name": "Poly Haven Online",
+      "tagline": "Free CC0 HDRIs, textures and models",
+      "maintainer": "Poly Haven <support@polyhaven.com>",
+      "website": "https://polyhaven.com",
+      "tags": [
+        "Material",
+        "Model",
+        "World"
+      ],
+      "blender_version_min": "5.3.0",
+      "license": [
+        "SPDX:CC0-1.0"
+      ],
+      "type": "asset-library",
+      "archive_hash": "sha256:3a4bf794b18830def935cf6d5a04fe904d958ad7c28212256c09b91a8f4ee43f",
+      "archive_size": 394,
+      "archive_url": "https://dl.polyhaven.org/file/bl-repo/ext/1.0.0/3a4bf794/poly_haven-1.0.0.zip"
+    }
+  ]
+}

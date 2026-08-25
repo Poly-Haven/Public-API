@@ -1,0 +1,14 @@
+{
+  "api_versions": {
+    "v1": {
+      "url": "_v1/asset-index.json",
+      "hash": "SHA256:9027b97cf7e4f6e71fd568b438115f03f781a8b78ad726b45ac86a7ac16f6273"
+    }
+  },
+  "name": "Poly Haven Online",
+  "contact": {
+    "name": "Poly Haven",
+    "url": "https://polyhaven.com",
+    "email": "support@polyhaven.com"
+  }
+}

@@ -1,0 +1,4084 @@
+{
+  "asset_count": 88,
+  "file_count": 88,
+  "assets": [
+    {
+      "name": "Alps Field",
+      "id_type": "WORLD",
+      "files": [
+        "alps_field.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/alps_field.webp",
+        "hash": "SHA256:5805b1ae5a17a1ddd0b15141145e7d843a9cdd83f52e89e9b55f6e985c30f620"
+      },
+      "meta": {
+        "catalog_id": "e2be213c-5874-5d77-bd68-611f48865362",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "grass",
+          "field",
+          "mountain",
+          "forest",
+          "alps",
+          "valley",
+          "mountains & hills",
+          "mountains & alpine",
+          "alpine valleys"
+        ],
+        "author": "Andreas Mischok",
+        "description": "Unclipped free 20K HDRI of an Alps field: sunny, partly-cloudy morning/afternoon with high-contrast natural light, crisp alpine valley atmosphere, strong sun.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/alps_field",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Antique Katana 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "antique_katana_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/antique_katana_01.webp",
+        "hash": "SHA256:dc53852ec3db335774d92fc216f3e5b66057369ac8a67f48f0b23fd57ea436a5"
+      },
+      "meta": {
+        "catalog_id": "ac5957b6-3b31-5398-bfc4-3caa2c139661",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "antique",
+          "ninja",
+          "katana",
+          "sword",
+          "sharp",
+          "blade",
+          "japanese",
+          "weapon",
+          "weapons",
+          "bladed",
+          "swords & sabres"
+        ],
+        "author": "Tal Swicegood",
+        "description": "Free 8K model of an antique Japanese katana with a dark, worn blade, ornate tsuba, brown tsuka wrap and aged brass fittings.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/antique_katana_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Asphalt 02",
+      "id_type": "MATERIAL",
+      "files": [
+        "asphalt_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/asphalt_02.webp",
+        "hash": "SHA256:80c46dd7d03925b7f3cf29d2ee5a506df1d74f558821d009898a431f69841a94"
+      },
+      "meta": {
+        "catalog_id": "14b1fa58-0a32-5a44-9fcc-4e3a70655c2b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "asphalt",
+          "cracked",
+          "flat",
+          "road",
+          "asphalt road",
+          "tarmac road",
+          "gritty",
+          "weathered",
+          "grey",
+          "cracking",
+          "tar",
+          "cracks",
+          "asphalt & bitumen",
+          "cracked asphalt"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(3m wide) Free 8K texture of weathered grey asphalt: gritty coarse aggregate, subtle tar cracks, rough matte surface with uneven wear.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/asphalt_02",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              3000.000238418579,
+              3000.0
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Asphalt Pit Lane",
+      "id_type": "MATERIAL",
+      "files": [
+        "asphalt_pit_lane.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/asphalt_pit_lane.webp",
+        "hash": "SHA256:e74cdc1f3c49c047e93c0273b7b10635cdea0635609b7f1ea26634700e9114de"
+      },
+      "meta": {
+        "catalog_id": "14b1fa58-0a32-5a44-9fcc-4e3a70655c2b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "asphalt",
+          "asphalt road",
+          "road",
+          "roadway",
+          "tarmac road",
+          "race track",
+          "pit lane",
+          "asphalt & bitumen",
+          "tracks",
+          "race tracks"
+        ],
+        "author": "Dimitrios Savva",
+        "description": "(2m wide) Free 8K asphalt texture: dark pit-lane tarmac with fine gravel aggregate, gritty roughness, subtle tire wear and a low-reflective matte surface.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/asphalt_pit_lane",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2000.0,
+              2000.0
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Autumn Field (Pure Sky)",
+      "id_type": "WORLD",
+      "files": [
+        "autumn_field_puresky.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/autumn_field_puresky.webp",
+        "hash": "SHA256:bca2d4df30aa3fb2ada37295a6c6764a144cd914db69433eb9a181c07971db6d"
+      },
+      "meta": {
+        "catalog_id": "61ac0f4c-0977-548f-b345-f34c2d9eff35",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "pure skies"
+        ],
+        "author": "Jarod Guest, Sergej Majboroda",
+        "description": "Free 16K HDRI, unclipped: clear pure-blue sky with strong morning sun, high-contrast cool tones, crisp shadows and soft reflections over a calm horizon.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/autumn_field_puresky",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Autumn Forest 04",
+      "id_type": "WORLD",
+      "files": [
+        "autumn_forest_04.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/autumn_forest_04.webp",
+        "hash": "SHA256:2a0673e46913ee0ca0aab41c81ce25d3ad3b222163e0b6ec011a75b9125e3709"
+      },
+      "meta": {
+        "catalog_id": "0adcf5c3-a3af-5e36-a317-c5450a6c6b69",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "tree",
+          "sun",
+          "autumn",
+          "forest",
+          "forest & woodland",
+          "deciduous forest"
+        ],
+        "author": "Alexander Scholten",
+        "description": "Free 21K unclipped HDRI of an autumn forest at low sun - warm golden light, long shadows.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/autumn_forest_04",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Bambanani Sunset",
+      "id_type": "WORLD",
+      "files": [
+        "bambanani_sunset.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/bambanani_sunset.webp",
+        "hash": "SHA256:f882edf8fa8f1b6857371f705cbbcd10add3dded90e51bbe780872ac4cd71d0d"
+      },
+      "meta": {
+        "catalog_id": "e24087fb-50f3-5cb6-b6b3-6940983cc440",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "field",
+          "power line",
+          "grass",
+          "tower",
+          "fields & countryside",
+          "grassland & meadows",
+          "open fields & meadows"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20K, unclipped HDRI. Warm, low sunset light over a dry grassy field with partly cloudy sky, medium contrast, sun near horizon and silhouetted power towers.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/bambanani_sunset",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Bolt Action Rifle 7.62",
+      "id_type": "COLLECTION",
+      "files": [
+        "bolt_action_rifle_7_62.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/bolt_action_rifle_7_62.webp",
+        "hash": "SHA256:db40bd13990878eadb3ea25482c10a34b0797065a30fcbf5c02f5b04b751afff"
+      },
+      "meta": {
+        "catalog_id": "ac5957b6-3b31-5398-bfc4-3caa2c139661",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "vintage",
+          "worn",
+          "old",
+          "weathered",
+          "aged",
+          "gun",
+          "scope",
+          "bullet",
+          "weapons",
+          "firearms",
+          "rifles"
+        ],
+        "author": "Mateusz Sadek",
+        "description": "Free 8K model of a classic bolt-action 7.62 rifle with long barrel, worn wood stock, cloth-wrapped butt, detachable magazine, small scope, and weathered metal.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/bolt_action_rifle_7_62",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Brick Floor 04",
+      "id_type": "MATERIAL",
+      "files": [
+        "brick_floor_04.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/brick_floor_04.webp",
+        "hash": "SHA256:f2b570ab99f09556eba3058be923bd7c8aaea4d7012a290bc9205fe0d47e986a"
+      },
+      "meta": {
+        "catalog_id": "d58e299e-3614-59cb-aa58-d51081ce27ad",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "dark",
+          "weathered",
+          "scratched",
+          "dirty",
+          "smooth",
+          "rough",
+          "grout",
+          "staggered",
+          "rectangular",
+          "brick & block",
+          "clay brick",
+          "running-bond"
+        ],
+        "author": "Dimitrios Savva",
+        "description": "(1.91m wide) Free 8K brick floor texture with dark brown pavers, tight mortar lines, subtle wear and chips, scattered stains and scratches, and a slightly rough, low-sheen surface.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/brick_floor_04",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1909.999966621399,
+              1909.999966621399
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Brown Mud Leaves 01",
+      "id_type": "MATERIAL",
+      "files": [
+        "brown_mud_leaves_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/brown_mud_leaves_01.webp",
+        "hash": "SHA256:9a9926d83cff2dc6738eb4c34bf45e26f65e8685d3f0254eecbc6f5c293d6929"
+      },
+      "meta": {
+        "catalog_id": "093b53b6-72b6-5509-b70d-ff771361ce42",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "grass",
+          "mud",
+          "moss",
+          "stones",
+          "orange",
+          "forest",
+          "ground & terrain",
+          "forest floor",
+          "leaf litter"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(1.3m wide) Free 8K texture of brown muddy ground with scattered leaves, moss patches, small pebbles and a damp, rough surface with fine organic detail.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/brown_mud_leaves_01",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1299.9998331069946,
+              1299.9998331069946
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Brown Photostudio 02",
+      "id_type": "WORLD",
+      "files": [
+        "brown_photostudio_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/brown_photostudio_02.webp",
+        "hash": "SHA256:2f6adff1ec882df6b523bf4d75f10d466aa5090e72c49cab9c3d0aa460f8f2f3"
+      },
+      "meta": {
+        "catalog_id": "852d9f97-4dcb-5415-8b67-70ee62ebcd6b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "bed",
+          "studio",
+          "fluorescent",
+          "window",
+          "couch",
+          "chair",
+          "photo",
+          "table",
+          "kitchen",
+          "fridge",
+          "backplates",
+          "photo studios",
+          "natural-light studios"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free unclipped 16K HDRI - warm brown indoor studio lit by large window daylight and cool fluorescent fixtures; medium contrast, soft shadows.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/brown_photostudio_02",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Camera 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "Camera_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/Camera_01.webp",
+        "hash": "SHA256:045a83dca71e5066b0f097dc053702cfca48b7c31ccecca1bb3edabe84621864"
+      },
+      "meta": {
+        "catalog_id": "e5497ed4-42cd-5f99-a2ff-4d22456f0146",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "vintage",
+          "camera",
+          "antique",
+          "ornate",
+          "photography",
+          "retro",
+          "lens",
+          "classic",
+          "analog",
+          "electronics & appliances",
+          "audio & video",
+          "cameras"
+        ],
+        "author": "Rajil Jose Macatangay",
+        "description": "Free vintage rangefinder camera model with ornate wear, leather strap and detailed lens - high-res prop for retro scenes, stills, animations, and product shots.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/Camera_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Canary Wharf",
+      "id_type": "WORLD",
+      "files": [
+        "canary_wharf.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/canary_wharf.webp",
+        "hash": "SHA256:69b09c48d48e391f38ee35e46493422b56ae2785ae98d3c31b0619adc57e234a"
+      },
+      "meta": {
+        "catalog_id": "d1253b6c-5097-59b0-9d1e-f60fe3921d43",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "europe",
+          "london",
+          "architecture",
+          "city",
+          "building",
+          "railing",
+          "concrete",
+          "street",
+          "streets & town",
+          "rooftops & balconies",
+          "balconies & terraces"
+        ],
+        "author": "Andreas Mischok",
+        "description": "Unclipped, free 16K HDRI of Canary Wharf - overcast morning, soft natural light, low-contrast partly cloudy sky, cool urban reflections and gentle shadows.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/canary_wharf",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Cardboard Box 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "cardboard_box_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/cardboard_box_01.webp",
+        "hash": "SHA256:ca6ec9ea434c8820ea41c37413414d5daf596062ccc34cb8ac20fcf36d636b34"
+      },
+      "meta": {
+        "catalog_id": "5cd27f07-a7a1-563f-a639-3cf446d62b98",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "warehouse",
+          "shed",
+          "storage",
+          "box",
+          "paper",
+          "worn",
+          "old",
+          "broken",
+          "damaged",
+          "garage",
+          "containers & storage",
+          "boxes & crates",
+          "cardboard boxes"
+        ],
+        "author": "Rahul Chaudhary",
+        "description": "Free 4K model of a worn, creased cardboard box with torn flaps, taped seams and a weathered strap - aged, dented paper texture and realistic damage.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/cardboard_box_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Chess Set",
+      "id_type": "COLLECTION",
+      "files": [
+        "chess_set.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/chess_set.webp",
+        "hash": "SHA256:dd5846a18825872dee7d8723a2d30bff2ab5f6d2c53184a10be271012a3ba98a"
+      },
+      "meta": {
+        "catalog_id": "06d3dbc4-9f98-571a-8361-fc2239dcdebf",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "boardgame",
+          "game",
+          "old",
+          "decor",
+          "home",
+          "vintage",
+          "antique",
+          "tabletop",
+          "display piece",
+          "ornamental",
+          "elegant",
+          "leisure",
+          "games & toys",
+          "board games"
+        ],
+        "author": "Riley Queen",
+        "description": "Free 8K model: elegant vintage marble chess set with polished black and white pieces on a beveled, high-gloss checkered board.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/chess_set",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Citrus Orchard Road (Pure Sky)",
+      "id_type": "WORLD",
+      "files": [
+        "citrus_orchard_road_puresky.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/citrus_orchard_road_puresky.webp",
+        "hash": "SHA256:fe4bf4904d9ef3794f892e14d49ab613d453ff284244d9d6ff9e48ba94056f13"
+      },
+      "meta": {
+        "catalog_id": "61ac0f4c-0977-548f-b345-f34c2d9eff35",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "pure skies"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Unclipped, free 20K HDRI: low-contrast sunrise with partly cloudy sky, gentle warm light and soft ambient reflections for outdoor, natural lighting.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/citrus_orchard_road_puresky",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Classic Laptop",
+      "id_type": "COLLECTION",
+      "files": [
+        "classic_laptop.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/classic_laptop.webp",
+        "hash": "SHA256:33f5a4c262cb1b671c226f931db70c2d0ad330d832a18c9eaf5d9b4ca747fb94"
+      },
+      "meta": {
+        "catalog_id": "e5497ed4-42cd-5f99-a2ff-4d22456f0146",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "old",
+          "vintage",
+          "beige",
+          "notebook",
+          "lcd",
+          "trackball",
+          "electronics & appliances",
+          "computing",
+          "computers"
+        ],
+        "author": "Arrangemonk",
+        "description": "Free 4K model of a retro beige laptop with DOS screen, chunky keycaps, built-in trackball, floppy slot, thick hinges, and period-correct details.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/classic_laptop",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Coast Sand Rocks 02",
+      "id_type": "MATERIAL",
+      "files": [
+        "coast_sand_rocks_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/coast_sand_rocks_02.webp",
+        "hash": "SHA256:b742564b82a410d92c68fbe602665457fec8fc04b22dc8c410b4b4b749629f49"
+      },
+      "meta": {
+        "catalog_id": "43443496-f24e-5150-8a25-f5cd3c9455e2",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "grass",
+          "rock face",
+          "rock",
+          "moss",
+          "rough",
+          "uneven",
+          "weathered",
+          "stones",
+          "cliff",
+          "ground",
+          "seaside",
+          "coastal",
+          "stone",
+          "rock & cliffs",
+          "coastal rock"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(15m wide) Free 8K texture of weathered coastal sand-rock: rough, uneven rock faces with scattered stones, brown sandy soil and patchy green moss coverage.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/coast_sand_rocks_02",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              15000.0,
+              15000.0
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Cobblestone Street Night",
+      "id_type": "WORLD",
+      "files": [
+        "cobblestone_street_night.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/cobblestone_street_night.webp",
+        "hash": "SHA256:8eb7c388f39d56a8254761a45cd8209308ea26c71a48baf649556ed28dc2a4bd"
+      },
+      "meta": {
+        "catalog_id": "d1253b6c-5097-59b0-9d1e-f60fe3921d43",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "city",
+          "street",
+          "cobblestone",
+          "dark",
+          "lamp",
+          "germany",
+          "europe",
+          "alley",
+          "narrow",
+          "road",
+          "car",
+          "pavement",
+          "streets & town",
+          "streets & alleys",
+          "historic & old-town streets"
+        ],
+        "author": "Greg Zaal, Jenelle van Heerden",
+        "description": "Free 24K unclipped HDRI of a narrow German cobblestone street at night - warm lamp-lit, high-contrast pools of light, deep shadows, clear sky and car reflections.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/cobblestone_street_night",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Concrete Cat Statue",
+      "id_type": "COLLECTION",
+      "files": [
+        "concrete_cat_statue.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/concrete_cat_statue.webp",
+        "hash": "SHA256:ace4e8f07da46e460a84ef4a58e7437b2087aa4602274981e844b660eff8dfda"
+      },
+      "meta": {
+        "catalog_id": "4871560c-6388-5632-9674-cc074543fc11",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "garden",
+          "outdoor",
+          "landscaping",
+          "gardening",
+          "statue",
+          "concrete",
+          "sculpture",
+          "cat",
+          "lawn decoration",
+          "decor & art",
+          "sculptures & figurines",
+          "animal figures"
+        ],
+        "author": "Rico Cilliers, Riley Queen",
+        "description": "Free 8K concrete cat statue with a weathered, moss-speckled surface, serene expression and soft, rounded forms in a classic seated sculptural pose.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/concrete_cat_statue",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Concrete Floor Worn 001",
+      "id_type": "MATERIAL",
+      "files": [
+        "concrete_floor_worn_001.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/concrete_floor_worn_001.webp",
+        "hash": "SHA256:e0ad87cfec1356945892383e54842a9e8df08cd3d5c8ec6e4d18313b08b769f6"
+      },
+      "meta": {
+        "catalog_id": "bf0ac183-1cb8-51c5-a1ae-27b623a3dc04",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "worn",
+          "old",
+          "plain",
+          "grey",
+          "weathered",
+          "bare",
+          "discolored",
+          "concrete",
+          "cast walls & floors",
+          "bare cast"
+        ],
+        "author": "Dimitrios Savva, Rico Cilliers",
+        "description": "(3m wide) Free 16K concrete floor texture, worn grey slab with fine scratches, chips, stains and subtle roughness and discoloration.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/concrete_floor_worn_001",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              3000.0,
+              3000.000238418579
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Construction Yard",
+      "id_type": "WORLD",
+      "files": [
+        "construction_yard.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/construction_yard.webp",
+        "hash": "SHA256:d83cfe3d20ef398af6d349e4797117ee80ee74f6dda6775d8fa16f32491a5c24"
+      },
+      "meta": {
+        "catalog_id": "05e07e9e-b36a-5cf5-b5e8-f41d49f63d1a",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "concrete",
+          "building",
+          "city",
+          "apartments",
+          "foundation",
+          "construction",
+          "development",
+          "backplates",
+          "industrial",
+          "construction sites"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free 16K HDRI, unclipped. Bright morning sun with partly cloudy sky, high-contrast natural light casting crisp shadows over a concrete urban construction yard and apartment blocks.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/construction_yard",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Damaged Plaster",
+      "id_type": "MATERIAL",
+      "files": [
+        "damaged_plaster.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/damaged_plaster.webp",
+        "hash": "SHA256:dc9c6847afac196e50380d8e167b90a8e69c7ea3cbd32e7fd5fcc9b2cd481933"
+      },
+      "meta": {
+        "catalog_id": "bf0ac183-1cb8-51c5-a1ae-27b623a3dc04",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "brick",
+          "bricks",
+          "plaster",
+          "plasterconcrete",
+          "chipped",
+          "deteriorating",
+          "weathered",
+          "cracked",
+          "crumbling",
+          "plastering",
+          "cracking",
+          "exposed brick",
+          "damaged",
+          "old brick",
+          "worn down",
+          "concrete",
+          "plaster & stucco",
+          "plaster over brick & stone"
+        ],
+        "author": "Amal Kumar",
+        "description": "(1.85m wide) Free 16K texture of damaged plaster with exposed brick - weathered, cracked, chipped and crumbling surface for aged wall and masonry materials.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/damaged_plaster",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1850.0001430511475,
+              1850.0001430511475
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Dark Rock",
+      "id_type": "MATERIAL",
+      "files": [
+        "dark_rock.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/dark_rock.webp",
+        "hash": "SHA256:b88bf34d1bbb332df0807d5b80a39cadf1b486638303630b9c2171eb6a444342"
+      },
+      "meta": {
+        "catalog_id": "43443496-f24e-5150-8a25-f5cd3c9455e2",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "uneven",
+          "rough",
+          "weathered",
+          "rock",
+          "fissured",
+          "cracked",
+          "craggy",
+          "striated",
+          "geological",
+          "rock formation",
+          "veined",
+          "stone",
+          "fractured",
+          "metamorphic",
+          "striations",
+          "exposed rock",
+          "rock & cliffs",
+          "stratified & layered rock"
+        ],
+        "author": "Amal Kumar",
+        "description": "(2.42m wide) Free 8K dark rock texture with layered fractures, deep crevices and chipped edges, charcoal tone and rough, slightly matte surface with subtle highlights.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/dark_rock",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2421.1976528167725,
+              2421.199083328247
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Derelict Airfield 02",
+      "id_type": "WORLD",
+      "files": [
+        "derelict_airfield_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/derelict_airfield_02.webp",
+        "hash": "SHA256:0652610895838f85420529eaf410dcfa8b622876a08bf4758c5ece83d2d4f2ab"
+      },
+      "meta": {
+        "catalog_id": "9dca8445-763d-5a08-8e51-3e9d534f6c53",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "tree",
+          "warehouse",
+          "abandoned",
+          "hangar",
+          "concrete",
+          "overgrown",
+          "abandoned & ruins",
+          "industrial",
+          "abandoned airfields"
+        ],
+        "author": "Alexander Scholten",
+        "description": "Free 24K unclipped HDRI of a derelict airfield: high-contrast morning sun, partly cloudy, crisp shadows on hangars and overgrowth. Ideal for abandoned scenes.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/derelict_airfield_02",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Empty Warehouse 01",
+      "id_type": "WORLD",
+      "files": [
+        "empty_warehouse_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/empty_warehouse_01.webp",
+        "hash": "SHA256:4c715b98e6e806064e03c9880ea72e6f2300ce4b70136d7480545a07233c4377"
+      },
+      "meta": {
+        "catalog_id": "9dca8445-763d-5a08-8e51-3e9d534f6c53",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "warehouse",
+          "derelict",
+          "fluorescent",
+          "concrete",
+          "industrial",
+          "backplates",
+          "abandoned & ruins",
+          "derelict factories & warehouses"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free 16K unclipped HDRI of an empty warehouse interior, cool fluorescent ceiling light with a warm side window glow, medium contrast and an industrial mood.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/empty_warehouse_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Fabric Pattern 07",
+      "id_type": "MATERIAL",
+      "files": [
+        "fabric_pattern_07.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/fabric_pattern_07.webp",
+        "hash": "SHA256:9994248483a18f479d1529a3990384b29da262808cfcc00a86553c8874aec661"
+      },
+      "meta": {
+        "catalog_id": "e047764c-df60-50d0-a05a-557eaffe05ed",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "towel",
+          "plain",
+          "cloth",
+          "checkered",
+          "woven",
+          "textile",
+          "picnic",
+          "textiles & leather",
+          "plaid & check"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(0.4m wide) Free 8K texture of red-and-cream woven cotton: coarse towel-like checkered weave with visible yarns, soft matte surface and subtle fiber variation.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/fabric_pattern_07",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              400.0000059604645,
+              400.00003576278687
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ferndale Studio 12",
+      "id_type": "WORLD",
+      "files": [
+        "ferndale_studio_12.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/ferndale_studio_12.webp",
+        "hash": "SHA256:53f167d8bf0f93eb744703210d857d7b0bf42cac4cdb8dd80cf69cce2e16d159"
+      },
+      "meta": {
+        "catalog_id": "852d9f97-4dcb-5415-8b67-70ee62ebcd6b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "photo",
+          "lamp",
+          "infinity",
+          "dark ceiling",
+          "rectangle",
+          "tube",
+          "blue",
+          "colors",
+          "white",
+          "studio",
+          "photo studios",
+          "coloured & gel lighting"
+        ],
+        "author": "Dimitrios Savva, Greg Zaal",
+        "description": "Free indoor studio HDRI with neon tube lamps and a soft key, cool blue-magenta tones, medium contrast, great for product and portrait renders.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/ferndale_studio_12",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Flamingo Pan",
+      "id_type": "WORLD",
+      "files": [
+        "flamingo_pan.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/flamingo_pan.webp",
+        "hash": "SHA256:83d19838cebce08b95258889368362bad642109b344306c85baa4e8d9cb2f790"
+      },
+      "meta": {
+        "catalog_id": "e2be213c-5874-5d77-bd68-611f48865362",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "tree",
+          "hilltop",
+          "dam",
+          "lake",
+          "grass",
+          "dirt",
+          "view",
+          "mountains & hills",
+          "hilltops & viewpoints",
+          "lakeside hilltops"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20K unclipped HDRI: hilltop lake at sunset with warm, low-contrast golden light, soft wispy clouds, gentle sun rim, trees and grassy/dirt foreground.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/flamingo_pan",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Forest Ground 06",
+      "id_type": "MATERIAL",
+      "files": [
+        "forest_ground_06.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/forest_ground_06.webp",
+        "hash": "SHA256:28d78c171c69945d69d8af4bef97297597c52a3667bbb1b08505aa46866907fe"
+      },
+      "meta": {
+        "catalog_id": "093b53b6-72b6-5509-b70d-ff771361ce42",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "dirt",
+          "dirty",
+          "soil",
+          "compact soil",
+          "loose earth",
+          "scattered leaves",
+          "forest soil",
+          "forest",
+          "scattered rocks",
+          "forest debris",
+          "pathway",
+          "dry soil",
+          "pebbly",
+          "twigs",
+          "leaves",
+          "fallen leaves",
+          "ground & terrain",
+          "forest floor"
+        ],
+        "author": "Charlotte Baglioni",
+        "description": "(2.11m wide) Free 8K forest ground texture with compacted dark soil, scattered pebbles, twigs and leaf flecks, subtle damp sheen and varied roughness.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/forest_ground_06",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2109.999895095825,
+              2109.999895095825
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Freight Station",
+      "id_type": "WORLD",
+      "files": [
+        "freight_station.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/freight_station.webp",
+        "hash": "SHA256:15fcba6bfc34f1cad7bf713bb03b0d3a7f0fe1894b57a27983ee8b7ed01f8843"
+      },
+      "meta": {
+        "catalog_id": "05e07e9e-b36a-5cf5-b5e8-f41d49f63d1a",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "industrial",
+          "crane",
+          "backplates",
+          "yards & terminals",
+          "freight & cargo yards"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free 16K unclipped HDRI of an industrial freight yard at sunset, warm low sun, partly cloudy sky, silhouetted cranes and medium-contrast natural light.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/freight_station",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "German Town Street",
+      "id_type": "WORLD",
+      "files": [
+        "german_town_street.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/german_town_street.webp",
+        "hash": "SHA256:aa8af6776ea3c9fe279fe881382c12eadea54c63dc3ac3bb2913820f8de5776a"
+      },
+      "meta": {
+        "catalog_id": "d1253b6c-5097-59b0-9d1e-f60fe3921d43",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "road",
+          "street",
+          "city",
+          "asphalt",
+          "sidewalk",
+          "tree",
+          "sun",
+          "industrial",
+          "warehouse",
+          "europe",
+          "streets & town",
+          "streets & alleys",
+          "city streets"
+        ],
+        "author": "Alexander Scholten",
+        "description": "Free 23K unclipped HDRI of a German town street - high-contrast morning/afternoon sun with partly cloudy sky; urban/industrial lighting ideal for outdoor renders.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/german_town_street",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Glasshouse Interior",
+      "id_type": "WORLD",
+      "files": [
+        "glasshouse_interior.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/glasshouse_interior.webp",
+        "hash": "SHA256:3b18d89f77cedfc380b51dcd705b9e44b43572e83c8b3e65edf8a8cffb37afd7"
+      },
+      "meta": {
+        "catalog_id": "cbb92625-87fc-54c1-8938-2ca872466e15",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "large windows",
+          "bed",
+          "kitchen",
+          "dining table",
+          "fireplace",
+          "vintage carpet",
+          "cozy",
+          "panoramic",
+          "vista",
+          "interiors",
+          "residential",
+          "living rooms & lounges"
+        ],
+        "author": "Dario Barresi",
+        "description": "Free, unclipped 24k HDRI of a glasshouse interior with soft, low-contrast partly-cloudy light through large windows, panoramic vista and cozy mood.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/glasshouse_interior",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Golden Gate Hills",
+      "id_type": "WORLD",
+      "files": [
+        "golden_gate_hills.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/golden_gate_hills.webp",
+        "hash": "SHA256:58fcbb9157e5c7d707cd64712b63b4bcf5e7beb2cc8c60bcd72a1a380eea8530"
+      },
+      "meta": {
+        "catalog_id": "e2be213c-5874-5d77-bd68-611f48865362",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "grass",
+          "hilltop",
+          "mountain",
+          "view",
+          "rock",
+          "mountains & hills",
+          "hilltops & viewpoints",
+          "grassland hilltops"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20K unclipped HDRI. Bright, high-contrast midday sun with a crisp sun\u2011star and scattered cumulus clouds; warm, directional light over green hilltops, rocky grassland and distant mountains.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/golden_gate_hills",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Gray Rocks",
+      "id_type": "MATERIAL",
+      "files": [
+        "gray_rocks.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/gray_rocks.webp",
+        "hash": "SHA256:ad4caf5cb5a6c43d686b41f1d1342226a2a17582179bbb64403831d83dc89a8f"
+      },
+      "meta": {
+        "catalog_id": "093b53b6-72b6-5509-b70d-ff771361ce42",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "uneven",
+          "rocks",
+          "rocky",
+          "rock",
+          "gray",
+          "rough",
+          "ground & terrain",
+          "rocky ground"
+        ],
+        "author": "Dimitrios Savva",
+        "description": "(1.8m wide) Free 8K texture of uneven, angular gray rocks with rough, coarse faces, packed gravel gaps and scattered dirt and leaf debris - a natural rocky surface.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/gray_rocks",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1799.9995946884155,
+              1799.9995946884155
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Hangar Interior",
+      "id_type": "WORLD",
+      "files": [
+        "hangar_interior.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/hangar_interior.webp",
+        "hash": "SHA256:f5dd1c02bcc5f1f76d4ebb462dafa1f685aa55deef377d0c1a932e57a4eb7c32"
+      },
+      "meta": {
+        "catalog_id": "05e07e9e-b36a-5cf5-b5e8-f41d49f63d1a",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "hangar",
+          "plane",
+          "airport",
+          "concrete",
+          "aviation",
+          "warehouse",
+          "industrial",
+          "factories & warehouses",
+          "aircraft hangars"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Unclipped, free 20K HDRI of a hangar interior with natural midday light - bright open-bay backlight, skylight patches, soft shadows and medium contrast.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/hangar_interior",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Historic Cloister Passage",
+      "id_type": "WORLD",
+      "files": [
+        "historic_cloister_passage.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/historic_cloister_passage.webp",
+        "hash": "SHA256:c212168f7695b1531615783002c50f447a94e0b247e6edad64a77f9595b32d17"
+      },
+      "meta": {
+        "catalog_id": "cbb92625-87fc-54c1-8938-2ca872466e15",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "arched windows",
+          "sandstone",
+          "wooden door",
+          "gothic",
+          "medieval",
+          "monastery",
+          "castle",
+          "arch",
+          "interiors",
+          "religious",
+          "crypts & cloisters"
+        ],
+        "author": "Elvis Posa",
+        "description": "Unclipped, free 24K HDRI of a historic cloister with warm stone arches, soft overcast skylight from courtyard windows, soft shadows and a low-contrast mood.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/historic_cloister_passage",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Interior Tiles",
+      "id_type": "MATERIAL",
+      "files": [
+        "interior_tiles.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/interior_tiles.webp",
+        "hash": "SHA256:bb77ff751a2be1adaa7512a8a83512515958e678fc19e48e125a3e522d513d23"
+      },
+      "meta": {
+        "catalog_id": "ddfe77d6-042a-5bc5-aed9-17689b32c9c3",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "tiles",
+          "tiled",
+          "floor",
+          "indoor flooring",
+          "grout lines",
+          "square tiles",
+          "ceramic",
+          "ceramic tiles",
+          "beige",
+          "squares",
+          "speckle",
+          "glazed tiles",
+          "glossy glazed"
+        ],
+        "author": "Charlotte Baglioni",
+        "description": "(1.9m wide) Free 16k material of beige ceramic square tiles with dark grout lines, subtle surface speckle, soft bevels and a low-sheen, slightly worn indoor flooring look.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/interior_tiles",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1899.9998569488525,
+              1899.9998569488525
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Japanese Stone Wall",
+      "id_type": "MATERIAL",
+      "files": [
+        "japanese_stone_wall.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/japanese_stone_wall.webp",
+        "hash": "SHA256:997da8d66d1ba1d4ff549b7045c504b6b0b87b883decbc744d9c69271fcfed73"
+      },
+      "meta": {
+        "catalog_id": "d58e299e-3614-59cb-aa58-d51081ce27ad",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "uneven",
+          "stones",
+          "wall",
+          "rocks",
+          "stone",
+          "rock",
+          "brick & block",
+          "stone block & paver",
+          "ashlar & coursed stone"
+        ],
+        "author": "Rico Cilliers, Charlotte Baglioni, Dario Barresi",
+        "description": "(1.9m wide) Free 8K texture of a Japanese stone wall, rough weathered granite blocks with uneven faces, deep mortar joints and subtle surface wear.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/japanese_stone_wall",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1899.9998569488525,
+              1899.9998569488525
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "J&E Gray 02",
+      "id_type": "WORLD",
+      "files": [
+        "je_gray_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/je_gray_02.webp",
+        "hash": "SHA256:6d1ad61a601e9d3f441328efca7e35bdaa57badb3cb42a1f1531377391e451de"
+      },
+      "meta": {
+        "catalog_id": "0adcf5c3-a3af-5e36-a317-c5450a6c6b69",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "forest",
+          "grass",
+          "pine",
+          "sun",
+          "forest & woodland",
+          "coniferous forest"
+        ],
+        "author": "Greg Zaal",
+        "description": "Free 24K unclipped HDRI of a sunlit pine forest with long morning shadows, bright sun flare and high-contrast natural light across grassy terrain.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/je_gray_02",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+      "id_type": "WORLD",
+      "files": [
+        "kloofendal_48d_partly_cloudy_puresky.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/kloofendal_48d_partly_cloudy_puresky.webp",
+        "hash": "SHA256:9cb695fe0be99ed35e1e2b03fb214d0ee798f0784a8b9a854c4d840296d1f038"
+      },
+      "meta": {
+        "catalog_id": "61ac0f4c-0977-548f-b345-f34c2d9eff35",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "pure skies"
+        ],
+        "author": "Greg Zaal, Jarod Guest",
+        "description": "Free 16K unclipped HDRI - midday partly-cloudy pure sky with bright sun, high-contrast natural light and crisp clouds for realistic outdoor lighting.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Laminate Floor 02",
+      "id_type": "MATERIAL",
+      "files": [
+        "laminate_floor_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/laminate_floor_02.webp",
+        "hash": "SHA256:b3039d529a2a057952e9942d449f6bbe35d05aecbe982f7b792cc3a9f6d89479"
+      },
+      "meta": {
+        "catalog_id": "16ce9f0f-197e-50d9-97a5-03110dec6b9f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "even",
+          "flat",
+          "wooden",
+          "floor",
+          "laminate",
+          "smooth",
+          "tiles",
+          "brown",
+          "wood",
+          "planks",
+          "engineered wood"
+        ],
+        "author": "Dario Barresi, Charlotte Baglioni",
+        "description": "(1.7m wide) Free 8K laminate floor texture. Smooth, even brown wood-plank material with subtle grain, light satin sheen and fine seams, clean indoor appearance.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/laminate_floor_02",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1699.9999284744263,
+              1700.0000476837158
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Leather Red 02",
+      "id_type": "MATERIAL",
+      "files": [
+        "leather_red_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/leather_red_02.webp",
+        "hash": "SHA256:4a53ee61a607b95f421b1eb517fabf394bca5d38bda486b6b5ed6422a60af8c2"
+      },
+      "meta": {
+        "catalog_id": "e047764c-df60-50d0-a05a-557eaffe05ed",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "leather",
+          "even",
+          "smooth",
+          "new",
+          "creased",
+          "wrinkled",
+          "semi-gloss",
+          "upholstery",
+          "textile ",
+          "animal-hide",
+          "textiles & leather",
+          "upholstery leather"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(0.6m wide) Free 8K texture: smooth, even red-brown leather with fine pebbled grain, soft creases and subtle wrinkles, semi-gloss surface with an upholstery/animal-hide look.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/leather_red_02",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              600.0000238418579,
+              600.0000238418579
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lifebuoy",
+      "id_type": "COLLECTION",
+      "files": [
+        "lifebuoy.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/lifebuoy.webp",
+        "hash": "SHA256:badbe8c8027a6184a59c4325ca0279c73b919e8802c0e97817aafc2520690080"
+      },
+      "meta": {
+        "catalog_id": "9075c19a-6f20-547f-9d77-210245d0db2a",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "weathered",
+          "safety",
+          "lifering",
+          "marine",
+          "nautical",
+          "flotation device",
+          "life preserver",
+          "vehicles & transport",
+          "watercraft",
+          "buoys & markers"
+        ],
+        "author": "Hank Kaamura",
+        "description": "Free 8K weathered red lifebuoy with cracked paint, salt stains, faded stencils, and a loose pale rope; crisp scuffs and surface detail.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/lifebuoy",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Lilienstein",
+      "id_type": "WORLD",
+      "files": [
+        "lilienstein.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/lilienstein.webp",
+        "hash": "SHA256:dc1d419c338eb208189139dcf10b579c9a6fc5ccd044ef46a9ea5ad32d3b67ce"
+      },
+      "meta": {
+        "catalog_id": "e24087fb-50f3-5cb6-b6b3-6940983cc440",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "grass",
+          "field",
+          "forest",
+          "meadow",
+          "fields & countryside",
+          "grassland & meadows",
+          "wildflower meadows"
+        ],
+        "author": "Andreas Mischok",
+        "description": "Free 19K unclipped HDRI of a sunlit meadow at sunset: soft warm sun, partly cloudy sky, medium-contrast natural light with long shadows and forest.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/lilienstein",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Long Life Food",
+      "id_type": "COLLECTION",
+      "files": [
+        "long_life_food.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/long_life_food.webp",
+        "hash": "SHA256:a9bd618c06f7c63e919621350140d699169583b5fdf901858e694ea2e5278eb6"
+      },
+      "meta": {
+        "catalog_id": "95511f9d-9188-528b-827c-c2ae573942f9",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "groceries",
+          "canned beans",
+          "carton milk",
+          "tinned food",
+          "canned tomatoes",
+          "sardines",
+          "food & kitchen",
+          "packaged & pantry"
+        ],
+        "author": "Mia Pecina Zorko",
+        "description": "Free 4K model of pantry staples: milk carton, tomato and bean cans, and sardines. Realistic wear, dents, pull-tab tin, crisp labels, clean topology.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/long_life_food",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Marble Bust 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "marble_bust_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/marble_bust_01.webp",
+        "hash": "SHA256:cbb67f379d208c491522de2e64ee3248f684f8c1f5f5fce1eca6cd0356d7e1a0"
+      },
+      "meta": {
+        "catalog_id": "4871560c-6388-5632-9674-cc074543fc11",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sculpt",
+          "sculpture",
+          "statue",
+          "art",
+          "sandstone",
+          "bust",
+          "marble",
+          "mansion",
+          "renaissance",
+          "man",
+          "decor & art",
+          "sculptures & figurines",
+          "busts & human figures"
+        ],
+        "author": "Rico Cilliers",
+        "description": "Free 8K model: a marble Renaissance-style male bust with finely carved features, subtle surface veining, light weathering and a round plinth.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/marble_bust_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Metal Office Desk",
+      "id_type": "COLLECTION",
+      "files": [
+        "metal_office_desk.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_office_desk.webp",
+        "hash": "SHA256:b6fa3c1a9341a7ce1e313e9a45d0f6f611f379e9754305587301b2b14d59f454"
+      },
+      "meta": {
+        "catalog_id": "b5459a63-3e54-5de8-80b3-dd2e6527186f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "old",
+          "vintage",
+          "metal",
+          "dirty",
+          "scratched",
+          "industrial",
+          "rectangular",
+          "furniture",
+          "tables",
+          "desks"
+        ],
+        "author": "Ulan Cabanilla",
+        "description": "Free 8k metal office desk model with worn grey finish, dual pedestal drawers, chrome handles and tapered legs - sturdy industrial mid-century look.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/metal_office_desk",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Metal Plate",
+      "id_type": "MATERIAL",
+      "files": [
+        "metal_plate.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_plate.webp",
+        "hash": "SHA256:bf9cc0ba136bd31ecc3abc0bcaae14a7d358fa23a856fd8bda88c6ee702f3f63"
+      },
+      "meta": {
+        "catalog_id": "0464e190-894f-5084-9a28-b04421cb06f9",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "bare",
+          "painted",
+          "rusty",
+          "pattern",
+          "iron",
+          "factory",
+          "industrial",
+          "steel",
+          "metal",
+          "plate & grating",
+          "diamond & checker plate"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(0.5m wide) Free 8K texture of worn diamond-plate steel with chipped green paint, rust, pitting and dark oily highlights. Rough, dirty industrial metal surface.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/metal_plate",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              500.0,
+              500.0
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metal Tool Chest",
+      "id_type": "COLLECTION",
+      "files": [
+        "metal_tool_chest.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_tool_chest.webp",
+        "hash": "SHA256:40b489a3145c888e1629ba4798aa826b8259be88b8355d9b3e68330e22024eb6"
+      },
+      "meta": {
+        "catalog_id": "7487dd8b-b5a4-5e45-8bfc-9af1bca0cd22",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "props",
+          "tools",
+          "industrial",
+          "containers",
+          "old",
+          "metal",
+          "garage",
+          "workshop",
+          "storage",
+          "shed",
+          "worn",
+          "mechanics toolbox",
+          "rusted",
+          "steel",
+          "red",
+          "tools & equipment",
+          "workshop equipment",
+          "tool chests"
+        ],
+        "author": "Yann Kervran, John Hutcheson",
+        "description": "Free 8K model of a worn red steel tool chest - rusted scratches, metal handles and lock; rigged lid and drawers, ideal for garage, workshop or industrial scenes.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/metal_tool_chest",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Metro: Noord",
+      "id_type": "WORLD",
+      "files": [
+        "metro_noord.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/metro_noord.webp",
+        "hash": "SHA256:a03594e96f045ddd8f981233453bfc674bbc4d1ae9e22a20c55f3ad0cdd49b29"
+      },
+      "meta": {
+        "catalog_id": "cbb92625-87fc-54c1-8938-2ca872466e15",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "train",
+          "metro",
+          "station",
+          "modern",
+          "bench",
+          "glass",
+          "architecture",
+          "empty",
+          "platform",
+          "europe",
+          "amsterdam",
+          "interiors",
+          "halls & venues",
+          "transit stations"
+        ],
+        "author": "Greg Zaal",
+        "description": "Free 24K unclipped HDRI: night Amsterdam metro platform with warm artificial lights, arched glass roof, reflective train cars; medium contrast, soft shadows.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/metro_noord",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Mid Century Lounge Chair",
+      "id_type": "COLLECTION",
+      "files": [
+        "mid_century_lounge_chair.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/mid_century_lounge_chair.webp",
+        "hash": "SHA256:00bc939b26435c4a2bcf08e9e867a75dd5f28b28201aba9182fe3041eb091b76"
+      },
+      "meta": {
+        "catalog_id": "b5459a63-3e54-5de8-80b3-dd2e6527186f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "wooden",
+          "leather",
+          "couch",
+          "lounge",
+          "architecture",
+          "modern",
+          "interior design",
+          "home decor",
+          "living room",
+          "comfort",
+          "stylish",
+          "recliner",
+          "retro",
+          "classy",
+          "furniture",
+          "seating",
+          "chairs"
+        ],
+        "author": "Kuutti Siitonen",
+        "description": "Free 8K mid-century lounge chair: wooden shell, worn brown leather cushions, swivel recliner base - stylish, comfy retro seating for modern interiors.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/mid_century_lounge_chair",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Modern Evening Street",
+      "id_type": "WORLD",
+      "files": [
+        "modern_evening_street.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/modern_evening_street.webp",
+        "hash": "SHA256:5561069851afc9f12b253339905f1bddc7441fa647c81214dd57ce43b9fec2e3"
+      },
+      "meta": {
+        "catalog_id": "d1253b6c-5097-59b0-9d1e-f60fe3921d43",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "building",
+          "city",
+          "street",
+          "street light",
+          "europe",
+          "architecture",
+          "facade",
+          "evening",
+          "dusk",
+          "sidewalk",
+          "office",
+          "streets & town",
+          "streets & alleys",
+          "city streets"
+        ],
+        "author": "Grzegorz Wronkowski",
+        "description": "Free, unclipped 20k HDRI - soft dusk light on a European office street, low-contrast partly cloudy sky, cool evening tones with warm streetlamps.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/modern_evening_street",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Modular Chainlink Fence",
+      "id_type": "COLLECTION",
+      "files": [
+        "modular_chainlink_fence.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/modular_chainlink_fence.webp",
+        "hash": "SHA256:53dbf833418c2bc4afc46d792e1da960218bab189a8fa8d1ede0955e037add2d"
+      },
+      "meta": {
+        "catalog_id": "c6ce7aa7-4ec2-5fac-82f8-9c747570e5cb",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "infrastructure",
+          "city",
+          "urban",
+          "fencing",
+          "barrier",
+          "security",
+          "boundary",
+          "wall",
+          "wire",
+          "architecture",
+          "fences & barriers"
+        ],
+        "author": "James Ray Cock, Amal Kumar",
+        "description": "Free 8K modular chainlink fence kit with rusted posts, gate and configurable panels - gritty urban/industrial barrier ideal for city, alley & security scenes.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/modular_chainlink_fence",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Modular Wooden Pier",
+      "id_type": "COLLECTION",
+      "files": [
+        "modular_wooden_pier.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/modular_wooden_pier.webp",
+        "hash": "SHA256:5df59d7a738b38ab382c35ab3db9ccbf7195a018712531822de8a5f73782c058"
+      },
+      "meta": {
+        "catalog_id": "c6ce7aa7-4ec2-5fac-82f8-9c747570e5cb",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "old",
+          "wooden",
+          "wood",
+          "pier",
+          "ship",
+          "maritime",
+          "sea",
+          "water",
+          "ocean",
+          "worn",
+          "structure",
+          "scaffolding",
+          "dock",
+          "jetty",
+          "landing",
+          "wharf",
+          "mossy",
+          "modular",
+          "architecture",
+          "outdoor structures",
+          "piers & docks"
+        ],
+        "author": "Rico Cilliers",
+        "description": "Free 8K model of a modular, weathered wooden pier: uneven planks, mossy pilings, tied ropes and scaffolded supports conveying a worn maritime character.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/modular_wooden_pier",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Namaqualand Boulder 02",
+      "id_type": "COLLECTION",
+      "files": [
+        "namaqualand_boulder_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/namaqualand_boulder_02.webp",
+        "hash": "SHA256:cbe7832026a78c028317fbd38b38df987afd590190bf1d29edf10ed806cd82a8"
+      },
+      "meta": {
+        "catalog_id": "d887b1f3-16f9-569b-a737-63ca66807b2f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "karoo",
+          "desert",
+          "south africa",
+          "boulders",
+          "rocks",
+          "geological",
+          "rock",
+          "landscaping",
+          "nature",
+          "rocks & stone",
+          "desert boulders"
+        ],
+        "author": "Greg Zaal, Rico Cilliers",
+        "description": "Free 8K model of Namaqualand boulders - realistic Karoo sandstone rocks with layered, weathered surfaces, perfect for desert, geological, and landscaping scenes.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/namaqualand_boulder_02",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Oak Veneer 01",
+      "id_type": "MATERIAL",
+      "files": [
+        "oak_veneer_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/oak_veneer_01.webp",
+        "hash": "SHA256:ff2ea0abb70c582d23dda2d965c8674143544c0855c9edb635122d1c9a505a14"
+      },
+      "meta": {
+        "catalog_id": "16ce9f0f-197e-50d9-97a5-03110dec6b9f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "veneer",
+          "oak",
+          "grain",
+          "wood grain",
+          "natural wood",
+          "road",
+          "wood",
+          "oak veneer"
+        ],
+        "author": "Jenelle van Heerden",
+        "description": "(1.83m wide) Free 16K oak veneer texture with fine vertical grain, warm natural tones and a smooth, lightly glossy finish - ideal for furniture and interiors.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/oak_veneer_01",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1830.0000429153442,
+              1830.0000429153442
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Overcast Soil (Pure Sky)",
+      "id_type": "WORLD",
+      "files": [
+        "overcast_soil_puresky.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/overcast_soil_puresky.webp",
+        "hash": "SHA256:f22cf49909b45a44a4780a8ca06f61b6ef88018c8d57912948593495b5b526fd"
+      },
+      "meta": {
+        "catalog_id": "61ac0f4c-0977-548f-b345-f34c2d9eff35",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "pure skies"
+        ],
+        "author": "Jarod Guest, Sergej Majboroda",
+        "description": "Free 16K unclipped HDRI: soft, low-contrast overcast sky with diffused natural morning/afternoon light and a subtle warm horizon glow, calm moody lighting.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/overcast_soil_puresky",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Patterned Terracotta Tiling",
+      "id_type": "MATERIAL",
+      "files": [
+        "patterned_terracotta_tiling.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/patterned_terracotta_tiling.webp",
+        "hash": "SHA256:4559ced4a689feaf234c56c27d76dc0beb1e4115196def7ad1aae071cb3edc7e"
+      },
+      "meta": {
+        "catalog_id": "ddfe77d6-042a-5bc5-aed9-17689b32c9c3",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "terracotta",
+          "tiles",
+          "grout lines",
+          "grout",
+          "ceramic tiles",
+          "indoor flooring",
+          "indoor",
+          "geometric pattern",
+          "octagonal tiles",
+          "consistent",
+          "ceramic"
+        ],
+        "author": "Amal Kumar",
+        "description": "(2.15m wide) Free 8K terracotta tile texture with an octagon-and-dot pattern, warm red slabs with small black insets, slight sheen, worn edges and fine grout lines.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/patterned_terracotta_tiling",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2151.7231464385986,
+              2151.724338531494
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Peppermint Powerplant",
+      "id_type": "WORLD",
+      "files": [
+        "peppermint_powerplant.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/peppermint_powerplant.webp",
+        "hash": "SHA256:6215b91b42a408a893459f929a2c87b8cc799c1d550220cd04245472a8e7ccbf"
+      },
+      "meta": {
+        "catalog_id": "9dca8445-763d-5a08-8e51-3e9d534f6c53",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "abandoned",
+          "industrial",
+          "factory",
+          "workshop",
+          "abandoned & ruins",
+          "derelict factories & warehouses"
+        ],
+        "author": "Andreas Mischok",
+        "description": "Free 19K HDRI (unclipped) - abandoned industrial interior with large arched windows, soft morning light, medium contrast, dusty warmth, sharp metal highlights.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/peppermint_powerplant",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Pocket Watch",
+      "id_type": "COLLECTION",
+      "files": [
+        "pocket_watch.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/pocket_watch.webp",
+        "hash": "SHA256:792cfc5aa9bdd50277c06ed207e1060f6383caaf22ed0e77fce959db0bfc8a8f"
+      },
+      "meta": {
+        "catalog_id": "5ffcf167-a620-50f4-968b-f8bff403970e",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "antique",
+          "brass",
+          "ornate",
+          "gold",
+          "vintage",
+          "watch",
+          "timepiece",
+          "watchface",
+          "time",
+          "apparel & personal items",
+          "accessories",
+          "watches & timepieces"
+        ],
+        "author": "PierreB3D",
+        "description": "Free 4K antique brass pocket watch model with polished case, Roman numerals, ornate black hands, subtle wear, and realistic glass reflections.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/pocket_watch",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Portable Generator",
+      "id_type": "COLLECTION",
+      "files": [
+        "portable_generator.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/portable_generator.webp",
+        "hash": "SHA256:24a619f41139e04da4fad17a39c1dafcaac3abb78dfbbeb318134b43f56279d7"
+      },
+      "meta": {
+        "catalog_id": "f9f72c1f-d49e-52d8-9c2a-fe27dddfac1f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "gasoline",
+          "backup power",
+          "construction equipment",
+          "power generator",
+          "petrol",
+          "garage",
+          "power",
+          "engine",
+          "industrial & infrastructure",
+          "utility equipment"
+        ],
+        "author": "James Ray Cock",
+        "description": "Free 8K model of a rugged yellow portable generator branding, tubular steel frame, crisp gauges, outlets and switches, exposed wiring, and worn grime.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/portable_generator",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Potted Plant 02",
+      "id_type": "COLLECTION",
+      "files": [
+        "potted_plant_02.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/potted_plant_02.webp",
+        "hash": "SHA256:ddb99f39e0deeac92c6f5e156e144094ed014c334763d6051042d7265108a0fa"
+      },
+      "meta": {
+        "catalog_id": "d887b1f3-16f9-569b-a737-63ca66807b2f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "potplant",
+          "plant",
+          "pot",
+          "vase",
+          "medium",
+          "leaf",
+          "green",
+          "terracotta",
+          "nature",
+          "plants",
+          "potted plants"
+        ],
+        "author": "Rico Cilliers",
+        "description": "Free 8K model. Realistic terracotta pot with weathered rim, textured soil, and variegated green, heart-shaped leaves with pronounced veins.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/potted_plant_02",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Pretoria Gardens",
+      "id_type": "WORLD",
+      "files": [
+        "pretoria_gardens.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/pretoria_gardens.webp",
+        "hash": "SHA256:22635b745aad112adc064455f180a24b759adc862d5f8b365994cfb6c86095c2"
+      },
+      "meta": {
+        "catalog_id": "c5ab9a2f-4786-57e3-acc5-3c6a73956e10",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "grass",
+          "field",
+          "tree",
+          "park",
+          "parks & gardens",
+          "parks",
+          "open parkland"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20K unclipped HDRI - bright midday park with a high-contrast sun, scattered clouds, warm grassy field and crisp tree shadows, natural outdoor lighting.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/pretoria_gardens",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Quarry 04",
+      "id_type": "WORLD",
+      "files": [
+        "quarry_04.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/quarry_04.webp",
+        "hash": "SHA256:4243915a0657e864525890304a2965d1d5a4cce53172c027283cc431a7cd4351"
+      },
+      "meta": {
+        "catalog_id": "0cbfe03c-0260-5155-8e66-41ede66fc546",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sand",
+          "desert & arid",
+          "dunes",
+          "mine dumps & tailings"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free 16K unclipped HDRI: soft, low-contrast sunset over a cracked sandy quarry, cool blue skies with thin clouds and gentle natural light.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/quarry_04",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Red Brick",
+      "id_type": "MATERIAL",
+      "files": [
+        "red_brick.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/red_brick.webp",
+        "hash": "SHA256:4933b47fd80d6e40ea5bee945eb9c6078d9e5d255f954674012f1b5ef74d0702"
+      },
+      "meta": {
+        "catalog_id": "d58e299e-3614-59cb-aa58-d51081ce27ad",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "brick",
+          "bricks",
+          "wall",
+          "red brick",
+          "brick wall",
+          "rough",
+          "exterior",
+          "brick & block",
+          "clay brick",
+          "running-bond"
+        ],
+        "author": "Rob Tuytel",
+        "description": "(1.4m wide) Free 16K texture of red brick wall with rough, weathered surfaces, varied warm tones and recessed grey mortar, strong surface detail and subtle chipped edges.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/red_brick",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1399.999976158142,
+              1399.999976158142
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Resting Place",
+      "id_type": "WORLD",
+      "files": [
+        "resting_place.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/resting_place.webp",
+        "hash": "SHA256:a1b5178711a06e8254f6fbf99517a211f0439013bd2f87b8547e6c07fcfe8f9a"
+      },
+      "meta": {
+        "catalog_id": "f30d179e-f9a7-57eb-b5d2-f9d71ad39458",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "grass",
+          "field",
+          "tree",
+          "dam",
+          "lake",
+          "park",
+          "hut",
+          "cabin",
+          "coast & water",
+          "rivers & lakes",
+          "lakeshores"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Free 16K unclipped HDRI capturing warm, high-contrast morning/afternoon sun over a grassy lakeside field with scattered clouds, trees, huts and calm water.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/resting_place",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Road Damaged",
+      "id_type": "MATERIAL",
+      "files": [
+        "road_damaged.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/road_damaged.webp",
+        "hash": "SHA256:ded6dcc163e8732da59340680ab10a44d049919a754fd805fcdf364c46ca4b89"
+      },
+      "meta": {
+        "catalog_id": "14b1fa58-0a32-5a44-9fcc-4e3a70655c2b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "rough",
+          "weathered",
+          "uneven",
+          "crumbling",
+          "asphalt",
+          "asphalt road",
+          "dusty",
+          "dirty",
+          "cracked",
+          "damaged",
+          "chipped",
+          "pothole",
+          "potholes",
+          "pitted",
+          "battered",
+          "deteriorating",
+          "tar",
+          "asphalt & bitumen",
+          "roads",
+          "damaged roads"
+        ],
+        "author": "Dimitrios Savva",
+        "description": "(2.2m wide) Free 8K texture of damaged road: cracked, patchy asphalt with potholes, rough aggregate, dark stains, matte and dusty wear.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/road_damaged",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2200.000047683716,
+              2200.000047683716
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rock Face 03",
+      "id_type": "MATERIAL",
+      "files": [
+        "rock_face_03.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/rock_face_03.webp",
+        "hash": "SHA256:013c4558255cc4e7ae9f488b376ccd24fb09972ac382c05c18de53fb11d75f2b"
+      },
+      "meta": {
+        "catalog_id": "43443496-f24e-5150-8a25-f5cd3c9455e2",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "rough",
+          "rock",
+          "cliff",
+          "uneven",
+          "weathered",
+          "wall",
+          "cracked",
+          "stone",
+          "rock face",
+          "rugged",
+          "chipped",
+          "eroded",
+          "cracks",
+          "rocks",
+          "rock & cliffs",
+          "rough rock faces"
+        ],
+        "author": "Dario Barresi, Rico Cilliers",
+        "description": "(2.7m wide) Free 16K texture - weathered, rugged rock face with rough, cracked, uneven stone, chipped edges and eroded details in variegated brown tones.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/rock_face_03",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2699.9995708465576,
+              2699.9995708465576
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rogland Clear Night",
+      "id_type": "WORLD",
+      "files": [
+        "rogland_clear_night.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/rogland_clear_night.webp",
+        "hash": "SHA256:3dfd4b94563aaa81371e3cd19019f90af03672a88e2205ae34404f831758455f"
+      },
+      "meta": {
+        "catalog_id": "0cbfe03c-0260-5155-8e66-41ede66fc546",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "stars",
+          "milky way",
+          "galaxy",
+          "astronomy",
+          "dark",
+          "rocky",
+          "arid",
+          "desert",
+          "desert & arid",
+          "karoo & scrubland",
+          "rocky outcrops"
+        ],
+        "author": "Greg Zaal",
+        "description": "Free, unclipped 24K HDRI: clear, desert night with Milky Way and stars over rocky, arid terrain, soft natural starlight for subtle night lighting.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/rogland_clear_night",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Round Spectacles",
+      "id_type": "COLLECTION",
+      "files": [
+        "round_spectacles.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/round_spectacles.webp",
+        "hash": "SHA256:b47120f03a7d879fb7c96efcbe114e46f0f92e150b373c7288659aae996bbee6"
+      },
+      "meta": {
+        "catalog_id": "5ffcf167-a620-50f4-968b-f8bff403970e",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "vintage",
+          "round frame",
+          "retro",
+          "eyewear",
+          "accessories",
+          "glasses",
+          "apparel & personal items"
+        ],
+        "author": "Sean Buckley",
+        "description": "Free 8k model of vintage round spectacles with thin metal frame, reflective lenses, subtle wear, smudges, nose pads and curved temples.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/round_spectacles",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Rubber Duck Toy",
+      "id_type": "COLLECTION",
+      "files": [
+        "rubber_duck_toy.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/rubber_duck_toy.webp",
+        "hash": "SHA256:92e97e5831d2e22369977f8425662dc842f783aca9196285f0bbf6b1ce749583"
+      },
+      "meta": {
+        "catalog_id": "06d3dbc4-9f98-571a-8361-fc2239dcdebf",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "shed",
+          "toy",
+          "bathroom",
+          "child",
+          "home",
+          "fun",
+          "kids",
+          "play",
+          "float",
+          "plastic",
+          "cute",
+          "animal",
+          "leisure",
+          "games & toys",
+          "toys"
+        ],
+        "author": "Plat251",
+        "description": "Free 4K model: cute yellow rubber duck with glossy plastic, bright red beak, simple cartoon eyes and light scuffs/grime for a slightly worn, playful look.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/rubber_duck_toy",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Rust Coarse 01",
+      "id_type": "MATERIAL",
+      "files": [
+        "rust_coarse_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/rust_coarse_01.webp",
+        "hash": "SHA256:b64a6c1e5d38fa6010197a5658d8ea486b263699dbcaf0b42c55736745328773"
+      },
+      "meta": {
+        "catalog_id": "0464e190-894f-5084-9a28-b04421cb06f9",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "coarse",
+          "rusty",
+          "rust",
+          "red",
+          "stained",
+          "grunge",
+          "old",
+          "weathered",
+          "iron",
+          "metal",
+          "steel",
+          "rough",
+          "sheet & corrugated",
+          "flat sheet"
+        ],
+        "author": "Dimitrios Savva, Rico Cilliers",
+        "description": "(2.2m wide) Free 16K texture of coarse, weathered rust - red-brown stained, pitted and gritty iron/steel with a rough, grungy surface and subtle scuffs.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/rust_coarse_01",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              2199.9998092651367,
+              2200.000286102295
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Security Camera 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "security_camera_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/security_camera_01.webp",
+        "hash": "SHA256:779e3c9f332e759fb534f9c1d73ecc29cde4a7e0d9a658d059b8e0ac7deb9124"
+      },
+      "meta": {
+        "catalog_id": "f9f72c1f-d49e-52d8-9c2a-fe27dddfac1f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "electronics",
+          "appliances",
+          "industrial",
+          "collection: hidden_alley",
+          "cctv",
+          "surveillance",
+          "monitoring",
+          "police",
+          "security",
+          "camera",
+          "utility",
+          "infrastructure",
+          "industrial & infrastructure",
+          "utility equipment",
+          "surveillance cameras"
+        ],
+        "author": "Alexander Otterbeck, Yann Kervran",
+        "description": "Free 8K model: rigged wall-mounted CCTV camera with weathered metal housing, pivoting mount and realistic lens - industrial security asset for surveillance.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/security_camera_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Shanghai Bund",
+      "id_type": "WORLD",
+      "files": [
+        "shanghai_bund.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/shanghai_bund.webp",
+        "hash": "SHA256:68b4e64aff13c14ee21e1b4046cdbb50cdee6b245d6e96f4432ba7bb0e0b857b"
+      },
+      "meta": {
+        "catalog_id": "f30d179e-f9a7-57eb-b5d2-f9d71ad39458",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "skyscraper",
+          "skyline",
+          "china",
+          "neon",
+          "promenade",
+          "building",
+          "architecture",
+          "street",
+          "city",
+          "square",
+          "balcony",
+          "shanghai",
+          "coast & water",
+          "harbours & piers",
+          "promenades & seafronts"
+        ],
+        "author": "Greg Zaal",
+        "description": "Free 16K HDRI (unclipped) capturing Shanghai Bund at night: high-contrast neon skyline, warm promenade lighting, partly cloudy sky and vivid river reflections.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/shanghai_bund",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Ship Pinnace",
+      "id_type": "COLLECTION",
+      "files": [
+        "ship_pinnace.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/ship_pinnace.webp",
+        "hash": "SHA256:4accf718e0ed36252fffd8704bd6ec1cf20c256c0a75b42dac6842f85a48d122"
+      },
+      "meta": {
+        "catalog_id": "9075c19a-6f20-547f-9d77-210245d0db2a",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "old",
+          "wooden",
+          "wood",
+          "colonial",
+          "maritime",
+          "ship",
+          "boat",
+          "ocean",
+          "sea",
+          "pirates",
+          "commercial",
+          "sail",
+          "vehicles & transport",
+          "watercraft",
+          "sailing ships"
+        ],
+        "author": "James Ray Cock, Rico Cilliers, Nicol\u00f2 Zubbini, Yann Kervran",
+        "description": "Free 4K model of a rigged wooden colonial pinnace - ornate, weathered hull, detailed rigging and sails, perfect for maritime, pirate, or historical scenes.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/ship_pinnace",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Studio Small 09",
+      "id_type": "WORLD",
+      "files": [
+        "studio_small_09.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/studio_small_09.webp",
+        "hash": "SHA256:0f7f93f9b9eab14fe56ff5f8a6b7cdedda7cbb362f68bbe17bed865cd506c050"
+      },
+      "meta": {
+        "catalog_id": "852d9f97-4dcb-5415-8b67-70ee62ebcd6b",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "umbrella",
+          "softbox",
+          "infinity",
+          "lamp",
+          "studio",
+          "photo",
+          "photo studios",
+          "softbox & lamp setups"
+        ],
+        "author": "Sergej Majboroda",
+        "description": "Unclipped, free 16K HDRI: small studio with large octaboxes casting soft directional artificial light on a white infinity cyc; medium contrast, neutral tones.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/studio_small_09",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Suburban Garden",
+      "id_type": "WORLD",
+      "files": [
+        "suburban_garden.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/suburban_garden.webp",
+        "hash": "SHA256:8d509ffd3ad8999eee6f72143fbccf4a499f8bff72ed1805bdcf06b8d306e1e7"
+      },
+      "meta": {
+        "catalog_id": "c5ab9a2f-4786-57e3-acc5-3c6a73956e10",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "grass",
+          "sun",
+          "garden",
+          "bush",
+          "lapa",
+          "gazebo",
+          "pool",
+          "suburb",
+          "parks & gardens",
+          "gardens",
+          "courtyard gardens"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20k unclipped HDRI of a sunlit residential garden - clear blue midday sky, strong direct sunlight, warm tone, crisp shadows and lush green details.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/suburban_garden",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Sunny Rose Garden",
+      "id_type": "WORLD",
+      "files": [
+        "sunny_rose_garden.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/sunny_rose_garden.webp",
+        "hash": "SHA256:6f3ac3ce611a3c91266c8a7ed6661a67ab374f01dbadad7d99d9ec143a59fed9"
+      },
+      "meta": {
+        "catalog_id": "c5ab9a2f-4786-57e3-acc5-3c6a73956e10",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "grass",
+          "flower",
+          "path",
+          "palm tree",
+          "rose bushes",
+          "scattered clouds",
+          "rural",
+          "parks & gardens",
+          "gardens",
+          "formal gardens"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free 20k HDRI, unclipped, bright midday sun with scattered clouds, high-contrast warm sunlight and crisp shadows over rose bushes, grassy paths, distant palms.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/sunny_rose_garden",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "The Sky Is On Fire",
+      "id_type": "WORLD",
+      "files": [
+        "the_sky_is_on_fire.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/the_sky_is_on_fire.webp",
+        "hash": "SHA256:09da626bb9b13ace5a9c8f1b77645de96081bd8e8b0b0c5eaa2856aba2332798"
+      },
+      "meta": {
+        "catalog_id": "f30d179e-f9a7-57eb-b5d2-f9d71ad39458",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "twilight",
+          "rail",
+          "promenade",
+          "path",
+          "ocean",
+          "wave",
+          "backplates",
+          "coast & water",
+          "harbours & piers",
+          "promenades & seafronts"
+        ],
+        "author": "Greg Zaal, Rico Cilliers",
+        "description": "Free 16K HDRI, unclipped - twilight seaside promenade with a fiery sunset, partly cloudy skies, warm reflections on ocean waves and mid-contrast natural light.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/the_sky_is_on_fire",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Treasure Chest",
+      "id_type": "COLLECTION",
+      "files": [
+        "treasure_chest.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/treasure_chest.webp",
+        "hash": "SHA256:0982b5507dd6088ac20a145fcf261689860af8b44f8c60232b93ac03fd31fb5f"
+      },
+      "meta": {
+        "catalog_id": "5cd27f07-a7a1-563f-a639-3cf446d62b98",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "old",
+          "wooden",
+          "chest",
+          "treasure",
+          "pirates",
+          "gold",
+          "crate",
+          "maritime",
+          "colonial",
+          "worn",
+          "antique",
+          "wood",
+          "prop",
+          "container",
+          "metal",
+          "box",
+          "ornate",
+          "containers & storage",
+          "boxes & crates",
+          "chests & trunks"
+        ],
+        "author": "Rico Cilliers",
+        "description": "Free 8K model of a worn wooden treasure chest with ornate iron straps, rivets and a weathered, antique maritime look.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/treasure_chest",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Tree Lined Driveway",
+      "id_type": "WORLD",
+      "files": [
+        "tree_lined_driveway.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/tree_lined_driveway.webp",
+        "hash": "SHA256:f3b2cb619e12727dca412998725394a264b0bab6797a70a0ad5ce5d6a3ee33cf"
+      },
+      "meta": {
+        "catalog_id": "0adcf5c3-a3af-5e36-a317-c5450a6c6b69",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "road",
+          "asphalt",
+          "rural",
+          "countryside",
+          "cracked",
+          "summer",
+          "forest & woodland",
+          "woodland paths",
+          "forest roads"
+        ],
+        "author": "Dimitrios Savva, Jarod Guest",
+        "description": "Free unclipped 20k HDRI: bright sunlit tree-lined driveway with clear blue sky, scattered cumulus clouds, strong midday sunlight and crisp shadows.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/tree_lined_driveway",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Valley Of Desolation",
+      "id_type": "WORLD",
+      "files": [
+        "valley_of_desolation.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/valley_of_desolation.webp",
+        "hash": "SHA256:592a003e2a7422235637a545e02861adb5bf9e18c908e7acf68716614be3d7d3"
+      },
+      "meta": {
+        "catalog_id": "0cbfe03c-0260-5155-8e66-41ede66fc546",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "sun",
+          "view",
+          "hilltop",
+          "rock formation",
+          "desert canyon",
+          "mesa",
+          "rocky outcrop",
+          "cliff edge",
+          "scrubland",
+          "desert & arid",
+          "karoo & scrubland",
+          "rocky outcrops"
+        ],
+        "author": "Dario Barresi",
+        "description": "Unclipped, free 24K HDRI of a rocky valley at golden hour: clear sky, warm sun near horizon, crisp contrast, long shadows, vivid scrub and cliffs, dry tones.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/valley_of_desolation",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Velour Velvet",
+      "id_type": "MATERIAL",
+      "files": [
+        "velour_velvet.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/velour_velvet.webp",
+        "hash": "SHA256:202eb539ebe5bb6d61e8ca97ec706aa5bfbf32e62a7b962187d110827dbac537"
+      },
+      "meta": {
+        "catalog_id": "e047764c-df60-50d0-a05a-557eaffe05ed",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "red",
+          "luxury",
+          "royal",
+          "patchey",
+          "velvet",
+          "velveteen",
+          "microsuede",
+          "napped",
+          "upholstery",
+          "fashion",
+          "soft",
+          "plush",
+          "textiles & leather",
+          "pile & velvet",
+          "velvet & velour"
+        ],
+        "author": "colormass, Rico Cilliers",
+        "description": "(0.28m wide) Free 8K texture: plush red velour with napped, microsuede-like surface and patchy highlights - luxury upholstery and fashion material for soft, royal interiors.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/velour_velvet",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              284.22817052147235,
+              273.499995470047
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "White Stucco",
+      "id_type": "MATERIAL",
+      "files": [
+        "white_stucco.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/white_stucco.webp",
+        "hash": "SHA256:881801f52c17da7d55fb059fc119094b67fefc5f1435bd6aaa7318bc5c5aa6bd"
+      },
+      "meta": {
+        "catalog_id": "bf0ac183-1cb8-51c5-a1ae-27b623a3dc04",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "rough",
+          "wall",
+          "painted",
+          "stucco",
+          "white",
+          "granular",
+          "matte",
+          "uneven",
+          "porous",
+          "plaster",
+          "concrete",
+          "plaster & stucco",
+          "bare plaster"
+        ],
+        "author": "Amal Kumar",
+        "description": "(2m wide) Free 8K white stucco texture with fine granular bumps, subtle pores and a matte, slightly warm off\u2011white plaster finish.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/white_stucco",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              1998.0629682540894,
+              1998.0640411376953
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Wine Bottles 01",
+      "id_type": "COLLECTION",
+      "files": [
+        "wine_bottles_01.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/wine_bottles_01.webp",
+        "hash": "SHA256:25609f00d89cd55a959fcb81ec3bf8480568d23c0fceb8414598d9c9606ff32c"
+      },
+      "meta": {
+        "catalog_id": "95511f9d-9188-528b-827c-c2ae573942f9",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "wine",
+          "drink",
+          "bottle",
+          "champagne",
+          "grape",
+          "farmhouse",
+          "vineyard",
+          "food & kitchen",
+          "drinks",
+          "bottles & wine"
+        ],
+        "author": "Rico Cilliers, Jurita Burger",
+        "description": "Free 8K model of four wine and champagne bottles with realistic glass, varied labels, foil/wax tops and subtle wear, evoking a rustic vineyard farmhouse character.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/wine_bottles_01",
+        "copyright": "Poly Haven"
+      }
+    },
+    {
+      "name": "Wood Table Worn",
+      "id_type": "MATERIAL",
+      "files": [
+        "wood_table_worn.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/wood_table_worn.webp",
+        "hash": "SHA256:353ffc336f14bc4f000d0d72636d2bfd18f52c5ac86823249922d4a9ad3cdb86"
+      },
+      "meta": {
+        "catalog_id": "16ce9f0f-197e-50d9-97a5-03110dec6b9f",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "rough",
+          "planks",
+          "table",
+          "worn",
+          "old",
+          "damaged",
+          "discolored",
+          "stained",
+          "brown",
+          "dry",
+          "furniture",
+          "grain",
+          "scratched",
+          "wood",
+          "boards & planks",
+          "weathered planks"
+        ],
+        "author": "Dimitrios Savva, Rico Cilliers",
+        "description": "(0.55m wide) Free 8K texture of a worn, stained brown wooden table: dry, scratched planks with visible grain, discoloration, rough and damaged surface.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/wood_table_worn",
+        "copyright": "Poly Haven",
+        "properties": [
+          {
+            "name": "Real Scale (mm)",
+            "type": "IDP_ARRAY",
+            "value": [
+              549.9999523162842,
+              550.0000715255737
+            ],
+            "itemtype": "IDP_FLOAT"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Wooden Ladder",
+      "id_type": "COLLECTION",
+      "files": [
+        "wooden_ladder.blend"
+      ],
+      "bl_versions": {
+        "min": "5.3"
+      },
+      "thumbnail": {
+        "url": "https://dl.polyhaven.org/file/bl-repo/v1/wooden_ladder.webp",
+        "hash": "SHA256:44cc05355ffe4307adf755d6a3426edb747675a3c458e6799696d786a57308da"
+      },
+      "meta": {
+        "catalog_id": "7487dd8b-b5a4-5e45-8bfc-9af1bca0cd22",
+        "preferred_import_method": "APPEND",
+        "tags": [
+          "scaffolding",
+          "steps",
+          "construction",
+          "workshop",
+          "ladder",
+          "step-ladder",
+          "maintenance",
+          "utility",
+          "wooden",
+          "tools & equipment",
+          "workshop equipment",
+          "ladders"
+        ],
+        "author": "Miroslav Turura",
+        "description": "Free 4K wooden step ladder model with an A-frame design, worn planks, top platform, metal braces, and realistic scuffs, grain, and hardware.",
+        "license": "CC0 - Public Domain",
+        "webpage": "https://polyhaven.com/a/wooden_ladder",
+        "copyright": "Poly Haven"
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "Camera_01.blend",
+      "size_in_bytes": 31587081,
+      "hash": "SHA256:d6720e005a8a1219b1121b2547cef033a806738bd8f15e60b8219697311f8791",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/Camera_01.blend"
+    },
+    {
+      "path": "alps_field.blend",
+      "size_in_bytes": 21834421,
+      "hash": "SHA256:0419f8368521ca47c56b21f20644335615e57fbb765b0a89614cda598c14ad34",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/alps_field.blend"
+    },
+    {
+      "path": "antique_katana_01.blend",
+      "size_in_bytes": 5415384,
+      "hash": "SHA256:e87717de1ca8aebcab995fb1eea858a8895d9bbc4a508b3e6ad6706507befa0b",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/antique_katana_01.blend"
+    },
+    {
+      "path": "asphalt_02.blend",
+      "size_in_bytes": 23773436,
+      "hash": "SHA256:c44c53eadff8d9dd0e86758d55043c0ef461b7c3bb556863e75cf362ea4a119a",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/asphalt_02.blend"
+    },
+    {
+      "path": "asphalt_pit_lane.blend",
+      "size_in_bytes": 21666527,
+      "hash": "SHA256:4275e3d88588ef552887f44da2570c13454da6f02d50063f1c9eb803193c2d58",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/asphalt_pit_lane.blend"
+    },
+    {
+      "path": "autumn_field_puresky.blend",
+      "size_in_bytes": 11061793,
+      "hash": "SHA256:513752da4c16dda6383498d19d4724360a9826110ecb2dc846247b29118a97d3",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/autumn_field_puresky.blend"
+    },
+    {
+      "path": "autumn_forest_04.blend",
+      "size_in_bytes": 27105417,
+      "hash": "SHA256:d1dfc5dc2dac0ca290033205776e421d7b17b10017db46e9b18d535a8aa0a7e2",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/autumn_forest_04.blend"
+    },
+    {
+      "path": "bambanani_sunset.blend",
+      "size_in_bytes": 21713113,
+      "hash": "SHA256:21c4ff59f70f83e971eaaf41e038921b7cdcf639b74d9c27c441ae1eb8c2eba0",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/bambanani_sunset.blend"
+    },
+    {
+      "path": "bolt_action_rifle_7_62.blend",
+      "size_in_bytes": 70648040,
+      "hash": "SHA256:2e66b6ae732c2061130f4b9b3c7440c1aeee61e74875d3d3104e648f9e7d1af0",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/bolt_action_rifle_7_62.blend"
+    },
+    {
+      "path": "brick_floor_04.blend",
+      "size_in_bytes": 19877838,
+      "hash": "SHA256:d597b3378475817b79ff76688d80ec9d45db1a69f57ddbac5c7d45e03531a69f",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/brick_floor_04.blend"
+    },
+    {
+      "path": "brown_mud_leaves_01.blend",
+      "size_in_bytes": 24896426,
+      "hash": "SHA256:e53117acbdd7578901bc82e02be5466750abf61c6a637b8f0b1abd5ec6407526",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/brown_mud_leaves_01.blend"
+    },
+    {
+      "path": "brown_photostudio_02.blend",
+      "size_in_bytes": 21566565,
+      "hash": "SHA256:fce673e22cea4650d8a763f7542571f558a2161acf6740d4a9df06737f600b8e",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/brown_photostudio_02.blend"
+    },
+    {
+      "path": "canary_wharf.blend",
+      "size_in_bytes": 22272575,
+      "hash": "SHA256:bab17ef2783e5eb5ebd677bec95a3f11df5f67e01938d3ae434d3c96a1af5464",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/canary_wharf.blend"
+    },
+    {
+      "path": "cardboard_box_01.blend",
+      "size_in_bytes": 11127923,
+      "hash": "SHA256:0393685a64d5f5b46ee9247e9b912fca61ea9e267918cf00b3429d926b1914fc",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/cardboard_box_01.blend"
+    },
+    {
+      "path": "chess_set.blend",
+      "size_in_bytes": 126874316,
+      "hash": "SHA256:af7bd8dc02d2d288ff55782aef0d4f22fc37a8fc335fe0e9be833a2d24f8a1ae",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/chess_set.blend"
+    },
+    {
+      "path": "citrus_orchard_road_puresky.blend",
+      "size_in_bytes": 13306491,
+      "hash": "SHA256:7e4a1a1fabeb339d628eff0628369ea1bf8a16b8fd4ba8e766b419a0b68d171b",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/citrus_orchard_road_puresky.blend"
+    },
+    {
+      "path": "classic_laptop.blend",
+      "size_in_bytes": 8319758,
+      "hash": "SHA256:ae27bd5caa0a26364fe1d11df78e8adcc73d30c8562f08a8bdf9379307b98d3c",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/classic_laptop.blend"
+    },
+    {
+      "path": "coast_sand_rocks_02.blend",
+      "size_in_bytes": 24793931,
+      "hash": "SHA256:8f836d268670fbc2d826ed1a7bc2ead77f4563a01052a8eff8a27be801a2df85",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/coast_sand_rocks_02.blend"
+    },
+    {
+      "path": "cobblestone_street_night.blend",
+      "size_in_bytes": 25835390,
+      "hash": "SHA256:99512a27c6c790cfca8434b3fd6587de2a3f8854b03a73caafae1d5d75af4d44",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/cobblestone_street_night.blend"
+    },
+    {
+      "path": "concrete_cat_statue.blend",
+      "size_in_bytes": 15108061,
+      "hash": "SHA256:23378c81e7eb9d20b6b8dbaa2a99483f9cdc27cd9a2db9e10a1944c5299ca852",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/concrete_cat_statue.blend"
+    },
+    {
+      "path": "concrete_floor_worn_001.blend",
+      "size_in_bytes": 19528891,
+      "hash": "SHA256:e32e5f64af4b2fda96bd789b2dd58124be33e71347ed6c88597000e4422a3a44",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/concrete_floor_worn_001.blend"
+    },
+    {
+      "path": "construction_yard.blend",
+      "size_in_bytes": 21970210,
+      "hash": "SHA256:503497f5821eb9b1ad439e719f61e46be6b466ff2c605fec185e8367168e7060",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/construction_yard.blend"
+    },
+    {
+      "path": "damaged_plaster.blend",
+      "size_in_bytes": 20991142,
+      "hash": "SHA256:3295ac225dadb3468f5c264870424315cd79dfc541204a1e73d9fc7c2699e58e",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/damaged_plaster.blend"
+    },
+    {
+      "path": "dark_rock.blend",
+      "size_in_bytes": 18552613,
+      "hash": "SHA256:86d11eee1c2cc3f8e5252ef7eb41153000887e58c8a84807f241e2da3eafe0b8",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/dark_rock.blend"
+    },
+    {
+      "path": "derelict_airfield_02.blend",
+      "size_in_bytes": 21197651,
+      "hash": "SHA256:61dadccfe0ed2286bff48693898b3f6ef00de19675a5e5e13c1bbcdc63446fb5",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/derelict_airfield_02.blend"
+    },
+    {
+      "path": "empty_warehouse_01.blend",
+      "size_in_bytes": 22598599,
+      "hash": "SHA256:101685cad58e27795563c76deeee0b80a73bdeb1ea9d4264c99ef24d21f13b92",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/empty_warehouse_01.blend"
+    },
+    {
+      "path": "fabric_pattern_07.blend",
+      "size_in_bytes": 34637664,
+      "hash": "SHA256:ea6e38d0120790ff4d85dc7dec6e3c95272560262442df654276646c0cb69a95",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/fabric_pattern_07.blend"
+    },
+    {
+      "path": "ferndale_studio_12.blend",
+      "size_in_bytes": 21898704,
+      "hash": "SHA256:1a6f03fb6abb328600afde620f0fcc64a6f51d478bb4823437045b3496ef36e0",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/ferndale_studio_12.blend"
+    },
+    {
+      "path": "flamingo_pan.blend",
+      "size_in_bytes": 20809060,
+      "hash": "SHA256:ed4a17558da445e232e8afef9fb06d40bd01af725b2c3ddb076b59fbbc4bc176",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/flamingo_pan.blend"
+    },
+    {
+      "path": "forest_ground_06.blend",
+      "size_in_bytes": 24194932,
+      "hash": "SHA256:8b0681214f99a58a586dcd81f616cea9b1c1b60884b8d7e1508bef3f207d92dd",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/forest_ground_06.blend"
+    },
+    {
+      "path": "freight_station.blend",
+      "size_in_bytes": 20802434,
+      "hash": "SHA256:b612d32c68880cd140a18cd07ce4c618df940d4711db2ccdf5dbe0cfedbfa0e4",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/freight_station.blend"
+    },
+    {
+      "path": "german_town_street.blend",
+      "size_in_bytes": 20221274,
+      "hash": "SHA256:50f71ed8ebf455c718541a9fe61d56338d3e0eac604eaebc26507644efa27b9b",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/german_town_street.blend"
+    },
+    {
+      "path": "glasshouse_interior.blend",
+      "size_in_bytes": 21992842,
+      "hash": "SHA256:d51f19f140f4415638c554c579b1ffebde540cd2999a822820f79f380f6efc94",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/glasshouse_interior.blend"
+    },
+    {
+      "path": "golden_gate_hills.blend",
+      "size_in_bytes": 22023283,
+      "hash": "SHA256:e16836fcf68d2254eb2c1532e797d7457354267bfc11b1f171c6a43feb3e515f",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/golden_gate_hills.blend"
+    },
+    {
+      "path": "gray_rocks.blend",
+      "size_in_bytes": 23284721,
+      "hash": "SHA256:f079f0544c977952f2ce5fe49e90ffac78dbf2b80a4a4dce549b5d93110cf7e5",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/gray_rocks.blend"
+    },
+    {
+      "path": "hangar_interior.blend",
+      "size_in_bytes": 24032782,
+      "hash": "SHA256:913b25594566d4faf6b6191be718ebf9a8d1568b5eb96c659493b67e84c414c2",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/hangar_interior.blend"
+    },
+    {
+      "path": "historic_cloister_passage.blend",
+      "size_in_bytes": 23521640,
+      "hash": "SHA256:69f11de26444405405df4ff2f60c27b851dfec8dcb6b990c4d25547bbf0025db",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/historic_cloister_passage.blend"
+    },
+    {
+      "path": "interior_tiles.blend",
+      "size_in_bytes": 16263572,
+      "hash": "SHA256:b9416943a7cce4fb1a03ae05ca63aa74a259b1dbef1155955720c22f6f807033",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/interior_tiles.blend"
+    },
+    {
+      "path": "japanese_stone_wall.blend",
+      "size_in_bytes": 22233863,
+      "hash": "SHA256:ba57e5cc1732b661086faea8c65893b7dd0ae38b4d56b40c0e041651d2f829d4",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/japanese_stone_wall.blend"
+    },
+    {
+      "path": "je_gray_02.blend",
+      "size_in_bytes": 25832934,
+      "hash": "SHA256:cbeec14779a4a0ca0a6045dfd5964b264f9ff93a06152d3dbf3050d90fc4a314",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/je_gray_02.blend"
+    },
+    {
+      "path": "kloofendal_48d_partly_cloudy_puresky.blend",
+      "size_in_bytes": 14727206,
+      "hash": "SHA256:c07970fca9a5e071c7abd6dd058c3952345d044cc86c6f31b511a6fd039e656c",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/kloofendal_48d_partly_cloudy_puresky.blend"
+    },
+    {
+      "path": "laminate_floor_02.blend",
+      "size_in_bytes": 19227238,
+      "hash": "SHA256:79b2f549141d6e90b9e8fc1aa5f7e841e6d7393ba0062f69fe2147d2e63ef5ba",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/laminate_floor_02.blend"
+    },
+    {
+      "path": "leather_red_02.blend",
+      "size_in_bytes": 23007515,
+      "hash": "SHA256:e7f411a0d277bcfbf0b4883c828e36e6c17bf72fe42851b3dfc1dddb4b217919",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/leather_red_02.blend"
+    },
+    {
+      "path": "lifebuoy.blend",
+      "size_in_bytes": 14004369,
+      "hash": "SHA256:9472fb48230554cf3199bf957ef4dad2787370cd876a74fa8b60673df87d3f65",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/lifebuoy.blend"
+    },
+    {
+      "path": "lilienstein.blend",
+      "size_in_bytes": 23482318,
+      "hash": "SHA256:c71652862909882e8b0954f091c819833daf1dd1e0d66530f5e669c3e038ee10",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/lilienstein.blend"
+    },
+    {
+      "path": "long_life_food.blend",
+      "size_in_bytes": 7809714,
+      "hash": "SHA256:893dcee80b52e546079a5fa35cbdb7a8f53ee09c3f00e0f6315528eb63665ae1",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/long_life_food.blend"
+    },
+    {
+      "path": "marble_bust_01.blend",
+      "size_in_bytes": 13490580,
+      "hash": "SHA256:943e6e5fb4bbab7e41f68623888c58e0e39efd1cb691f6f628a64e888f245549",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/marble_bust_01.blend"
+    },
+    {
+      "path": "metal_office_desk.blend",
+      "size_in_bytes": 5802757,
+      "hash": "SHA256:bc2ee724d1a5c9d4c2215cdd16507908b26a3ad82bc1bd3ad956c5a658375935",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_office_desk.blend"
+    },
+    {
+      "path": "metal_plate.blend",
+      "size_in_bytes": 24668264,
+      "hash": "SHA256:553780d2c98ba905949d087befc7715b1753c346dbace2cbd643e41f621d3509",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_plate.blend"
+    },
+    {
+      "path": "metal_tool_chest.blend",
+      "size_in_bytes": 12801307,
+      "hash": "SHA256:2de81cabd2c464888fddd1e745d4f8d75af4ba7ae46d50b5e55ed4419658b928",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/metal_tool_chest.blend"
+    },
+    {
+      "path": "metro_noord.blend",
+      "size_in_bytes": 24747446,
+      "hash": "SHA256:3534ef81a730098d45c1b82beb8e1db0d7ee40c4dae2f9b75ea196a0bc1f3a1b",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/metro_noord.blend"
+    },
+    {
+      "path": "mid_century_lounge_chair.blend",
+      "size_in_bytes": 11353240,
+      "hash": "SHA256:dabccecff792b854201fc6b17035fc4a3a69bcd43b5280aea23f7b82b921d6ed",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/mid_century_lounge_chair.blend"
+    },
+    {
+      "path": "modern_evening_street.blend",
+      "size_in_bytes": 21749174,
+      "hash": "SHA256:50e2ad31ea60639335c6548fc6e4ac2241a7eb47e194091f55404f94c383d104",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/modern_evening_street.blend"
+    },
+    {
+      "path": "modular_chainlink_fence.blend",
+      "size_in_bytes": 47386547,
+      "hash": "SHA256:e3f3d55cc69157d1f4dccc1a9f83de5a1d12f084abfc5c228320f60eab35aa10",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/modular_chainlink_fence.blend"
+    },
+    {
+      "path": "modular_wooden_pier.blend",
+      "size_in_bytes": 90318185,
+      "hash": "SHA256:bfcc8dd23626f3f4841b68ddbfc328abb3fb45fee5c21b8462d9fed269ccf59d",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/modular_wooden_pier.blend"
+    },
+    {
+      "path": "namaqualand_boulder_02.blend",
+      "size_in_bytes": 20984694,
+      "hash": "SHA256:cf826c947464fc4728fe9be5a3338b1186da176cd2267bf9e26879ea911314ba",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/namaqualand_boulder_02.blend"
+    },
+    {
+      "path": "oak_veneer_01.blend",
+      "size_in_bytes": 16279117,
+      "hash": "SHA256:ffdbbf83e2887aa085fbba299252bc0ca848599c425f8bb8a41e0e982aa3ebd1",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/oak_veneer_01.blend"
+    },
+    {
+      "path": "overcast_soil_puresky.blend",
+      "size_in_bytes": 10585508,
+      "hash": "SHA256:49c1e2e6c3fa44c425dd66115a3ab2ae405e202df3fe967cd3201c28b6b3414d",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/overcast_soil_puresky.blend"
+    },
+    {
+      "path": "patterned_terracotta_tiling.blend",
+      "size_in_bytes": 14766523,
+      "hash": "SHA256:781100e6aec0d63f11a65d2b9bf5e4d5bf381d4c9a7519e049d89c1aa1c74e18",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/patterned_terracotta_tiling.blend"
+    },
+    {
+      "path": "peppermint_powerplant.blend",
+      "size_in_bytes": 24875831,
+      "hash": "SHA256:f53a6ff77fd8b068d653f752ff77a0af04ec54e7974ed2c2bb4b6c57c6b61016",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/peppermint_powerplant.blend"
+    },
+    {
+      "path": "pocket_watch.blend",
+      "size_in_bytes": 11240061,
+      "hash": "SHA256:0f54af431ce544083a761b27ffd4e0c298f20c7dffcd9df24ab94b56807fd979",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/pocket_watch.blend"
+    },
+    {
+      "path": "portable_generator.blend",
+      "size_in_bytes": 15436217,
+      "hash": "SHA256:98db8b6371f78e2f003542e7f276e7b41412b5433fc7f9aa86b1524fcd5557b9",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/portable_generator.blend"
+    },
+    {
+      "path": "potted_plant_02.blend",
+      "size_in_bytes": 83750237,
+      "hash": "SHA256:6b3a7560774c7a934a205a55fde86e4e21e1c07a106a4c0f892ac81f876a14b7",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/potted_plant_02.blend"
+    },
+    {
+      "path": "pretoria_gardens.blend",
+      "size_in_bytes": 23414810,
+      "hash": "SHA256:66ec5ce5a6341e2f82cbbaed96ca287a7b6c39e56930da6d28cec3c10c7a2dce",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/pretoria_gardens.blend"
+    },
+    {
+      "path": "quarry_04.blend",
+      "size_in_bytes": 18531947,
+      "hash": "SHA256:1af9dace365cb14d4bcc76a1e87c638dc76994fea9c58182a46f45a2789adbec",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/quarry_04.blend"
+    },
+    {
+      "path": "red_brick.blend",
+      "size_in_bytes": 19221930,
+      "hash": "SHA256:76d1876c4db5ed56d37c41a37177e4ee2ee3252fd86b5b8a8d4bd29c421ee957",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/red_brick.blend"
+    },
+    {
+      "path": "resting_place.blend",
+      "size_in_bytes": 20999473,
+      "hash": "SHA256:880c66cd128febc6be0c32028218c5d2ccbc62b3ea4319873c8d66c95eca1f33",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/resting_place.blend"
+    },
+    {
+      "path": "road_damaged.blend",
+      "size_in_bytes": 20968620,
+      "hash": "SHA256:efc01512ae01783463f765b8d2eca6670ce08f28c928db2cbc7f3e2dcc404f14",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/road_damaged.blend"
+    },
+    {
+      "path": "rock_face_03.blend",
+      "size_in_bytes": 21821521,
+      "hash": "SHA256:56ce30fcd217619e5ab7786f11812fa498e92b913f9f39061976f306720c4d3c",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/rock_face_03.blend"
+    },
+    {
+      "path": "rogland_clear_night.blend",
+      "size_in_bytes": 24727590,
+      "hash": "SHA256:cb94950d5d2514a640c5b596c75994a040c9e0ba8f089cf8dfded6fccb0c17b5",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/rogland_clear_night.blend"
+    },
+    {
+      "path": "round_spectacles.blend",
+      "size_in_bytes": 10363771,
+      "hash": "SHA256:cd2a4b186ba5914032b6af4181454690f0fb2be09ff3cf8513e4a5eede89a6c8",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/round_spectacles.blend"
+    },
+    {
+      "path": "rubber_duck_toy.blend",
+      "size_in_bytes": 2921497,
+      "hash": "SHA256:f3d49a8a223b90b4daffc06482850e62d288c326a8755ad94b9e712f78db29c8",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/rubber_duck_toy.blend"
+    },
+    {
+      "path": "rust_coarse_01.blend",
+      "size_in_bytes": 24009863,
+      "hash": "SHA256:06864b065281539bfc0d7d4e857b9bc2ac4fb47ee46a0e4c38c4912ca3b3a082",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/rust_coarse_01.blend"
+    },
+    {
+      "path": "security_camera_01.blend",
+      "size_in_bytes": 7619089,
+      "hash": "SHA256:6b502b01e59d0a95ee024df236805737741e29133dc3da8847e12f71e66c8494",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/security_camera_01.blend"
+    },
+    {
+      "path": "shanghai_bund.blend",
+      "size_in_bytes": 22404847,
+      "hash": "SHA256:e287893328593c3c87b6c39896c633a0ab799d76dee0ba817e4991f8a11eaaad",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/shanghai_bund.blend"
+    },
+    {
+      "path": "ship_pinnace.blend",
+      "size_in_bytes": 289987738,
+      "hash": "SHA256:33702b85639d86ed6fb7c55575159a98a40c12d827425dcb940a9cada4064f15",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/ship_pinnace.blend"
+    },
+    {
+      "path": "studio_small_09.blend",
+      "size_in_bytes": 18882538,
+      "hash": "SHA256:d824f1494677b5b795abaff7eccd310223146e6cb4169bcea2ec2a84ca0b3dad",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/studio_small_09.blend"
+    },
+    {
+      "path": "suburban_garden.blend",
+      "size_in_bytes": 22221600,
+      "hash": "SHA256:48d809737b7af1f7381ff7d90b8d822254a75f21f6ef407a5d82938b678af049",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/suburban_garden.blend"
+    },
+    {
+      "path": "sunny_rose_garden.blend",
+      "size_in_bytes": 22959626,
+      "hash": "SHA256:e65a289fd25c71c6c8f66336c0483f088c55af31e3e710a342ac3974d21e112c",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/sunny_rose_garden.blend"
+    },
+    {
+      "path": "the_sky_is_on_fire.blend",
+      "size_in_bytes": 19214816,
+      "hash": "SHA256:511e7fb85d8922cf47502aec90530958fc0f77f3a6c81fd0f5a8bf5f44535adb",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/the_sky_is_on_fire.blend"
+    },
+    {
+      "path": "treasure_chest.blend",
+      "size_in_bytes": 18736536,
+      "hash": "SHA256:55eddb72f7dbf6e184c5ef2470acd4d77a9197e0a15a9ff5b9b9809d7588f058",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/treasure_chest.blend"
+    },
+    {
+      "path": "tree_lined_driveway.blend",
+      "size_in_bytes": 23346732,
+      "hash": "SHA256:d102b4408cc714fd846a1b075536d62d7ee0d2801e8ea7838238721c8a8f9c7c",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/tree_lined_driveway.blend"
+    },
+    {
+      "path": "valley_of_desolation.blend",
+      "size_in_bytes": 19709837,
+      "hash": "SHA256:f99bc8ef1e5546965948f85c1cbf3e474ac220de934cec9435d0c07c4b837679",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/valley_of_desolation.blend"
+    },
+    {
+      "path": "velour_velvet.blend",
+      "size_in_bytes": 46258350,
+      "hash": "SHA256:7771bdc92a608e723a3ca5d869fa14b875f38c0e1d60ad90a149a81c2699861a",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/velour_velvet.blend"
+    },
+    {
+      "path": "white_stucco.blend",
+      "size_in_bytes": 19269889,
+      "hash": "SHA256:6b8c5b74bc31eecef7dc3952d5964ac4791fa8a731b703f88e328d832e41c73a",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/white_stucco.blend"
+    },
+    {
+      "path": "wine_bottles_01.blend",
+      "size_in_bytes": 36182139,
+      "hash": "SHA256:7c229dd99098afb0d213656b720baf9df0b21ab643698e8375991190e55eaed9",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/wine_bottles_01.blend"
+    },
+    {
+      "path": "wood_table_worn.blend",
+      "size_in_bytes": 20243504,
+      "hash": "SHA256:1c91490006f5a95797ff836ed1c2602e5d15d4f76149321b7ac5ac9c344dbe3f",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/wood_table_worn.blend"
+    },
+    {
+      "path": "wooden_ladder.blend",
+      "size_in_bytes": 11037790,
+      "hash": "SHA256:379f8840f1cf835582991f6a651f125e1437b23662f73368a6c5d73bfa40b3ff",
+      "blender_version": "5.3.17",
+      "url": "https://dl.polyhaven.org/file/bl-repo/v1/wooden_ladder.blend"
+    }
+  ]
+}

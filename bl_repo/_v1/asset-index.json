@@ -1,0 +1,273 @@
+{
+  "schema_version": "1.0.0",
+  "asset_size_bytes": 2332923398,
+  "asset_count": 88,
+  "file_count": 88,
+  "pages": [
+    {
+      "url": "_v1/assets-00000.json",
+      "hash": "SHA256:33f8836a3f94c199b28cc69610422b4df249458296e71f3249943453cd52914f"
+    }
+  ],
+  "catalogs": [
+    {
+      "path": "HDRIs",
+      "uuids": [
+        "6b43eea6-2dee-4960-8ff0-edfb4f283858"
+      ],
+      "simple_name": "HDRIs"
+    },
+    {
+      "path": "HDRIs/Abandoned & Ruins",
+      "uuids": [
+        "9dca8445-763d-5a08-8e51-3e9d534f6c53"
+      ],
+      "simple_name": "HDRIs-Abandoned & Ruins"
+    },
+    {
+      "path": "HDRIs/Coast & Water",
+      "uuids": [
+        "f30d179e-f9a7-57eb-b5d2-f9d71ad39458"
+      ],
+      "simple_name": "HDRIs-Coast & Water"
+    },
+    {
+      "path": "HDRIs/Desert & Arid",
+      "uuids": [
+        "0cbfe03c-0260-5155-8e66-41ede66fc546"
+      ],
+      "simple_name": "HDRIs-Desert & Arid"
+    },
+    {
+      "path": "HDRIs/Fields & Countryside",
+      "uuids": [
+        "e24087fb-50f3-5cb6-b6b3-6940983cc440"
+      ],
+      "simple_name": "HDRIs-Fields & Countryside"
+    },
+    {
+      "path": "HDRIs/Forest & Woodland",
+      "uuids": [
+        "0adcf5c3-a3af-5e36-a317-c5450a6c6b69"
+      ],
+      "simple_name": "HDRIs-Forest & Woodland"
+    },
+    {
+      "path": "HDRIs/Industrial",
+      "uuids": [
+        "05e07e9e-b36a-5cf5-b5e8-f41d49f63d1a"
+      ],
+      "simple_name": "HDRIs-Industrial"
+    },
+    {
+      "path": "HDRIs/Interiors",
+      "uuids": [
+        "cbb92625-87fc-54c1-8938-2ca872466e15"
+      ],
+      "simple_name": "HDRIs-Interiors"
+    },
+    {
+      "path": "HDRIs/Mountains & Hills",
+      "uuids": [
+        "e2be213c-5874-5d77-bd68-611f48865362"
+      ],
+      "simple_name": "HDRIs-Mountains & Hills"
+    },
+    {
+      "path": "HDRIs/Parks & Gardens",
+      "uuids": [
+        "c5ab9a2f-4786-57e3-acc5-3c6a73956e10"
+      ],
+      "simple_name": "HDRIs-Parks & Gardens"
+    },
+    {
+      "path": "HDRIs/Pure Skies",
+      "uuids": [
+        "61ac0f4c-0977-548f-b345-f34c2d9eff35"
+      ],
+      "simple_name": "HDRIs-Pure Skies"
+    },
+    {
+      "path": "HDRIs/Streets & Town",
+      "uuids": [
+        "d1253b6c-5097-59b0-9d1e-f60fe3921d43"
+      ],
+      "simple_name": "HDRIs-Streets & Town"
+    },
+    {
+      "path": "HDRIs/Studio",
+      "uuids": [
+        "852d9f97-4dcb-5415-8b67-70ee62ebcd6b"
+      ],
+      "simple_name": "HDRIs-Studio"
+    },
+    {
+      "path": "Models",
+      "uuids": [
+        "38881529-9e8f-474e-81c8-d535cba978f4"
+      ],
+      "simple_name": "Models"
+    },
+    {
+      "path": "Models/Apparel & Personal Items",
+      "uuids": [
+        "5ffcf167-a620-50f4-968b-f8bff403970e"
+      ],
+      "simple_name": "Models-Apparel & Personal Items"
+    },
+    {
+      "path": "Models/Architecture",
+      "uuids": [
+        "c6ce7aa7-4ec2-5fac-82f8-9c747570e5cb"
+      ],
+      "simple_name": "Models-Architecture"
+    },
+    {
+      "path": "Models/Containers & Storage",
+      "uuids": [
+        "5cd27f07-a7a1-563f-a639-3cf446d62b98"
+      ],
+      "simple_name": "Models-Containers & Storage"
+    },
+    {
+      "path": "Models/Decor & Art",
+      "uuids": [
+        "4871560c-6388-5632-9674-cc074543fc11"
+      ],
+      "simple_name": "Models-Decor & Art"
+    },
+    {
+      "path": "Models/Electronics & Appliances",
+      "uuids": [
+        "e5497ed4-42cd-5f99-a2ff-4d22456f0146"
+      ],
+      "simple_name": "Models-Electronics & Appliances"
+    },
+    {
+      "path": "Models/Food & Kitchen",
+      "uuids": [
+        "95511f9d-9188-528b-827c-c2ae573942f9"
+      ],
+      "simple_name": "Models-Food & Kitchen"
+    },
+    {
+      "path": "Models/Furniture",
+      "uuids": [
+        "b5459a63-3e54-5de8-80b3-dd2e6527186f"
+      ],
+      "simple_name": "Models-Furniture"
+    },
+    {
+      "path": "Models/Industrial & Infrastructure",
+      "uuids": [
+        "f9f72c1f-d49e-52d8-9c2a-fe27dddfac1f"
+      ],
+      "simple_name": "Models-Industrial & Infrastructure"
+    },
+    {
+      "path": "Models/Leisure",
+      "uuids": [
+        "06d3dbc4-9f98-571a-8361-fc2239dcdebf"
+      ],
+      "simple_name": "Models-Leisure"
+    },
+    {
+      "path": "Models/Nature",
+      "uuids": [
+        "d887b1f3-16f9-569b-a737-63ca66807b2f"
+      ],
+      "simple_name": "Models-Nature"
+    },
+    {
+      "path": "Models/Tools & Equipment",
+      "uuids": [
+        "7487dd8b-b5a4-5e45-8bfc-9af1bca0cd22"
+      ],
+      "simple_name": "Models-Tools & Equipment"
+    },
+    {
+      "path": "Models/Vehicles & Transport",
+      "uuids": [
+        "9075c19a-6f20-547f-9d77-210245d0db2a"
+      ],
+      "simple_name": "Models-Vehicles & Transport"
+    },
+    {
+      "path": "Models/Weapons",
+      "uuids": [
+        "ac5957b6-3b31-5398-bfc4-3caa2c139661"
+      ],
+      "simple_name": "Models-Weapons"
+    },
+    {
+      "path": "Textures",
+      "uuids": [
+        "0b4a1940-abfc-435d-ae06-1b1912fcb0fa"
+      ],
+      "simple_name": "Textures"
+    },
+    {
+      "path": "Textures/Asphalt & Bitumen",
+      "uuids": [
+        "14b1fa58-0a32-5a44-9fcc-4e3a70655c2b"
+      ],
+      "simple_name": "Textures-Asphalt & Bitumen"
+    },
+    {
+      "path": "Textures/Brick & Block",
+      "uuids": [
+        "d58e299e-3614-59cb-aa58-d51081ce27ad"
+      ],
+      "simple_name": "Textures-Brick & Block"
+    },
+    {
+      "path": "Textures/Ceramic",
+      "uuids": [
+        "ddfe77d6-042a-5bc5-aed9-17689b32c9c3"
+      ],
+      "simple_name": "Textures-Ceramic"
+    },
+    {
+      "path": "Textures/Concrete",
+      "uuids": [
+        "bf0ac183-1cb8-51c5-a1ae-27b623a3dc04"
+      ],
+      "simple_name": "Textures-Concrete"
+    },
+    {
+      "path": "Textures/Ground & Terrain",
+      "uuids": [
+        "093b53b6-72b6-5509-b70d-ff771361ce42"
+      ],
+      "simple_name": "Textures-Ground & Terrain"
+    },
+    {
+      "path": "Textures/Metal",
+      "uuids": [
+        "0464e190-894f-5084-9a28-b04421cb06f9"
+      ],
+      "simple_name": "Textures-Metal"
+    },
+    {
+      "path": "Textures/Stone",
+      "uuids": [
+        "43443496-f24e-5150-8a25-f5cd3c9455e2"
+      ],
+      "simple_name": "Textures-Stone"
+    },
+    {
+      "path": "Textures/Textiles & Leather",
+      "uuids": [
+        "e047764c-df60-50d0-a05a-557eaffe05ed"
+      ],
+      "simple_name": "Textures-Textiles & Leather"
+    },
+    {
+      "path": "Textures/Wood",
+      "uuids": [
+        "16ce9f0f-197e-50d9-97a5-03110dec6b9f"
+      ],
+      "simple_name": "Textures-Wood"
+    }
+  ]
+}
