@@ -96,6 +96,90 @@ paths:
                 $ref: '#/components/schemas/assets'
         '400':
           description: Bad request, e.g. unsupported asset type or unknown category
+  /search:
+    get:
+      summary: Hybrid semantic + keyword search over asset metadata.
+      description: >-
+        Search that understands intent and synonyms and works in any language - `couch` finds sofas,
+        `plastique` finds plastic. Returns the **full ranked list** of matching slugs, most relevant
+        first, rather than a small page of results. Look up each slug's metadata via `/assets` (which
+        you will usually already have) or `/info/{id}`.
+
+
+        Two rankings are fused: vector similarity, and a keyword match over name, tags and
+        categories. Reciprocal Rank Fusion combines them by POSITION rather than score, so an asset
+        both agree on outranks one only the vectors liked. An exact slug or name match is pinned
+        first. A query that matches no keywords at all - any non-Latin query, for instance - falls
+        back to pure similarity on its own, so multilingual search is unaffected.
+
+
+        **The array order is the ranking.** `score` is the vector similarity only: it is what `min`
+        filters on and the interpretable number, but it does not by itself explain the order once a
+        keyword match has lifted something. Scores are also **not** a reliable "we have nothing like
+        this" signal - the library always returns its closest assets even for a query it has nothing
+        for - so treat a low top score as a hint, not a verdict.
+
+
+        Early-access assets (those with a `date_published` in the future) are included with
+        `future=true`, the same way `/assets` works. Unpublished work in progress is never returned.
+      tags:
+        - assets
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: The search query. Send it trimmed and lower-cased so it shares a cache entry with equivalent queries.
+          schema:
+            type: string
+            maxLength: 100
+          example: mossy rock
+        - name: t
+          in: query
+          description: 'Filter by asset type. `type` is accepted as an alias. One of: `hdris`, `textures`, `models`, `all`.'
+          schema:
+            type: string
+            enum: [hdris, textures, models, all]
+          example: textures
+        - name: future
+          in: query
+          description: Include early-access assets that are scheduled but not yet published.
+          schema:
+            type: boolean
+          example: true
+        - name: min
+          in: query
+          description: Minimum similarity score to return. Defaults to `0.35`. Pass `0` for every asset, ranked.
+          schema:
+            type: number
+            minimum: -1
+            maximum: 1
+          example: 0.45
+        - name: limit
+          in: query
+          description: Return at most this many results. `total` still reports the full count, so a result counter stays accurate.
+          schema:
+            type: integer
+          example: 50
+        - name: hybrid
+          in: query
+          description: Set to `0` to skip the keyword lane and rank on vector similarity alone. Mostly for comparing the two.
+          schema:
+            type: boolean
+            default: true
+          example: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/searchResults'
+        '400':
+          description: Bad request - missing or over-long query, or an unsupported asset type
+        '429':
+          description: Too many requests from this IP. Retry after the number of seconds in the `Retry-After` header.
+        '503':
+          description: The query could not be embedded. Fall back to your own keyword matching.
   /info/{id}:
     get:
       summary: Information about an individual asset specified by its unique ID.
@@ -330,6 +414,51 @@ paths:
 
 components:
   schemas:
+    searchResults:
+      type: object
+      properties:
+        query:
+          type: string
+          description: The normalised query that was actually searched.
+          example: mossy rock
+        type:
+          type: string
+          description: The asset type filter that was applied.
+          example: textures
+        model:
+          type: string
+          description: Embedding model version. Changes when the library is re-embedded, which shifts scores.
+          example: qwen3-0.6b/v1
+        minScore:
+          type: number
+          example: 0.35
+        hybrid:
+          type: boolean
+          description: Whether the keyword lane actually contributed. False when it was disabled, or when the query matched no keywords (e.g. a non-Latin query), in which case the ranking is pure similarity.
+          example: true
+        keywordMatches:
+          type: integer
+          description: How many assets the keyword lane matched. Mostly useful for explaining a surprising ranking.
+          example: 21
+        total:
+          type: integer
+          description: Number of results before `limit` is applied. Use this for a result count.
+          example: 269
+        considered:
+          type: integer
+          description: Assets eligible for this search at all. A `total` of 0 with a large `considered` means nothing matched; a small `considered` means the filters excluded almost everything.
+          example: 521
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              slug:
+                type: string
+                example: sofa_01
+              score:
+                type: number
+                example: 0.5648
     assets:
       type: object
       properties:

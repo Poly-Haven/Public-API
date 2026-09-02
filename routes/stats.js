@@ -637,53 +637,48 @@ router.get('/software', async (req, res) => {
   }
 })
 
+// Searches are rolled up nightly by admin's /api/cron/searchGapStats and served from one document.
+//
+// This used to sweep the last 50,000 `searches` documents on every request, with no Cache-Control
+// and no in-memory cache, unlike its siblings here. The routine cost of that was small - polyhaven's
+// /stats is ISR on a 24h revalidate, so it asked about once a day per region - but the endpoint is
+// public and unauthenticated, and each bare hit was ~$0.03 in reads with nothing at the origin
+// bounding how often that could happen.
+//
+// The rollup is not really a cost fix though. The supply-quality numbers below cannot be computed
+// per request at any price: they need one /search call per term, each embedding a query through
+// Workers AI, throttled under the rate limiter. That is ~5.5 minutes for 150 terms.
+//
+// The shape changed with it: the old `avg` (average number of results for a term) is gone, because
+// semantic search returns hundreds of results for anything and the number stopped distinguishing a
+// well-served term from an unserved one. In its place each term carries `top1` and `mean10`
+// similarities - do we have the thing at all, and do we have a selection of it. See the cron for
+// why both are needed and why an average of the two is not a third signal.
+const SEARCHES_TTL = 30 * 60 * 1000
+let searchesCache = null
+
 router.get('/searches', async (req, res) => {
-  const types = ['hdris', 'textures', 'models']
-  let collectionRef = db.collection('searches').orderBy('timestamp', 'desc').limit(50000)
+  if (searchesCache && Date.now() - searchesCache.time < SEARCHES_TTL) {
+    res.set('Cache-Control', 'public, max-age=600, s-maxage=3600')
+    return res.status(200).json(searchesCache.data)
+  }
 
-  const collection = await collectionRef.get()
-
-  const searches = collection.docs
-    .map((doc) => doc.data())
-    .filter((dd) => dd.search_term && dd.search_term.length >= 3 && isNaN(dd.search_term) && types.includes(dd.type))
-
-  const returnData = { hdris: {}, textures: {}, models: {} }
-
-  for (const search of searches) {
-    const t = search.type
-    const s = search.search_term.trim().toLowerCase()
-
-    if (!returnData[t][s]) {
-      returnData[t][s] = { count: 0, total: 0 }
+  try {
+    const doc = await db.collection('search_stats').doc('rollup').get()
+    if (!doc.exists) {
+      // Before the cron's first run, or if it has been failing. An explicit miss the stats page can
+      // skip beats a chart drawn from the half of the data that is still available.
+      res.set('Cache-Control', 'no-store')
+      return res.status(503).send('Search stats have not been rolled up yet')
     }
-    returnData[t][s].count++
-    returnData[t][s].total += search.results
+    const data = doc.data()
+    searchesCache = { data, time: Date.now() }
+    res.set('Cache-Control', 'public, max-age=600, s-maxage=3600')
+    res.status(200).json(data)
+  } catch (e) {
+    console.error('[STATS] searches rollup failed:', e)
+    res.status(500).send('Failed to fetch search stats')
   }
-
-  for (const type in returnData) {
-    for (const term in returnData[type]) {
-      returnData[type][term].avg = returnData[type][term].total / returnData[type][term].count
-      delete returnData[type][term].total // Clean up
-    }
-  }
-
-  // Top searches logic...
-  for (const type in returnData) {
-    const sorted = Object.entries(returnData[type])
-      .sort(([, a], [, b]) => b.count - a.count)
-      .slice(0, 50)
-      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
-
-    returnData[type] = sorted
-  }
-
-  returnData.meta = {
-    total: searches.length,
-    earliestSearch: searches[searches.length - 1]?.timestamp,
-    latestSearch: searches[0]?.timestamp,
-  }
-
-  res.status(200).json(returnData)
 })
 
 // /post_download takes no parameters and hands the same few numbers to every caller, yet computing

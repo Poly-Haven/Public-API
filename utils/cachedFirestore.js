@@ -21,9 +21,28 @@ function getCacheStats() {
   }
 }
 
+// Anything holding derived state built from a cached collection needs to know when that state is
+// void. admin fires /clear_cache on every publish, before the Cloudflare purge, so without this the
+// search index would keep serving pre-publish vectors for its whole TTL - the exact stale-refill
+// failure the ordering in admin's purgeAssetCache.ts exists to avoid.
+const clearListeners = new Set()
+
+function onClear(fn) {
+  clearListeners.add(fn)
+  return () => clearListeners.delete(fn)
+}
+
 function clearCache() {
   const before = getCacheStats()
   collectionsCache.clear()
+  for (const fn of clearListeners) {
+    // A listener that throws must not stop the flush, or one bad subscriber pins every cache.
+    try {
+      fn()
+    } catch (err) {
+      console.error('[CACHE CLEAR] listener failed:', err)
+    }
+  }
   const after = getCacheStats()
 
   console.log(
@@ -310,5 +329,6 @@ function cachedFirestore() {
 
 cachedFirestore.clearCache = clearCache
 cachedFirestore.getCacheStats = getCacheStats
+cachedFirestore.onClear = onClear
 
 module.exports = cachedFirestore
