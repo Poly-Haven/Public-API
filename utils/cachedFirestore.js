@@ -4,6 +4,12 @@ const firestore = require('../firestore')
 const collectionsCache = new Map()
 const pendingRequests = new Map() // Track ongoing requests to prevent duplicate fetches
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+// Bumped by every clearCache(). A collection read that started before a flush may predate the
+// publish that triggered it, so comparing this before and after the read tells us whether the
+// result is safe to keep. Without it, an in-flight fetch resolving just after a flush writes its
+// pre-publish snapshot back with a fresh timestamp - re-arming a full TTL of staleness at exactly
+// the moment the flush was supposed to guarantee freshness.
+let cacheGeneration = 0
 // const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
@@ -34,6 +40,8 @@ function onClear(fn) {
 
 function clearCache() {
   const before = getCacheStats()
+  // Before clearing, so any read already in flight sees the new value when it resolves.
+  cacheGeneration++
   collectionsCache.clear()
   for (const fn of clearListeners) {
     // A listener that throws must not stop the flush, or one bad subscriber pins every cache.
@@ -122,19 +130,34 @@ async function getCachedCollection(collectionName) {
   console.log(`[${collectionName.toUpperCase()} CACHE MISS] Fetching fresh collection`)
 
   // Create a promise for this request and store it to prevent duplicate requests
+  const readCollection = async () => {
+    const db = firestore()
+    const collection = await db.collection(collectionName).get()
+    // Convert to the same format as the original code expects
+    let docs = {}
+    collection.forEach((doc) => {
+      docs[doc.id] = doc.data()
+    })
+    return docs
+  }
+
   const fetchPromise = (async () => {
     try {
-      const db = firestore()
-      const collection = await db.collection(collectionName).get()
+      let generation = cacheGeneration
+      let docs = await readCollection()
 
-      // Convert to the same format as the original code expects
-      let docs = {}
-      collection.forEach((doc) => {
-        docs[doc.id] = doc.data()
-      })
+      if (generation !== cacheGeneration) {
+        // A clear_cache landed while this read was in flight, so `docs` may be the very snapshot
+        // the flush was meant to discard. Read once more - that read demonstrably starts after the
+        // flush. Once, not in a loop: another flush during the retry is someone publishing again,
+        // and their own flush will be followed by their own reads.
+        console.log(`[${collectionName.toUpperCase()} CACHE STALE] Flushed mid-read, re-reading`)
+        generation = cacheGeneration
+        docs = await readCollection()
+      }
 
-      // Cache the result (double-check cache hasn't been populated by another request)
-      if (!isCacheValid(collectionsCache.get(collectionName))) {
+      // Only cache a result that no flush has invalidated since it was read.
+      if (generation === cacheGeneration && !isCacheValid(collectionsCache.get(collectionName))) {
         collectionsCache.set(collectionName, {
           data: docs,
           timestamp: Date.now(),
@@ -144,8 +167,11 @@ async function getCachedCollection(collectionName) {
 
       return docs
     } finally {
-      // Always clean up the pending request
-      pendingRequests.delete(collectionName)
+      // Only if it is still ours. A later request may have replaced it (this one having been
+      // dropped by a flush), and deleting that would strand its waiters on an orphaned promise.
+      if (pendingRequests.get(collectionName) === fetchPromise) {
+        pendingRequests.delete(collectionName)
+      }
     }
   })()
 
@@ -309,12 +335,17 @@ function cachedFirestore() {
                     }
                   }
                 } catch (error) {
+                  // Rethrow rather than reporting `exists: false`. A failed read and a genuinely
+                  // missing document are completely different answers, and callers act on them
+                  // very differently: validateKey turned a timeout here into "Invalid API key"
+                  // (403) for a paying customer across every /v2 endpoint, and v2/files turned it
+                  // into a 404 for an asset that exists. A caller that cannot tell the two apart
+                  // cannot help but get it wrong, so give it something it can distinguish.
+                  //
+                  // Consistent with the collection path above, which has always let read errors
+                  // propagate; only this doc-level fallback swallowed them.
                   console.error(`[${collectionName.toUpperCase()} DOC ERROR] Failed to fetch document ${docId}:`, error)
-                  return {
-                    id: docId,
-                    exists: false,
-                    data: () => null,
-                  }
+                  throw error
                 }
               }
             },

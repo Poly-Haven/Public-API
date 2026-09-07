@@ -7,6 +7,18 @@ require('dotenv').config()
 const app = express()
 app.use(cors())
 
+// Express 4 does not catch rejections from `async` route handlers, and this Node version's default
+// for an unhandled rejection is to terminate the process - so one Firestore hiccup inside any async
+// handler takes down every other in-flight request on this node, not just its own. PM2 restarts us,
+// but the blast radius is the whole node for a fault that belongs to one request.
+//
+// This does not answer the request that failed; that client waits for its own timeout. It only
+// stops one request's failure from becoming everyone's. Answering properly needs an error-handling
+// middleware registered after the routes, which the async route mounting below currently prevents.
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION] a request failed without being caught:', reason)
+})
+
 let debugRequests = false
 const isDev = process.env.NODE_ENV === 'development'
 // Middleware that logs the request url to the console

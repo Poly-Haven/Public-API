@@ -1,6 +1,23 @@
 const cachedFirestore = require('./cachedFirestore')
 const patreon_tiers = require('../constants/patreon_tiers.json')
 
+/**
+ * Returned when a Firestore read fails, as opposed to succeeding and finding nothing.
+ *
+ * The distinction matters more than it looks. A read error used to surface as `exists: false`, so a
+ * momentary Firestore blip told a paying Superhive or Patreon customer their key was invalid - a 403,
+ * which reads as permanent and which a client may respond to by discarding the key. 503 says what is
+ * actually true: we could not check, try again.
+ */
+const unavailable = (what) => ({
+  valid: false,
+  error: {
+    status: 503,
+    error: '503 Service Unavailable',
+    message: `Could not verify ${what} right now, please retry in a moment`,
+  },
+})
+
 const validateKey = async (req) => {
   const db = cachedFirestore()
 
@@ -32,7 +49,13 @@ const validateKey = async (req) => {
   }
 
   // Check if key exists in database
-  let keyDoc = await db.collection('api_keys').doc(apiKey).get()
+  let keyDoc
+  try {
+    keyDoc = await db.collection('api_keys').doc(apiKey).get()
+  } catch (err) {
+    console.error('[VALIDATE KEY] Could not read api_keys:', err)
+    return unavailable('your API key')
+  }
   if (!keyDoc.exists) {
     return {
       valid: false,
@@ -65,7 +88,17 @@ const validateKey = async (req) => {
     includeUpcoming = true
   } else {
     if (keyData.patron_uid) {
-      const patronDoc = await db.collection('patrons').doc(keyData.patron_uid).get()
+      // Also 503 rather than quietly leaving includeUpcoming false. Failing to confirm a patron's
+      // tier is not the same as confirming they have no early access, and the second is what the
+      // old behaviour asserted - so a supporter with the Early Access reward would hit a 403 on the
+      // very assets they pay for. A retryable error is the honest answer to a read we could not do.
+      let patronDoc
+      try {
+        patronDoc = await db.collection('patrons').doc(keyData.patron_uid).get()
+      } catch (err) {
+        console.error('[VALIDATE KEY] Could not read patrons:', err)
+        return unavailable('your supporter status')
+      }
       if (patronDoc.exists) {
         const patronData = patronDoc.data()
         let patronIsValid = false
