@@ -3,6 +3,8 @@ const fetch = require('node-fetch')
 const { XMLBuilder } = require('fast-xml-parser')
 const router = express.Router()
 
+const { thumbnailUrl } = require('../utils/imgUrl')
+
 const assetTypeNames = ['HDRI', 'Texture', 'Model']
 
 router.get('/', async (req, res) => {
@@ -37,9 +39,14 @@ router.get('/', async (req, res) => {
             title: assets[id].name,
             link: `https://polyhaven.com/a/${id}`,
             guid: id,
-            description: `<![CDATA[<a href="https://polyhaven.com/a/${id}"><img src="https://cdn.polyhaven.com/asset_img/thumbs/${id}.png?width=256&height=256" alt="${
-              assets[id].name
-            }" /></a> Download this free ${assetTypeNames[assets[id].type]} from Poly Haven]]>`,
+            // /assets returns img_version on each asset, so the feed's thumbnails are versioned
+            // too - feed readers cache images at least as aggressively as browsers do.
+            description: `<![CDATA[<a href="https://polyhaven.com/a/${id}"><img src="${thumbnailUrl(
+              id,
+              assets[id]
+            )}" alt="${assets[id].name}" /></a> Download this free ${
+              assetTypeNames[assets[id].type]
+            } from Poly Haven]]>`,
             pubDate: new Date(assets[id].date_published * 1000).toUTCString(),
           })),
         },

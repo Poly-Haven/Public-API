@@ -3,6 +3,7 @@ const router = express.Router()
 const asset_types = require('../../asset_types.json')
 
 const cachedFirestore = require('../../utils/cachedFirestore')
+const { thumbnailUrl } = require('../../utils/imgUrl')
 const validateKey = require('../../utils/validateKey')
 const { applyFilters, vaultIdOf } = require('../../utils/assetFilters')
 const { upcomingVaultIds } = require('../../utils/vaultStatus')
@@ -65,7 +66,7 @@ router.get('/', async (req, res) => {
     if (staging) return
     if (hiddenVaults.size && hiddenVaults.has(vaultIdOf(asset))) return
     if (!includeUpcoming && asset.date_published > now) return
-    asset.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${doc.id}.png?width=256&height=256`
+    asset.thumbnail_url = thumbnailUrl(doc.id, asset)
     docs[doc.id] = asset
   })
 

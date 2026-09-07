@@ -499,7 +499,7 @@ components:
           dimensions:
             - 30000
             - 30000
-          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256&v=7f3a91c4
         aerial_beach_01:
           name: Aerial Beach 01
           description: Free 16K aerial-view texture of wavy coastal beach sand, tileable for natural outdoor terrain.
@@ -533,7 +533,7 @@ components:
           dimensions:
             - 30000
             - 30000
-          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_beach_01.png?width=256&height=256
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_beach_01.png?width=256&height=256&v=7f3a91c4
     asset:
       type: object
       description: All asset types include this data.
@@ -562,6 +562,15 @@ components:
           type: string
           description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
           example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
+        img_version:
+          type: string
+          description: >-
+            A short hash of the asset's images, which changes whenever any of them are re-uploaded.
+            It is already appended to thumbnail_url as a `v` parameter; use it yourself when
+            building URLs for the asset's other images (asset_img/primary, /renders, /backplates
+            and /map_previews) so a replaced image is not served from a stale cache. May be absent
+            on assets compiled before it existed, in which case omit the parameter.
+          example: 7f3a91c4
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -621,7 +630,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/ArmChair_01.png?width=256&height=256
+          example: https://cdn.polyhaven.com/asset_img/thumbs/ArmChair_01.png?width=256&height=256&v=7f3a91c4
     hdri:
       type: object
       description: HDRI data, extends `asset` schema.
@@ -650,6 +659,15 @@ components:
           type: string
           description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
           example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
+        img_version:
+          type: string
+          description: >-
+            A short hash of the asset's images, which changes whenever any of them are re-uploaded.
+            It is already appended to thumbnail_url as a `v` parameter; use it yourself when
+            building URLs for the asset's other images (asset_img/primary, /renders, /backplates
+            and /map_previews) so a replaced image is not served from a stale cache. May be absent
+            on assets compiled before it existed, in which case omit the parameter.
+          example: 7f3a91c4
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -743,7 +761,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/abandoned_factory_canteen_01.png?width=256&height=256
+          example: https://cdn.polyhaven.com/asset_img/thumbs/abandoned_factory_canteen_01.png?width=256&height=256&v=7f3a91c4
         whitebalance:
           nullable: true
           type: integer
@@ -796,6 +814,15 @@ components:
           type: string
           description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
           example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
+        img_version:
+          type: string
+          description: >-
+            A short hash of the asset's images, which changes whenever any of them are re-uploaded.
+            It is already appended to thumbnail_url as a `v` parameter; use it yourself when
+            building URLs for the asset's other images (asset_img/primary, /renders, /backplates
+            and /map_previews) so a replaced image is not served from a stale cache. May be absent
+            on assets compiled before it existed, in which case omit the parameter.
+          example: 7f3a91c4
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -881,7 +908,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/brick_floor_003.png?width=256&height=256
+          example: https://cdn.polyhaven.com/asset_img/thumbs/brick_floor_003.png?width=256&height=256&v=7f3a91c4
         dimensions:
           type: array
           description: An array with the dimensions of this asset on each axis in millimeters.
@@ -914,6 +941,15 @@ components:
           type: string
           description: A SHA1 hash of the files object (from the /files endpoint), which will change whenever the files are updated.
           example: 8746a9a941bebe5743d0a710e11cb91beb225ca6
+        img_version:
+          type: string
+          description: >-
+            A short hash of the asset's images, which changes whenever any of them are re-uploaded.
+            It is already appended to thumbnail_url as a `v` parameter; use it yourself when
+            building URLs for the asset's other images (asset_img/primary, /renders, /backplates
+            and /map_previews) so a replaced image is not served from a stale cache. May be absent
+            on assets compiled before it existed, in which case omit the parameter.
+          example: 7f3a91c4
         authors:
           type: object
           description: Who created this asset, and what they did.
@@ -1010,7 +1046,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/horse_statue_01.png?width=256&height=256
+          example: https://cdn.polyhaven.com/asset_img/thumbs/horse_statue_01.png?width=256&height=256&v=7f3a91c4
     hdriFiles:
       type: object
       properties:

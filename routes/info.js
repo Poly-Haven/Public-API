@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const firestore = require('../firestore')
+const { thumbnailUrl } = require('../utils/imgUrl')
 
 const db = firestore()
 
@@ -46,7 +47,7 @@ router.get('/:id', async (req, res) => {
     // deleted so the doc is never mutated, in case this route ever moves onto the shared cache.
     const { reviewers, ...data } = doc.data()
     // Add thumbnail URL
-    data.thumbnail_url = `https://cdn.polyhaven.com/asset_img/thumbs/${asset_id}.png?width=256&height=256`
+    data.thumbnail_url = thumbnailUrl(asset_id, data)
     // Asset data only changes on publish, and publishing purges the CDN. Overrides the
     // no-store set at the top of the handler.
     res.set('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
