@@ -52,6 +52,12 @@ router.get('/:id', async (req, res) => {
   })
 
   if (!docs[asset_id]) {
+    // This route reads the shared 10-minute collection cache and has no per-document
+    // fallback, so a just-created asset is genuinely absent here for a while - and unlike a
+    // permanent 404 that one must not be cached. Whether the edge honours this depends on the
+    // zone's cache rules, which currently rewrite Cache-Control; the publish purge covers
+    // /similar/<slug> either way.
+    res.set('Cache-Control', 'no-store')
     res.status(404).send(`No asset with id ${escape(asset_id)}`)
     return
   }
