@@ -135,6 +135,25 @@ const search = async ({ queryVector, isAllowed, minScore = 0 }) => {
   return { results, scores, index: idx }
 }
 
+/**
+ * One asset's own stored vector, normalised, or null if it has none.
+ *
+ * Lets /similar rank an asset against the library without a Workers AI round trip: the asset was
+ * already embedded at publish time, and document-to-document is symmetric, so the query
+ * instruction that `workersAI.asQuery` wraps a search term in deliberately does NOT belong on it.
+ */
+const getVector = async (slug) => {
+  const idx = await getIndex()
+  // Linear scan over ~2.4k slugs, against the ~2.4M multiply-adds the scan it feeds costs.
+  const i = idx.slugs.indexOf(slug)
+  if (i === -1) return null
+  const offset = i * DIMS
+  const invNorm = idx.invNorms[i]
+  const vector = new Float32Array(DIMS)
+  for (let k = 0; k < DIMS; k++) vector[k] = idx.vectors[offset + k] * invNorm
+  return vector
+}
+
 const stats = () => {
   if (!index) return { built: false }
   return {
@@ -150,4 +169,4 @@ const stats = () => {
   }
 }
 
-module.exports = { search, getIndex, invalidate, stats, DIMS }
+module.exports = { search, getVector, getIndex, invalidate, stats, DIMS }
