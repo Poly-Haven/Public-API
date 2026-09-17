@@ -9,8 +9,21 @@ const { upcomingVaultIds } = require('../utils/vaultStatus')
 
 const db = cachedFirestore()
 
-const DEFAULT_NUM = 6
+/**
+ * Twelve, matching the strip polyhaven.com renders. It is the default rather than a `?num=12` on
+ * the website's request because admin's purgeAssetUrls can only purge exact URLs (Pro plan), and
+ * the one it purges on publish is the bare `/similar/<slug>` - a query-string variant the website
+ * asks for on every page view but nothing ever purges would serve pre-publish data for days.
+ */
+const DEFAULT_NUM = 12
 const MAX_NUM = 50
+
+/**
+ * The reserved metadata slot is one tile in six, so it is not spent on a list shorter than that -
+ * out of three it would make the metadata lane a third of the answer. Deliberately not tied to
+ * DEFAULT_NUM, which tracks the website's strip and moved once already.
+ */
+const RESERVED_MIN_NUM = 6
 
 /**
  * How far below the best neighbour's cosine the metadata lane's pick may sit and still be shown.
@@ -187,9 +200,7 @@ router.get('/:id', async (req, res) => {
     })
     ranked = results
 
-    // Never on a list shorter than the strip's six: one tile in six is the budget, and spending it
-    // out of three would make the metadata lane a third of the answer.
-    if (!vectorOnly && num >= DEFAULT_NUM && results.length > num) {
+    if (!vectorOnly && num >= RESERVED_MIN_NUM && results.length > num) {
       const idf = buildIdf(Object.values(docs))
       const pick = metadataRanking(this_asset, docs, idf, (slug) => scores.get(slug))[0]
       // Measured against the best VECTOR score, which is not necessarily ranked[0] once the
