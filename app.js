@@ -119,7 +119,13 @@ app.use('/v2/superhive_' + process.env.SUPERHIVE_KEY, require('./superhive_hook'
 app.get('/', (req, res) => {
   res.status(200).send(`Welcome to the Poly Haven API!
   Documentation for available endpoints is here:
-  https://redocly.github.io/redoc/?url=https://api.polyhaven.com/api-docs/swagger.json&nocors`)
+  https://redocly.github.io/redoc/?url=https://api.polyhaven.com/api-docs/swagger.json&nocors
+  A short guide for agents and LLM tools is here:
+  https://polyhaven.com/llms.txt`)
 })
+
+// Agents look for these.
+app.get('/llms.txt', (req, res) => res.redirect(301, 'https://polyhaven.com/llms.txt'))
+app.get('/openapi.json', (req, res) => res.redirect(301, 'https://api.polyhaven.com/api-docs/swagger.json'))
 
 app.listen(3000)
