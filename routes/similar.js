@@ -4,8 +4,7 @@ const router = express.Router()
 
 const cachedFirestore = require('../utils/cachedFirestore')
 const embeddingIndex = require('../utils/embeddingIndex')
-const { vaultIdOf } = require('../utils/assetFilters')
-const { upcomingVaultIds } = require('../utils/vaultStatus')
+const { publicVaultIds, maskVault } = require('../utils/vaultStatus')
 
 const db = cachedFirestore()
 
@@ -153,15 +152,11 @@ router.get('/:id', async (req, res) => {
   // Captured before the gates below, so an early-access asset's own page still gets a strip.
   const this_asset = docs[asset_id]
 
-  // Filter what may not be shown. Same gates /assets and /search apply, including the upcoming
-  // vaults one: this strip is rendered on a public asset page, so it must not be the place an
-  // unannounced vault leaks from.
+  // Filter what may not be shown: staging, and anything not yet public - which includes every
+  // vaulted asset, parked on its year-3000 date.
   const now = Math.floor(Date.now() / 1000)
-  const hiddenVaults = await upcomingVaultIds()
   for (const id in docs) {
     if (docs[id].staging || docs[id].date_published > now) {
-      delete docs[id]
-    } else if (hiddenVaults.size && hiddenVaults.has(vaultIdOf(docs[id]))) {
       delete docs[id]
     }
   }
@@ -228,11 +223,17 @@ router.get('/:id', async (req, res) => {
     selected = [...ranked.slice(0, num - 1), reserved]
   }
 
+  // Everything left is public, so an unannounced vault can only reach here on an asset that was
+  // published first and put in the vault later. Masked anyway, the same as every other response.
+  const publicVaults = await publicVaultIds()
   const similar = {}
   for (const [slug, score] of selected) {
     // Copy before adding similarity. doc.data() hands back the live cached object, so writing to it
     // leaks this request's score into every other route that reads the cached assets collection.
-    similar[slug] = { ...docs[slug], similarity: score === null ? null : Math.round(score * 10000) / 10000 }
+    similar[slug] = {
+      ...maskVault(docs[slug], publicVaults),
+      similarity: score === null ? null : Math.round(score * 10000) / 10000,
+    }
   }
 
   res.status(200).json(similar)

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const cachedFirestore = require('../utils/cachedFirestore')
+const { publicVaultIds } = require('../utils/vaultStatus')
 
 // Read through the shared cache so this endpoint costs one Firestore read per node per 10 minutes
 // rather than one per request - per-read pricing is a real constraint here, and admin's
@@ -23,7 +24,19 @@ router.get('/', async (req, res) => {
   // An empty manifest is a valid answer, not an error: consumers fall back to unversioned URLs,
   // which is exactly the behaviour that predates this endpoint. Returning 404 would instead make
   // every caller special-case it.
-  const versions = doc.exists ? doc.data() : {}
+  const all = doc.exists ? doc.data() : {}
+
+  // A vault's banner is vaults/<id>.png, and polyhaven.com bakes this manifest's vaults/ entries
+  // into every asset page - so banner art uploaded ahead of an announcement would publish the
+  // vault's name sitewide. Banners are only served once their vault is public. Subfolders
+  // (vaults/icons/, the roadmap's milestone icons) are not vault ids and pass through.
+  const publicVaults = await publicVaultIds()
+  const versions = {}
+  for (const [path, version] of Object.entries(all)) {
+    const banner = path.match(/^vaults\/([^/]+)\.[a-z0-9]+$/i)
+    if (banner && !publicVaults.has(banner[1])) continue
+    versions[path] = version
+  }
 
   // Must be >= 43200. This zone silently rewrites any shorter max-age up to 43200 and drops
   // s-maxage, so asking for less would be a promise the edge discards. The manifest changes only

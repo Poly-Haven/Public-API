@@ -4,6 +4,7 @@ const router = express.Router()
 
 const firestore = require('../firestore')
 const { thumbnailUrl } = require('../utils/imgUrl')
+const { publicVaultIds, maskVault } = require('../utils/vaultStatus')
 
 const db = firestore()
 
@@ -45,7 +46,10 @@ router.get('/:id', async (req, res) => {
     // reviewers is internal review metadata and has no business in a public response. /assets and
     // /v2/assets have always stripped it, this endpoint just never did. Destructured rather than
     // deleted so the doc is never mutated, in case this route ever moves onto the shared cache.
-    const { reviewers, ...data } = doc.data()
+    const { reviewers, ...unmasked } = doc.data()
+    // An asset in a vault that hasn't been announced is attributed to "an upcoming vault" only -
+    // this is the response its asset page is built from.
+    const data = maskVault(unmasked, await publicVaultIds())
     // Add thumbnail URL
     data.thumbnail_url = thumbnailUrl(asset_id, data)
     // Asset data only changes on publish, and publishing purges the CDN. Overrides the

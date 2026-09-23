@@ -3,8 +3,6 @@ const embeddingIndex = require('./embeddingIndex')
 const keywordIndex = require('./keywordIndex')
 const rankFusion = require('./rankFusion')
 const workersAI = require('./workersAI')
-const { vaultIdOf } = require('./assetFilters')
-const { upcomingVaultIds } = require('./vaultStatus')
 
 const asset_types = require('../asset_types.json')
 
@@ -36,8 +34,6 @@ const normaliseQuery = (raw) =>
  * Slugs an unauthenticated caller may see, applying exactly the gates /assets applies:
  *
  *  - `staging`         work in progress, never public.
- *  - upcoming vaults   not yet announced. Withheld from every listing even with future=true, which
- *                      matches /assets - nobody is meant to know these exist yet.
  *  - `date_published`  in the future = early access. INCLUDED under future=true, because search is
  *                      one of the few things that gets people to discover early-access content and
  *                      support the Patreon. The site does the same and gates only the download.
@@ -48,7 +44,6 @@ const normaliseQuery = (raw) =>
 const allowedSlugs = async ({ typeIndex, includeUpcoming, query }) => {
   const collection = await db.collection('assets').get()
   const now = Math.floor(Date.now() / 1000)
-  const hiddenVaults = await upcomingVaultIds()
   const allowed = new Set()
   // Collected in the same pass rather than from a name Map built per request.
   const exact = []
@@ -56,7 +51,6 @@ const allowedSlugs = async ({ typeIndex, includeUpcoming, query }) => {
     // Read-only: doc.data() hands back the live cached object shared with every other route.
     const asset = doc.data()
     if (asset.staging) return
-    if (hiddenVaults.size && hiddenVaults.has(vaultIdOf(asset))) return
     if (!includeUpcoming && asset.date_published > now) return
     if (typeIndex !== null && asset.type !== typeIndex) return
     allowed.add(doc.id)

@@ -4,8 +4,8 @@ const router = express.Router()
 
 const cachedFirestore = require('../utils/cachedFirestore')
 const { thumbnailUrl } = require('../utils/imgUrl')
-const { applyFilters, vaultIdOf } = require('../utils/assetFilters')
-const { upcomingVaultIds } = require('../utils/vaultStatus')
+const { applyFilters } = require('../utils/assetFilters')
+const { publicVaultIds, maskVault } = require('../utils/vaultStatus')
 
 const asset_types = require('../asset_types.json')
 
@@ -47,19 +47,17 @@ router.get('/', async (req, res) => {
   // strip old_id, reviewers and scale out of the shared cache for every other route.
   const collection = await collectionRef.get()
   const now = Math.floor(Date.now() / 1000)
-  // Assets in a vault that hasn't been announced stay out of every listing, even for ?future=true.
-  // Unlike the date check this is not an early-access gate - nobody is meant to see these yet, so
-  // there is no key that opts in. /info still serves them, which is what their (unlinked) asset
-  // pages need.
-  const hiddenVaults = await upcomingVaultIds()
+  // Assets in a vault that hasn't been announced are listed like any other early-access asset, but
+  // attributed only to "an upcoming vault". Masked here, before applyFilters, so ?vault=<id> can't
+  // be used to confirm a guessed vault name.
+  const publicVaults = await publicVaultIds()
   let docs = {}
   collection.forEach((doc) => {
     const { old_id, reviewers, scale, staging, ...asset } = doc.data()
     if (staging) return
-    if (hiddenVaults.size && hiddenVaults.has(vaultIdOf(asset))) return
     if (!includeUpcoming && asset.date_published > now) return
     asset.thumbnail_url = thumbnailUrl(doc.id, asset)
-    docs[doc.id] = asset
+    docs[doc.id] = maskVault(asset, publicVaults)
   })
 
   // Categories (2/2)

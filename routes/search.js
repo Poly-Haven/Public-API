@@ -17,7 +17,7 @@ const { rateLimit } = require('../utils/rateLimit')
  *
  * Early access: assets whose date_published is in the future are INCLUDED with ?future=true, the
  * same keyless opt-in /assets has. Search is a discovery route for early-access content, not a
- * thing to hide it from. Staging assets and un-announced vaults are always excluded.
+ * thing to hide it from. Staging assets are always excluded.
  *
  * Cached for 12 hours, matching /info and /files. Measured against the live zone rather than
  * assumed: any origin max-age below 43200 is rewritten to exactly 43200 and the other directives
