@@ -499,7 +499,7 @@ components:
           dimensions:
             - 30000
             - 30000
-          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256&v=7f3a91c4
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_asphalt_01.png?width=256&height=256&format=webp&v=7f3a91c4
         aerial_beach_01:
           name: Aerial Beach 01
           description: Free 16K aerial-view texture of wavy coastal beach sand, tileable for natural outdoor terrain.
@@ -533,7 +533,7 @@ components:
           dimensions:
             - 30000
             - 30000
-          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_beach_01.png?width=256&height=256&v=7f3a91c4
+          thumbnail_url: https://cdn.polyhaven.com/asset_img/thumbs/aerial_beach_01.png?width=256&height=256&format=webp&v=7f3a91c4
     asset:
       type: object
       description: All asset types include this data.
@@ -630,7 +630,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/ArmChair_01.png?width=256&height=256&v=7f3a91c4
+          example: https://cdn.polyhaven.com/asset_img/thumbs/ArmChair_01.png?width=256&height=256&format=webp&v=7f3a91c4
     hdri:
       type: object
       description: HDRI data, extends `asset` schema.
@@ -761,7 +761,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/abandoned_factory_canteen_01.png?width=256&height=256&v=7f3a91c4
+          example: https://cdn.polyhaven.com/asset_img/thumbs/abandoned_factory_canteen_01.png?width=256&height=256&format=webp&v=7f3a91c4
         whitebalance:
           nullable: true
           type: integer
@@ -908,7 +908,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/brick_floor_003.png?width=256&height=256&v=7f3a91c4
+          example: https://cdn.polyhaven.com/asset_img/thumbs/brick_floor_003.png?width=256&height=256&format=webp&v=7f3a91c4
         dimensions:
           type: array
           description: An array with the dimensions of this asset on each axis in millimeters.
@@ -1046,7 +1046,7 @@ components:
         thumbnail_url:
           type: string
           description: The URL of the preview image thumbnail for this asset. Provided in .webp format.
-          example: https://cdn.polyhaven.com/asset_img/thumbs/horse_statue_01.png?width=256&height=256&v=7f3a91c4
+          example: https://cdn.polyhaven.com/asset_img/thumbs/horse_statue_01.png?width=256&height=256&format=webp&v=7f3a91c4
     hdriFiles:
       type: object
       properties:

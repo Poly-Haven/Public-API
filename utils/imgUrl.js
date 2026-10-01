@@ -38,7 +38,13 @@ const cdnUrl = (path, params, version) => {
 
 // The one shape three routes (/info, /assets, /v2/assets) and the RSS feed all need. Takes the
 // whole asset document so callers cannot forget the version.
+//
+// `format=webp` is explicit because Cloudflare caches this URL for everyone. Left to itself, Bunny's
+// Optimizer picks WebP or PNG from each client's Accept header without sending a Vary, so whichever
+// client fetched a thumbnail first decided the format every later client got - a script asking
+// with `Accept: */*` pinned a PNG four times the size for all of them. Naming the format makes the
+// bytes a function of the URL alone.
 const thumbnailUrl = (slug, asset) =>
-  cdnUrl(`asset_img/thumbs/${slug}.png`, { width: 256, height: 256 }, asset && asset.img_version)
+  cdnUrl(`asset_img/thumbs/${slug}.png`, { width: 256, height: 256, format: 'webp' }, asset && asset.img_version)
 
 module.exports = { CDN, VERSION_PARAM, cdnUrl, thumbnailUrl }
