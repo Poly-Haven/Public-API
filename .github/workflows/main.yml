@@ -17,19 +17,19 @@ jobs:
           host: ${{secrets.SSH_HOST_API3}}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          script_stop: true
           script: |
             cd ~/api
             git pull
-            npm ci
-            pm2 reload app --time --update-env
+            bash deploy.sh
       - name: Deploy API5
         uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{secrets.SSH_HOST_API5}}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          script_stop: true
           script: |
             cd ~/api
             git pull
-            npm ci
-            pm2 reload app --time --update-env
+            bash deploy.sh

@@ -74,43 +74,41 @@ app.post('/debug/:state', (req, res) => {
   })
 })
 
+// Synchronous on purpose: nothing may listen until every route is mounted. When this was async, requests
+// in the first moments after a restart fell through to Express's default 404, which the Cloudflare edge
+// then cached for 12h.
 const routeDir = './routes/'
-fs.readdir(routeDir, (err, files) => {
-  files.forEach((file) => {
-    const filePath = routeDir + file
-    const stats = fs.statSync(filePath)
+fs.readdirSync(routeDir).forEach((file) => {
+  const filePath = routeDir + file
+  const stats = fs.statSync(filePath)
 
-    if (stats.isFile() && file.endsWith('.js')) {
-      // Handle regular route files
-      fn = file.split('.')[0]
-      if (fn === 'tmp' && process.env.NODE_ENV !== 'development') return
-      const r = require(filePath)
-      try {
-        app.use('/' + fn, r)
-      } catch (err) {
-        console.log('Failed to register endpoint', fn)
-        console.log(err)
-      }
-    } else if (stats.isDirectory()) {
-      // Handle subdirectories (like v2/)
-      const subDir = filePath + '/'
-      fs.readdir(subDir, (err, subFiles) => {
-        if (err) return
-        subFiles.forEach((subFile) => {
-          if (subFile.endsWith('.js')) {
-            const subFn = subFile.split('.')[0]
-            const r = require(subDir + subFile)
-            try {
-              app.use('/' + file + '/' + subFn, r)
-            } catch (err) {
-              console.log('Failed to register endpoint', file + '/' + subFn)
-              console.log(err)
-            }
-          }
-        })
-      })
+  if (stats.isFile() && file.endsWith('.js')) {
+    // Handle regular route files
+    fn = file.split('.')[0]
+    if (fn === 'tmp' && process.env.NODE_ENV !== 'development') return
+    const r = require(filePath)
+    try {
+      app.use('/' + fn, r)
+    } catch (err) {
+      console.log('Failed to register endpoint', fn)
+      console.log(err)
     }
-  })
+  } else if (stats.isDirectory()) {
+    // Handle subdirectories (like v2/)
+    const subDir = filePath + '/'
+    fs.readdirSync(subDir).forEach((subFile) => {
+      if (subFile.endsWith('.js')) {
+        const subFn = subFile.split('.')[0]
+        const r = require(subDir + subFile)
+        try {
+          app.use('/' + file + '/' + subFn, r)
+        } catch (err) {
+          console.log('Failed to register endpoint', file + '/' + subFn)
+          console.log(err)
+        }
+      }
+    })
+  }
 })
 
 // Superhive webhook endpoint
@@ -128,4 +126,15 @@ app.get('/', (req, res) => {
 app.get('/llms.txt', (req, res) => res.redirect(301, 'https://polyhaven.com/llms.txt'))
 app.get('/openapi.json', (req, res) => res.redirect(301, 'https://api.polyhaven.com/api-docs/swagger.json'))
 
-app.listen(3000)
+const server = app.listen(process.env.PORT || 3000, () => {
+  // PM2 runs this in cluster mode with wait_ready (see ecosystem.config.js): on reload it keeps the old
+  // worker serving until the new one sends this, so a deploy never leaves the port unanswered.
+  if (process.send) process.send('ready')
+})
+
+// Once the replacement is ready, PM2 sends the old worker SIGINT. Stop taking new connections and let
+// in-flight requests finish, but exit before PM2's kill_timeout (5s) would SIGKILL us mid-response.
+process.on('SIGINT', () => {
+  server.close(() => process.exit(0))
+  setTimeout(() => process.exit(0), 4000).unref()
+})
