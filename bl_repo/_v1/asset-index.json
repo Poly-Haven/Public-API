@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "asset_size_bytes": 2332923398,
-  "asset_count": 88,
-  "file_count": 88,
+  "asset_size_bytes": 2256859974,
+  "asset_count": 86,
+  "file_count": 86,
   "pages": [
     {
       "url": "_v1/assets-00000.json",
-      "hash": "SHA256:3d17585e0188b1cfdd195f24430e07e34d8395e18b006307e2b1182aed847a49"
+      "hash": "SHA256:ad109d1f255710ea4b6f90e51287b59920974b39bd80cbd7408ec5b87b2eaf6f"
     }
   ],
   "catalogs": [
@@ -191,13 +191,6 @@
         "9075c19a-6f20-547f-9d77-210245d0db2a"
       ],
       "simple_name": "Models-Vehicles & Transport"
-    },
-    {
-      "path": "Models/Weapons",
-      "uuids": [
-        "ac5957b6-3b31-5398-bfc4-3caa2c139661"
-      ],
-      "simple_name": "Models-Weapons"
     },
     {
       "path": "Textures",

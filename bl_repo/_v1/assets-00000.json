@@ -1,6 +1,6 @@
 {
-  "asset_count": 88,
-  "file_count": 88,
+  "asset_count": 86,
+  "file_count": 86,
   "assets": [
     {
       "name": "Alps Field",
@@ -34,42 +34,6 @@
         "description": "Unclipped free 20K HDRI of an Alps field: sunny, partly-cloudy morning/afternoon with high-contrast natural light, crisp alpine valley atmosphere, strong sun.",
         "license": "CC0 - Public Domain",
         "webpage": "https://polyhaven.com/a/alps_field",
-        "copyright": "Poly Haven"
-      }
-    },
-    {
-      "name": "Antique Katana 01",
-      "id_type": "COLLECTION",
-      "files": [
-        "antique_katana_01.blend"
-      ],
-      "bl_versions": {
-        "min": "5.3"
-      },
-      "thumbnail": {
-        "url": "https://dl.polyhaven.org/file/bl-repo/v1/antique_katana_01.webp",
-        "hash": "SHA256:dc53852ec3db335774d92fc216f3e5b66057369ac8a67f48f0b23fd57ea436a5"
-      },
-      "meta": {
-        "catalog_id": "ac5957b6-3b31-5398-bfc4-3caa2c139661",
-        "preferred_import_method": "APPEND",
-        "tags": [
-          "antique",
-          "ninja",
-          "katana",
-          "sword",
-          "sharp",
-          "blade",
-          "japanese",
-          "weapon",
-          "weapons",
-          "bladed",
-          "swords & sabres"
-        ],
-        "author": "Tal Swicegood",
-        "description": "Free 8K model of an antique Japanese katana with a dark, worn blade, ornate tsuba, brown tsuka wrap and aged brass fittings.",
-        "license": "CC0 - Public Domain",
-        "webpage": "https://polyhaven.com/a/antique_katana_01",
         "copyright": "Poly Haven"
       }
     },
@@ -256,42 +220,6 @@
         "description": "Free 20K, unclipped HDRI. Warm, low sunset light over a dry grassy field with partly cloudy sky, medium contrast, sun near horizon and silhouetted power towers.",
         "license": "CC0 - Public Domain",
         "webpage": "https://polyhaven.com/a/bambanani_sunset",
-        "copyright": "Poly Haven"
-      }
-    },
-    {
-      "name": "Bolt Action Rifle 7.62",
-      "id_type": "COLLECTION",
-      "files": [
-        "bolt_action_rifle_7_62.blend"
-      ],
-      "bl_versions": {
-        "min": "5.3"
-      },
-      "thumbnail": {
-        "url": "https://dl.polyhaven.org/file/bl-repo/v1/bolt_action_rifle_7_62.webp",
-        "hash": "SHA256:db40bd13990878eadb3ea25482c10a34b0797065a30fcbf5c02f5b04b751afff"
-      },
-      "meta": {
-        "catalog_id": "ac5957b6-3b31-5398-bfc4-3caa2c139661",
-        "preferred_import_method": "APPEND",
-        "tags": [
-          "vintage",
-          "worn",
-          "old",
-          "weathered",
-          "aged",
-          "gun",
-          "scope",
-          "bullet",
-          "weapons",
-          "firearms",
-          "rifles"
-        ],
-        "author": "Mateusz Sadek",
-        "description": "Free 8K model of a classic bolt-action 7.62 rifle with long barrel, worn wood stock, cloth-wrapped butt, detachable magazine, small scope, and weathered metal.",
-        "license": "CC0 - Public Domain",
-        "webpage": "https://polyhaven.com/a/bolt_action_rifle_7_62",
         "copyright": "Poly Haven"
       }
     },
@@ -3479,13 +3407,6 @@
       "url": "https://dl.polyhaven.org/file/bl-repo/v1/alps_field.blend"
     },
     {
-      "path": "antique_katana_01.blend",
-      "size_in_bytes": 5415384,
-      "hash": "SHA256:e87717de1ca8aebcab995fb1eea858a8895d9bbc4a508b3e6ad6706507befa0b",
-      "blender_version": "5.3.17",
-      "url": "https://dl.polyhaven.org/file/bl-repo/v1/antique_katana_01.blend"
-    },
-    {
       "path": "asphalt_02.blend",
       "size_in_bytes": 23773436,
       "hash": "SHA256:c44c53eadff8d9dd0e86758d55043c0ef461b7c3bb556863e75cf362ea4a119a",
@@ -3519,13 +3440,6 @@
       "hash": "SHA256:21c4ff59f70f83e971eaaf41e038921b7cdcf639b74d9c27c441ae1eb8c2eba0",
       "blender_version": "5.3.17",
       "url": "https://dl.polyhaven.org/file/bl-repo/v1/bambanani_sunset.blend"
-    },
-    {
-      "path": "bolt_action_rifle_7_62.blend",
-      "size_in_bytes": 70648040,
-      "hash": "SHA256:2e66b6ae732c2061130f4b9b3c7440c1aeee61e74875d3d3104e648f9e7d1af0",
-      "blender_version": "5.3.17",
-      "url": "https://dl.polyhaven.org/file/bl-repo/v1/bolt_action_rifle_7_62.blend"
     },
     {
       "path": "brick_floor_04.blend",
