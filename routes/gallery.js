@@ -53,6 +53,9 @@ router.get('/', async (req, res) => {
     delete info.date_added
     delete info.reviewed_by
     delete info.author_email
+    // The submitter's own AI disclosure, before review. The reviewer's version (ai_use, ai_note) is the public one.
+    delete info.ai_use_submitted
+    delete info.ai_note_submitted
     info.id = k
     data.push(info)
   }
