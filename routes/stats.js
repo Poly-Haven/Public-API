@@ -433,6 +433,90 @@ router.get('/cfdaily', async (req, res) => {
 })
 
 /**
+ * Asset downloads per day and type as Cloudflare sees them, beside dlTrack's own `unique` for the
+ * same days. Written nightly by admin's /api/cron/cloudflareDownloads into `downloads_daily_cf`.
+ *
+ * Takes no parameters on purpose: the window is always the last year, so a junk query string cannot
+ * key a fresh Cloudflare cache entry, and every caller shares one in-memory result.
+ *
+ * Each CF day is one ~150 KB document, so the read is projected to the three numbers we chart: one
+ * read per day, a few hundred bytes each instead of ~55 MB for a year. dlTrack is read only from
+ * the first CF day onwards, since earlier days have nothing to compare against.
+ *
+ * Both are sessions, not file hits: CF counts one (client IP, asset) pair per UTC day across the
+ * website, the Blender add-on and every other client; dlTrack counts one (browser, asset) pair per
+ * day on polyhaven.com only.
+ */
+const CF_DOWNLOADS_TTL = 3 * 60 * 60 * 1000
+const CF_TYPE_KEYS = { T0: 'hdris', T1: 'textures', T2: 'models' }
+let cfDownloadsCache = null
+let cfDownloadsPending = null
+
+const computeCfDownloads = async () => {
+  const msPerDay = 24 * 60 * 60 * 1000
+  const yearAgo = new Date(Date.now() - 365 * msPerDay).toISOString().split('T')[0]
+
+  const cfSnap = await db
+    .collection('downloads_daily_cf')
+    .where('__name__', '>=', yearAgo)
+    .select(...Object.keys(CF_TYPE_KEYS).map((t) => `by_type.${t}.downloads`))
+    .get()
+
+  const days = {}
+  cfSnap.forEach((doc) => {
+    const byType = doc.get('by_type')
+    // 2026-08-23 is the one schema-1 day, captured before `by_type` existed.
+    if (!byType) return
+    const cf = {}
+    for (const [t, name] of Object.entries(CF_TYPE_KEYS)) {
+      cf[name] = byType[t] ? byType[t].downloads : null
+    }
+    days[doc.id] = { cf, dltrack: { hdris: null, textures: null, models: null } }
+  })
+
+  const first = Object.keys(days).sort()[0]
+  if (first) {
+    const dlSnap = await db
+      .collection('downloads_daily')
+      .where('type', '==', 'TYPE')
+      .where('day', '>=', first)
+      .select('day', 'slug', 'unique')
+      .get()
+    dlSnap.forEach((doc) => {
+      const d = doc.data()
+      const name = CF_TYPE_KEYS[d.slug]
+      if (name && days[d.day]) days[d.day].dltrack[name] = d.unique
+    })
+  }
+
+  return days
+}
+
+router.get('/cfdownloads', async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=3600')
+
+  if (cfDownloadsCache && Date.now() - cfDownloadsCache.time < CF_DOWNLOADS_TTL) {
+    return res.status(200).json(cfDownloadsCache.data)
+  }
+
+  if (!cfDownloadsPending) {
+    cfDownloadsPending = computeCfDownloads().finally(() => {
+      cfDownloadsPending = null
+    })
+  }
+
+  try {
+    const data = await cfDownloadsPending
+    cfDownloadsCache = { data, time: Date.now() }
+    res.status(200).json(data)
+  } catch (e) {
+    console.error('[STATS] cfdownloads failed:', e)
+    res.set('Cache-Control', 'no-store')
+    res.status(500).send('Failed to fetch Cloudflare download stats')
+  }
+})
+
+/**
  * What our audience actually makes things with, from the `software` field on gallery submissions.
  *
  * Counted per artwork rather than per mention, so every number is a share of artworks and the chart
