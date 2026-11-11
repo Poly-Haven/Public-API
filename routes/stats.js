@@ -433,8 +433,8 @@ router.get('/cfdaily', async (req, res) => {
 })
 
 /**
- * Asset downloads per day and type as Cloudflare sees them, beside dlTrack's own `unique` for the
- * same days. Written nightly by admin's /api/cron/cloudflareDownloads into `downloads_daily_cf`.
+ * Asset downloads per day as Cloudflare sees them, by asset type and by source, beside dlTrack's
+ * own `unique` for the same days. Written nightly by admin's /api/cron/cloudflareDownloads into `downloads_daily_cf`.
  *
  * Takes no parameters on purpose: the window is always the last year, so a junk query string cannot
  * key a fresh Cloudflare cache entry, and every caller shares one in-memory result.
@@ -443,12 +443,17 @@ router.get('/cfdaily', async (req, res) => {
  * read per day, a few hundred bytes each instead of ~55 MB for a year. dlTrack is read only from
  * the first CF day onwards, since earlier days have nothing to compare against.
  *
+ * `sources` are the four classes the cron's headline counts. Each is deduplicated within itself only,
+ * so together they run ~0.3% over the headline: a client seen as both web and add-on for one asset
+ * counts once in each.
+ *
  * Both are sessions, not file hits: CF counts one (client IP, asset) pair per UTC day across the
  * website, the Blender add-on and every other client; dlTrack counts one (browser, asset) pair per
  * day on polyhaven.com only.
  */
 const CF_DOWNLOADS_TTL = 3 * 60 * 60 * 1000
 const CF_TYPE_KEYS = { T0: 'hdris', T1: 'textures', T2: 'models' }
+const CF_SOURCES = ['web', 'addon', 'selfref', 'other']
 let cfDownloadsCache = null
 let cfDownloadsPending = null
 
@@ -459,7 +464,10 @@ const computeCfDownloads = async () => {
   const cfSnap = await db
     .collection('downloads_daily_cf')
     .where('__name__', '>=', yearAgo)
-    .select(...Object.keys(CF_TYPE_KEYS).map((t) => `by_type.${t}.downloads`))
+    .select(
+      ...Object.keys(CF_TYPE_KEYS).map((t) => `by_type.${t}.downloads`),
+      ...CF_SOURCES.map((c) => `classes.${c}.downloads`)
+    )
     .get()
 
   const days = {}
@@ -471,7 +479,12 @@ const computeCfDownloads = async () => {
     for (const [t, name] of Object.entries(CF_TYPE_KEYS)) {
       cf[name] = byType[t] ? byType[t].downloads : null
     }
-    days[doc.id] = { cf, dltrack: { hdris: null, textures: null, models: null } }
+    const classes = doc.get('classes') || {}
+    const sources = {}
+    for (const c of CF_SOURCES) {
+      sources[c] = classes[c] ? classes[c].downloads : null
+    }
+    days[doc.id] = { cf, sources, dltrack: { hdris: null, textures: null, models: null } }
   })
 
   const first = Object.keys(days).sort()[0]
