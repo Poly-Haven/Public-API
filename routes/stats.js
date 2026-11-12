@@ -18,6 +18,10 @@ const cachedDb = cachedFirestore()
 
 const TYPE_NAMES = ['hdris', 'textures', 'models']
 
+// The first day in downloads_daily, which dlTrack began writing alongside download_count. Assets
+// published before it show no sign of earlier counts having been carried over.
+const DOWNLOAD_TRACKING_START = Date.parse('2021-04-07T00:00:00Z') / 1000
+
 // downloads_daily is ~2.9M documents and grows by ~2.3k/day, ~91% of it type=ASSET.
 // Left unguarded, `/stats/downloads` with no parameters scans the whole collection
 // on a public unauthenticated endpoint, and Cloudflare's cache key includes the
@@ -231,8 +235,8 @@ router.get('/relativecategory', async (req, res) => {
  * how many sit exactly on that node, so the pair shows where in a branch the assets actually live.
  * Only nodes with at least one asset appear - an empty category has no popularity to report.
  *
- * `avg` is the mean of each asset's lifetime downloads per day, the same measure the old chart
- * used, so numbers stay comparable across the transition.
+ * `avg` is the mean of each asset's lifetime downloads per day, the old chart's measure except that
+ * an asset's days are counted from DOWNLOAD_TRACKING_START at the earliest.
  *
  * Attribute buckets mirror what the library can actually filter by, so a chart point maps onto a
  * real query. Booleans report both sides (absent means false); enums report only the values that
@@ -278,7 +282,9 @@ router.get('/taxonomy', async (req, res) => {
     // A brand new asset's downloads/day is dominated by its launch spike, so it would land far off
     // the top of the chart and drag its category's mean with it.
     if (days < 1) return
-    const dpd = (asset.download_count || 0) / days
+    // download_count only started counting on DOWNLOAD_TRACKING_START, so an older asset divided by
+    // its full age reads ~1.7x too low (2017 HDRIs averaged half the rate of 2021+ ones before this).
+    const dpd = (asset.download_count || 0) / ((now - Math.max(asset.date_published, DOWNLOAD_TRACKING_START)) / 86400)
 
     totals[type]++
 
