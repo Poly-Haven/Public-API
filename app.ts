@@ -226,13 +226,11 @@ export const buildApp = async (): Promise<FastifyInstance> => {
     const mod = (await import(new URL(relPath, import.meta.url).href)) as { default: FastifyPluginAsync }
     return mod.default
   }
-  // TODO(ts): remove once every route is .ts
-  const isRouteFile = (file: string) => file.endsWith('.ts') || file.endsWith('.js')
   const routeDir = path.join(import.meta.dirname, 'routes')
   for (const file of fs.readdirSync(routeDir)) {
     const stats = fs.statSync(path.join(routeDir, file))
 
-    if (stats.isFile() && isRouteFile(file)) {
+    if (stats.isFile() && file.endsWith('.ts')) {
       // Handle regular route files
       const fn = file.split('.')[0]
       if (fn === 'tmp' && process.env.NODE_ENV !== 'development') continue
@@ -240,7 +238,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
     } else if (stats.isDirectory()) {
       // Handle subdirectories (like v2/)
       for (const subFile of fs.readdirSync(path.join(routeDir, file))) {
-        if (isRouteFile(subFile)) {
+        if (subFile.endsWith('.ts')) {
           const subFn = subFile.split('.')[0]
           mount('/' + file + '/' + subFn, await loadRoute('./routes/' + file + '/' + subFile))
         }

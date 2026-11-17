@@ -47,6 +47,7 @@ export default async function (fastify: FastifyInstance) {
         query: req.query.q || req.query.query,
         assetType: req.query.type || req.query.t,
         includeUpcoming: Boolean(req.query.future),
+        v1Freeze: true,
         minScore: req.query.min,
         // Clamped: slice(0, -50) would drop the BEST matches and report a total that disagrees with
         // results.length. No caller sends a negative limit, but this is a documented public endpoint

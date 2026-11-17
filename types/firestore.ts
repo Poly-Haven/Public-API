@@ -64,6 +64,8 @@ export interface ApiKey {
   ref?: string
   superhive_uid?: string | number
   patron_uid?: string
+  /** Set when a key is revoked (rotated out by POST /v2/create_key). */
+  revoked_at?: string
 }
 
 /** patrons/{patreon user id} */

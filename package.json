@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node -r ./test/v2/preload.cjs --test --test-force-exit test/v2/*.test.ts"
   },
   "keywords": [],
   "author": "",

@@ -2,9 +2,21 @@ import escape from 'escape-html'
 import type { FastifyInstance } from 'fastify'
 
 import firestore from '../firestore.ts'
+import type { Asset } from '../types/firestore.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
 import { sendText } from '../utils/http.ts'
+import { isHiddenFromV1, v1FreezeActive } from '../utils/v1Freeze.ts'
 
 const db = firestore()
+const cached = cachedFirestore()
+
+// After the v1 early-access freeze, an early-access asset that was not on the allowlist does not exist here.
+// Costs nothing while the freeze is off.
+const hiddenByFreeze = async (asset_id: string) => {
+  if (!v1FreezeActive()) return false
+  const asset = (await cached.collection<Asset>('assets').doc(asset_id).get()).data()
+  return asset !== null && isHiddenFromV1(asset_id, asset, Math.floor(Date.now() / 1000))
+}
 
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', async (req, reply) => {
@@ -36,7 +48,7 @@ export default async function (fastify: FastifyInstance) {
     }
 
     const doc = await db.collection('files').doc(asset_id).get()
-    if (!doc.exists) {
+    if (!doc.exists || (await hiddenByFreeze(asset_id))) {
       return sendText(reply, 404, `No asset with id ${escape(asset_id)}`)
     } else {
       // File lists only change on publish, and publishing purges the CDN. Overrides the

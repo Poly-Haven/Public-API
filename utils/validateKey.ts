@@ -24,6 +24,10 @@ const unavailable = (what: string): KeyValidation => ({
   },
 })
 
+/** The key in an Authorization header, with or without the 'Bearer ' prefix. */
+const extractKey = (authHeader: string): string =>
+  authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
+
 const validateKey = async (req: FastifyRequest): Promise<KeyValidation> => {
   const db = cachedFirestore()
 
@@ -41,7 +45,7 @@ const validateKey = async (req: FastifyRequest): Promise<KeyValidation> => {
   }
 
   // Validate API key format
-  const apiKey = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
+  const apiKey = extractKey(authHeader)
   const allowedKeyChars = 'abcdef0123456789'
   if (apiKey.length !== 64 || [...apiKey].some((c) => !allowedKeyChars.includes(c))) {
     return {
@@ -141,4 +145,5 @@ const validateKey = async (req: FastifyRequest): Promise<KeyValidation> => {
   }
 }
 
+export { extractKey }
 export default validateKey

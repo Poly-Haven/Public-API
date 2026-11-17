@@ -50,6 +50,7 @@ const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 // the moment the flush was supposed to guarantee freshness.
 let cacheGeneration = 0
 // const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
+const SECRET_ID_COLLECTIONS = new Set(['api_keys'])
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
 function getCacheStats() {
@@ -339,10 +340,14 @@ function cachedFirestore(): CachedDb {
           )
         },
         doc: (docId: string) => {
+          // Some collections are keyed by a secret (an API key is its own doc id), and these lines
+          // land in the PM2 logs, so only a prefix of those ids is ever logged.
+          const logId = SECRET_ID_COLLECTIONS.has(collectionName) ? `${docId.slice(0, 8)}...` : docId
           return {
             get: async () => {
               const cachedData = await getCachedCollection(collectionName)
-              const docData = cachedData[docId]
+              // Own keys only: an id like "constructor" must not resolve to Object.prototype's member.
+              const docData = Object.hasOwn(cachedData, docId) ? cachedData[docId] : undefined
 
               if (docData) {
                 return {
@@ -353,7 +358,7 @@ function cachedFirestore(): CachedDb {
               } else {
                 // Document not found in cache, check directly from Firestore
                 console.log(
-                  `[${collectionName.toUpperCase()} DOC MISS] Document ${docId} not in cache, checking Firestore directly`
+                  `[${collectionName.toUpperCase()} DOC MISS] Document ${logId} not in cache, checking Firestore directly`
                 )
                 try {
                   const db = firestore()
@@ -365,7 +370,7 @@ function cachedFirestore(): CachedDb {
                     const cacheEntry = collectionsCache.get(collectionName)
                     if (cacheEntry) {
                       cacheEntry.data[docId] = freshDocData
-                      console.log(`[${collectionName.toUpperCase()} DOC CACHE] Added document ${docId} to cache`)
+                      console.log(`[${collectionName.toUpperCase()} DOC CACHE] Added document ${logId} to cache`)
                     }
 
                     return {
@@ -390,7 +395,7 @@ function cachedFirestore(): CachedDb {
                   //
                   // Consistent with the collection path above, which has always let read errors
                   // propagate; only this doc-level fallback swallowed them.
-                  console.error(`[${collectionName.toUpperCase()} DOC ERROR] Failed to fetch document ${docId}:`, error)
+                  console.error(`[${collectionName.toUpperCase()} DOC ERROR] Failed to fetch document ${logId}:`, error)
                   throw error
                 }
               }

@@ -6,6 +6,7 @@ import * as workersAI from './workersAI.ts'
 
 import type { Asset } from '../types/firestore.ts'
 import { assetTypes as asset_types } from './schemas.ts'
+import { isHiddenFromV1 } from './v1Freeze.ts'
 
 const db = cachedFirestore()
 
@@ -14,6 +15,8 @@ interface SearchParams {
   query: unknown
   assetType?: string
   includeUpcoming?: boolean
+  /** Apply the v1 early-access freeze (utils/v1Freeze.ts). v2 never does. */
+  v1Freeze?: boolean
   minScore?: unknown
   limit?: number
   hybrid?: boolean
@@ -55,10 +58,12 @@ const normaliseQuery = (raw: unknown): string =>
 const allowedSlugs = async ({
   typeIndex,
   includeUpcoming,
+  v1Freeze,
   query,
 }: {
   typeIndex: number | null
   includeUpcoming: boolean
+  v1Freeze: boolean
   query: string
 }): Promise<{ allowed: Set<string>; exact: string[] }> => {
   const collection = await db.collection<Asset>('assets').get()
@@ -71,6 +76,7 @@ const allowedSlugs = async ({
     const asset = doc.data()
     if (asset.staging) return
     if (!includeUpcoming && asset.date_published > now) return
+    if (v1Freeze && isHiddenFromV1(doc.id, asset, now)) return
     if (typeIndex !== null && asset.type !== typeIndex) return
     allowed.add(doc.id)
     if (query && (doc.id.toLowerCase() === query || String(asset.name || '').toLowerCase() === query)) {
@@ -121,6 +127,7 @@ const runSearch = async ({
   query: rawQuery,
   assetType,
   includeUpcoming = false,
+  v1Freeze = false,
   minScore,
   limit,
   hybrid = true,
@@ -134,7 +141,7 @@ const runSearch = async ({
     workersAI.embedQuery(query).catch((err) => {
       throw new SearchError(503, `Could not embed the query: ${err.message}`)
     }),
-    allowedSlugs({ typeIndex, includeUpcoming, query }),
+    allowedSlugs({ typeIndex, includeUpcoming, v1Freeze, query }),
     hybrid ? keywordIndex.rank(query) : Promise.resolve([]),
   ])
 

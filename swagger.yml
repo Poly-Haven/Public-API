@@ -16,6 +16,10 @@ servers:
 tags:
   - name: assets
     description: Endpoints for interacting with assets.
+  - name: v2
+    description: The v2 API, used by polyhaven.com and the Blender extension. Public, keyless endpoints that are the same for everyone (metadata of early-access assets included) and cacheable; the response format is always `{ message, data }`.
+  - name: v2 (keyed)
+    description: v2 endpoints that need an API key in the Authorization header. The only thing behind a key is the file list (download URLs) of an early-access asset. Never cached.
 paths:
   /types:
     get:
@@ -412,8 +416,479 @@ paths:
         '400':
           description: Bad request, e.g. missing or unsupported {type}
 
+  /v2/assets:
+    get:
+      summary: Every asset's metadata, early-access assets included.
+      description: >-
+        Like `/assets`, but always includes early-access assets (those with a `date_published` in the future; vault
+        assets are dated far in the future), and wraps the result in `{ message, data }`. Metadata is public: only the
+        **files** of an early-access asset need a key (see `/v2/ea/files`). Keyless, and the response is the same for
+        everyone, so it is cached for an hour; an `Authorization` header is ignored. Staging assets are never listed.
+        Accepts the same filters as `/assets` (`type`, `categories`, `category`, `collection`, `vault` and per-type
+        attributes).
+      tags:
+        - v2
+      parameters:
+        - name: type
+          in: query
+          description: Filter to assets of a particular type. Can be `hdris`/`textures`/`models`/`all`.
+          schema:
+            type: string
+          example: textures
+      responses:
+        '200':
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=3600
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v2Assets'
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/info/{id}:
+    get:
+      summary: Metadata of one asset, early access included.
+      description: The same object `/v2/assets` gives for the asset. Staging and unknown ids are both a 404.
+      tags:
+        - v2
+      parameters:
+        - $ref: '#/components/parameters/v2AssetId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/hdri'
+                      - $ref: '#/components/schemas/texture'
+                      - $ref: '#/components/schemas/model'
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '404':
+          $ref: '#/components/responses/v2NotFound'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/files/{id}:
+    get:
+      summary: File list for a released asset.
+      description: >-
+        Like `/files/{id}`, wrapped in `{ message, data }`, for released assets only. An early-access asset answers
+        `403` with `early_access_until` (epoch seconds); that response is cached no longer than until that moment. Use
+        `/v2/ea/files/{id}` with an early-access key for those. Keyless.
+      tags:
+        - v2
+      parameters:
+        - $ref: '#/components/parameters/v2AssetId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/hdriFiles'
+                      - $ref: '#/components/schemas/textureFiles'
+                      - $ref: '#/components/schemas/modelFiles'
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '403':
+          description: The asset is in early access.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 403 Forbidden
+                  message:
+                    type: string
+                    example: Asset is in early access
+                  early_access_until:
+                    type: integer
+                    description: When the asset is released, as epoch seconds.
+                    example: 1795000000
+        '404':
+          $ref: '#/components/responses/v2NotFound'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/categories/{type}:
+    get:
+      summary: Category counts, early-access assets included.
+      description: Like `/categories/{type}?future=true`, wrapped in `{ message, data }`.
+      tags:
+        - v2
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: '`hdris`, `textures`, `models` or `all`.'
+          schema:
+            type: string
+          example: hdris
+        - name: in
+          in: query
+          description: Comma-separated categories already chosen; only assets in all of them are counted.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                    example:
+                      all: 521
+                      outdoor: 300
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/search:
+    get:
+      summary: Semantic search, early-access assets included.
+      description: >-
+        Like `/search?future=true` (see there for the ranking), wrapped in `{ message, data }`. Keyless and cached by
+        URL. Rate limited per client IP (150 a minute), which answers `429` with `Retry-After`.
+      tags:
+        - v2
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: The search query (100 characters at most).
+          schema:
+            type: string
+          example: mossy rock
+        - name: type
+          in: query
+          description: Filter to one asset type.
+          schema:
+            type: string
+          example: textures
+        - name: min
+          in: query
+          description: Minimum similarity score, between -1 and 1.
+          schema:
+            type: number
+        - name: limit
+          in: query
+          description: Cap the number of results (`total` still counts them all).
+          schema:
+            type: integer
+        - name: hybrid
+          in: query
+          description: Set to `0` for the pure semantic ranking.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/searchResults'
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '429':
+          description: Too many searches from this IP. Not cached.
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/similar/{id}:
+    get:
+      summary: Assets similar to one, early-access assets included.
+      description: Like `/similar/{id}`, wrapped in `{ message, data }`, except that early-access assets may appear in the results. Staging assets never do.
+      tags:
+        - v2
+      parameters:
+        - $ref: '#/components/parameters/v2AssetId'
+        - name: num
+          in: query
+          description: How many to return (default 12, at most 50).
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    description: Asset data keyed by slug, most similar first, each with a `similarity` score.
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '404':
+          $ref: '#/components/responses/v2NotFound'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/taxonomy:
+    get:
+      summary: The category taxonomy and attribute schema.
+      description: The `/taxonomy` body, wrapped in `{ message, data }`.
+      tags:
+        - v2
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+  /v2/taxonomy/{type}:
+    get:
+      summary: The taxonomy and attributes of one asset type.
+      description: The `/taxonomy/{type}` body, wrapped in `{ message, data }`.
+      tags:
+        - v2
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+          example: textures
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+  /v2/extensions:
+    get:
+      summary: Releases of the Poly Haven Blender add-on.
+      description: >-
+        All releases, or with `blender_version` only the highest one that Blender version can run. Public. Unrelated
+        to `/extensions`, the Blender extensions repository for the asset library.
+      tags:
+        - v2
+      parameters:
+        - name: blender_version
+          in: query
+          schema:
+            type: string
+          example: '4.2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  version:
+                    type: string
+                    example: v1
+                  blocklist:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/key:
+    get:
+      summary: What an API key is.
+      description: Validates the key in the `Authorization` header and says whether it includes early access. Never returns the key. Not cached.
+      tags:
+        - v2 (keyed)
+      security:
+        - apiKey: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                        example: true
+                      early_access:
+                        type: boolean
+                      kind:
+                        type: string
+                        enum: [superhive, patron, other]
+        '403':
+          $ref: '#/components/responses/v2KeyRejected'
+        '429':
+          description: Over the per-key request limit (when enforced). Has `Retry-After`.
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/ea/files/{id}:
+    get:
+      summary: File list for any non-staging asset, early access included.
+      description: >-
+        Needs a key with early access for an early-access asset (`403`, "This key does not include early access"
+        otherwise); any valid key may fetch a released asset. Not cached.
+      tags:
+        - v2 (keyed)
+      security:
+        - apiKey: []
+      parameters:
+        - $ref: '#/components/parameters/v2AssetId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/hdriFiles'
+                      - $ref: '#/components/schemas/textureFiles'
+                      - $ref: '#/components/schemas/modelFiles'
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '403':
+          $ref: '#/components/responses/v2KeyRejected'
+        '404':
+          $ref: '#/components/responses/v2NotFound'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+  /v2/ea/files:
+    get:
+      summary: File lists of every early-access asset.
+      description: >-
+        Requires a key with early access. Returns `{ message, data: { <slug>: <files> } }` for every non-staging asset
+        with a `date_published` in the future. Not cached.
+      tags:
+        - v2 (keyed)
+      security:
+        - apiKey: []
+      parameters:
+        - name: type
+          in: query
+          description: Narrow to `hdris`, `textures` or `models`.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    description: Files keyed by asset slug.
+        '400':
+          $ref: '#/components/responses/v2BadRequest'
+        '403':
+          $ref: '#/components/responses/v2KeyRejected'
+        '503':
+          $ref: '#/components/responses/v2Unavailable'
+
 components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      description: >-
+        An API key (64 hex characters) in `Authorization: Bearer <key>`. Only the `/v2/key` and `/v2/ea/*` endpoints use it.
+  parameters:
+    v2AssetId:
+      name: id
+      in: path
+      required: true
+      description: The unique ID/slug of the asset
+      schema:
+        type: string
+      example: ceramic_vase_03
+  responses:
+    v2BadRequest:
+      description: 'Bad input. Body `{ error: "400 Bad Request", message }`. Cached for 5 minutes.'
+    v2NotFound:
+      description: 'No asset with that ID (staging assets answer the same). Body `{ error: "404 Not Found", message }`. Cached for 5 minutes.'
+    v2Unavailable:
+      description: 'Firestore could not be read; retry shortly. Never cached.'
+    v2KeyRejected:
+      description: 'Missing, malformed, unknown or inactive key, or a key without early access. Body `{ error: "403 Forbidden", message }`. Never cached.'
   schemas:
+    v2Assets:
+      type: object
+      properties:
+        message:
+          type: string
+          example: OK
+        data:
+          $ref: '#/components/schemas/assets'
     searchResults:
       type: object
       properties:
