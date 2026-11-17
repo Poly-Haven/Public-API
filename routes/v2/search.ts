@@ -4,7 +4,8 @@ import type { Query } from '../../types/http.ts'
 import { runSearch, SearchError } from '../../utils/assetSearch.ts'
 import { rateLimit } from '../../utils/rateLimit.ts'
 import { publicCache, sendError, sendOk } from '../../utils/v2Cache.ts'
-import { hasPlainQuery } from '../../utils/v2Query.ts'
+import { assetTypes } from '../../utils/schemas.ts'
+import { hasPlainQuery, isAssetType } from '../../utils/v2Query.ts'
 
 /**
  * GET /v2/search?q=mossy+rock&t=textures: /search as v1 answers it with ?future=true (early-access assets are
@@ -23,10 +24,15 @@ export default async function (fastify: FastifyInstance) {
     }
     if (!hasPlainQuery(req)) return sendError(reply, 400, 'Query parameters must be plain values')
 
+    const assetType = req.query.type || req.query.t
+    if (!isAssetType(assetType)) {
+      return sendError(reply, 400, `Unsupported asset type. Must be: ${Object.keys(assetTypes).join('/')}`)
+    }
+
     try {
       const result = await runSearch({
         query: req.query.q || req.query.query,
-        assetType: req.query.type || req.query.t,
+        assetType,
         includeUpcoming: true,
         minScore: req.query.min,
         // Clamped as in v1: slice(0, -50) would drop the BEST matches.

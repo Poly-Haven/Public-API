@@ -14,7 +14,16 @@ const fs = require('fs')
 const path = require('path')
 const http = require('http')
 const crypto = require('crypto')
-const { isDiscordHookCall, alignCounters, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, numericTolerance, nonDeterministicBody } = require('./normalize')
+const {
+  isDiscordHookCall,
+  alignCounters,
+  normalizeBody,
+  normalizeText,
+  normalizeWrite,
+  keyOrderRandom,
+  numericTolerance,
+  nonDeterministicBody,
+} = require('./normalize')
 
 // ------------------------------------------------------------------ args
 const args = {}
@@ -47,7 +56,8 @@ for (const line of fs.readFileSync(args.env, 'utf8').split(/\r?\n/)) {
 }
 const CTX = args.ctx && fs.existsSync(args.ctx) ? JSON.parse(fs.readFileSync(args.ctx, 'utf8')) : {}
 const SECRETS = []
-for (const [k, v] of Object.entries(ENV)) if (v.length >= 8 && !/^(production|development)$/.test(v) && !/^NEXT_PUBLIC/.test(k)) SECRETS.push([k, v])
+for (const [k, v] of Object.entries(ENV))
+  if (v.length >= 8 && !/^(production|development)$/.test(v) && !/^NEXT_PUBLIC/.test(k)) SECRETS.push([k, v])
 for (const [k, v] of Object.entries(CTX)) if (v && String(v).length >= 8) SECRETS.push(['ctx:' + k, String(v)])
 SECRETS.sort((a, b) => b[1].length - a[1].length)
 const redact = (s) => {
@@ -80,7 +90,10 @@ function resolveTemplate(str, body) {
       if (kind === 'md5sig') {
         // Patreon's webhook signature: HMAC-MD5 of the raw body with the shared secret
         if (!(arg in ENV)) throw new Skip('env ' + arg + ' not set')
-        return crypto.createHmac('md5', ENV[arg]).update(body || '').digest('hex')
+        return crypto
+          .createHmac('md5', ENV[arg])
+          .update(body || '')
+          .digest('hex')
       }
       throw new Error('unknown template ' + all)
     })
@@ -90,7 +103,8 @@ function resolveTemplate(str, body) {
 const resolveDeep = (x, body) => {
   if (typeof x === 'string') return resolveTemplate(x, body)
   if (Array.isArray(x)) return x.map((y) => resolveDeep(y, body))
-  if (x && typeof x === 'object') return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, resolveDeep(v, body)]))
+  if (x && typeof x === 'object')
+    return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, resolveDeep(v, body)]))
   return x
 }
 
@@ -100,7 +114,10 @@ const agentFor = (u) => {
   if (!agents.has(u.host)) agents.set(u.host, new http.Agent({ keepAlive: true, maxSockets: CONC + 2 }))
   return agents.get(u.host)
 }
-const safePath = (p) => p.replace(/[^\x21-\x7e]/g, (c) => [...Buffer.from(c)].map((b) => '%' + b.toString(16).toUpperCase().padStart(2, '0')).join(''))
+const safePath = (p) =>
+  p.replace(/[^\x21-\x7e]/g, (c) =>
+    [...Buffer.from(c)].map((b) => '%' + b.toString(16).toUpperCase().padStart(2, '0')).join('')
+  )
 
 function send(base, { method, path: p, headers = {}, body, timeoutMs = 30000 }) {
   return new Promise((resolve) => {
@@ -116,12 +133,15 @@ function send(base, { method, path: p, headers = {}, body, timeoutMs = 30000 }) 
     }
     let req
     try {
-      req = http.request({ hostname: base.hostname, port: base.port, method, path: safePath(p), headers: h, agent: agentFor(base) }, (res) => {
-        const chunks = []
-        res.on('data', (c) => chunks.push(c))
-        res.on('end', () => finish({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }))
-        res.on('error', (e) => finish({ error: 'response:' + (e.code || e.message) }))
-      })
+      req = http.request(
+        { hostname: base.hostname, port: base.port, method, path: safePath(p), headers: h, agent: agentFor(base) },
+        (res) => {
+          const chunks = []
+          res.on('data', (c) => chunks.push(c))
+          res.on('end', () => finish({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }))
+          res.on('error', (e) => finish({ error: 'response:' + (e.code || e.message) }))
+        }
+      )
     } catch (e) {
       return finish({ error: 'request:' + (e.code || e.message) })
     }
@@ -136,13 +156,32 @@ function send(base, { method, path: p, headers = {}, body, timeoutMs = 30000 }) 
 }
 
 // ------------------------------------------------------------------ comparison
-const HEADERS = ['content-type', 'cache-control', 'access-control-allow-origin', 'access-control-allow-methods', 'access-control-allow-headers', 'terms-of-service', 'location', 'vary', 'x-ph-early-access', 'retry-after',
-  'allow', 'content-encoding', 'content-disposition', 'last-modified', 'access-control-max-age', 'access-control-allow-credentials', 'access-control-expose-headers']
+const HEADERS = [
+  'content-type',
+  'cache-control',
+  'access-control-allow-origin',
+  'access-control-allow-methods',
+  'access-control-allow-headers',
+  'terms-of-service',
+  'location',
+  'vary',
+  'x-ph-early-access',
+  'retry-after',
+  'allow',
+  'content-encoding',
+  'content-disposition',
+  'last-modified',
+  'access-control-max-age',
+  'access-control-allow-credentials',
+  'access-control-expose-headers',
+]
 // note: x-powered-by is Express-specific and expected to go away; date/connection/keep-alive/content-length are transport.
 
 // First path segments that are real routes (see build-corpus.js); anything else is scanner junk, grouped as one prefix.
 const KNOWN = new Set(
-  'assets author authors bl_repo categories clear_cache collections community_prizes corporate course_progress courses dl_track extensions files finances funding gallery gallery_click image_versions info legacy lighthouse_key milestones news patreon_hook patron_info patrons patrons_latest patrons_top ping popularity renders rss search similar sponsor stats taxonomy text timelines track_search translation_progress types vaults v2 api-docs debug llms.txt openapi.json tmp'.split(' ')
+  'assets author authors bl_repo categories clear_cache collections community_prizes corporate course_progress courses dl_track extensions files finances funding gallery gallery_click image_versions info legacy lighthouse_key milestones news patreon_hook patron_info patrons patrons_latest patrons_top ping popularity renders rss search similar sponsor stats taxonomy text timelines track_search translation_progress types vaults v2 api-docs debug llms.txt openapi.json tmp'.split(
+    ' '
+  )
 )
 const prefixOf = (url) => {
   const segs = url.split('?')[0].split('/').filter(Boolean)
@@ -160,13 +199,20 @@ const short = (v, n = 80) => {
 function jsonDiff(a, b, p, out, limit, tol = 0) {
   if (out.length >= limit) return
   if (a === b) return
-  if (tol && typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b))) return
+  if (
+    tol &&
+    typeof a === 'number' &&
+    typeof b === 'number' &&
+    Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b))
+  )
+    return
   const ta = Array.isArray(a) ? 'array' : a === null ? 'null' : typeof a
   const tb = Array.isArray(b) ? 'array' : b === null ? 'null' : typeof b
   if (ta !== tb) return void out.push(`${p || '$'}: type ${ta} vs ${tb} (${short(a, 40)} vs ${short(b, 40)})`)
   if (ta === 'array') {
     if (a.length !== b.length) out.push(`${p || '$'}: array length ${a.length} vs ${b.length}`)
-    for (let i = 0; i < Math.min(a.length, b.length) && out.length < limit; i++) jsonDiff(a[i], b[i], `${p}[${i}]`, out, limit, tol)
+    for (let i = 0; i < Math.min(a.length, b.length) && out.length < limit; i++)
+      jsonDiff(a[i], b[i], `${p}[${i}]`, out, limit, tol)
     return
   }
   if (ta === 'object') {
@@ -202,7 +248,8 @@ function compareResponses(entry, a, b) {
     const y = b.headers[h]
     if (x !== y) diffs.push({ aspect: 'header:' + h, detail: `old=${short(x)} new=${short(y)}` })
   }
-  if (!!a.headers.etag !== !!b.headers.etag) diffs.push({ aspect: 'etag-presence', detail: `old=${!!a.headers.etag} new=${!!b.headers.etag}` })
+  if (!!a.headers.etag !== !!b.headers.etag)
+    diffs.push({ aspect: 'etag-presence', detail: `old=${!!a.headers.etag} new=${!!b.headers.etag}` })
 
   const pn = pathnameOf(entry.url || entry.path)
   const ta = a.body.toString('utf8')
@@ -212,8 +259,18 @@ function compareResponses(entry, a, b) {
   let aOk = false
   let bOk = false
   if (isJsonType(a) || isJsonType(b)) {
-    try { ja = JSON.parse(ta); aOk = true } catch (e) { /* not JSON */ }
-    try { jb = JSON.parse(tb); bOk = true } catch (e) { /* not JSON */ }
+    try {
+      ja = JSON.parse(ta)
+      aOk = true
+    } catch (e) {
+      /* not JSON */
+    }
+    try {
+      jb = JSON.parse(tb)
+      bOk = true
+    } catch (e) {
+      /* not JSON */
+    }
   }
   if (aOk && bOk) {
     const na = normalizeBody(pn, ja)
@@ -222,9 +279,13 @@ function compareResponses(entry, a, b) {
     const out = []
     jsonDiff(na, nb, '', out, 5, numericTolerance(pn))
     if (out.length) diffs.push({ aspect: 'body', detail: out.join(' | ') })
-    else if (!keyOrderRandom(pn) && !numericTolerance(pn) && JSON.stringify(na) !== JSON.stringify(nb)) diffs.push({ aspect: 'body-key-order', detail: contextDiff(JSON.stringify(na), JSON.stringify(nb)) })
+    else if (!keyOrderRandom(pn) && !numericTolerance(pn) && JSON.stringify(na) !== JSON.stringify(nb))
+      diffs.push({ aspect: 'body-key-order', detail: contextDiff(JSON.stringify(na), JSON.stringify(nb)) })
   } else if (aOk !== bOk) {
-    diffs.push({ aspect: 'body', detail: `one side is not JSON: old ${aOk ? 'json' : 'text'} new ${bOk ? 'json' : 'text'}; ${contextDiff(ta, tb)}` })
+    diffs.push({
+      aspect: 'body',
+      detail: `one side is not JSON: old ${aOk ? 'json' : 'text'} new ${bOk ? 'json' : 'text'}; ${contextDiff(ta, tb)}`,
+    })
   } else {
     const na = normalizeText(pn, ta)
     const nb = normalizeText(pn, tb)
@@ -249,7 +310,13 @@ const record = (kind, label, prefix, cmp, extra = {}) => {
     results.push({ kind, ...label, prefix, outcome, diffs: cmp.diffs, ...extra })
     for (const d of cmp.diffs.length ? cmp.diffs : [{ aspect: 'error', detail: cmp.errorKind }]) {
       const k = `${d.aspect} ${prefix}`
-      const s = sigs.get(k) || { aspect: d.aspect, prefix, n: 0, example: `${label.method} ${label.url}`, detail: d.detail }
+      const s = sigs.get(k) || {
+        aspect: d.aspect,
+        prefix,
+        n: 0,
+        example: `${label.method} ${label.url}`,
+        detail: d.detail,
+      }
       s.n++
       sigs.set(k, s)
     }
@@ -281,10 +348,21 @@ async function replayEntry(entry, idx) {
   }
   const [a, b] = await Promise.all([send(OLD, req), send(NEW, req)])
   const cmp = compareResponses(entry, a, b)
-  const label = { method: entry.method, url: redact(entry.url) + (entry.auth ? ` [auth=${entry.auth}]` : ''), tag: entry.tag }
+  const label = {
+    method: entry.method,
+    url: redact(entry.url) + (entry.auth ? ` [auth=${entry.auth}]` : ''),
+    tag: entry.tag,
+  }
   const prefix = prefixOf(entry.url)
   // 304 round trip on a sample of cacheable 200s
-  if (!cmp.errored && entry.method === 'GET' && a.status === 200 && a.headers.etag && b.headers.etag && !nonDeterministicBody(pathnameOf(entry.url))) {
+  if (
+    !cmp.errored &&
+    entry.method === 'GET' &&
+    a.status === 200 &&
+    a.headers.etag &&
+    b.headers.etag &&
+    !nonDeterministicBody(pathnameOf(entry.url))
+  ) {
     etagSamples[prefix] = (etagSamples[prefix] || 0) + 1
     if (etagSamples[prefix] <= 2) {
       // Production data moves under us (download_count is live), so if the body changed between the two requests the
@@ -293,12 +371,17 @@ async function replayEntry(entry, idx) {
         let r = await send(base, { ...req, headers: { ...req.headers, 'if-none-match': etag } })
         if (r.status === 200) {
           const fresh = await send(base, req)
-          if (fresh.headers && fresh.headers.etag && fresh.headers.etag !== etag) r = await send(base, { ...req, headers: { ...req.headers, 'if-none-match': fresh.headers.etag } })
+          if (fresh.headers && fresh.headers.etag && fresh.headers.etag !== etag)
+            r = await send(base, { ...req, headers: { ...req.headers, 'if-none-match': fresh.headers.etag } })
         }
         return r
       }
       const [a2, b2] = await Promise.all([conditional(OLD, a.headers.etag), conditional(NEW, b.headers.etag)])
-      if (a2.status !== 304 || b2.status !== 304) cmp.diffs.push({ aspect: '304', detail: `if-none-match round trip: old=${a2.status || a2.error} new=${b2.status || b2.error} (expected 304 on both)` })
+      if (a2.status !== 304 || b2.status !== 304)
+        cmp.diffs.push({
+          aspect: '304',
+          detail: `if-none-match round trip: old=${a2.status || a2.error} new=${b2.status || b2.error} (expected 304 on both)`,
+        })
     }
   }
   record('corpus', label, prefix, cmp, { oldStatus: a.status, newStatus: b.status })
@@ -318,7 +401,10 @@ async function runCorpus() {
       try {
         await replayEntry(e, e.__i + 1)
       } catch (err) {
-        record('corpus', { method: e.method, url: redact(e.url) }, prefixOf(e.url), { diffs: [{ aspect: 'harness-error', detail: String(err.stack || err) }], errored: true })
+        record('corpus', { method: e.method, url: redact(e.url) }, prefixOf(e.url), {
+          diffs: [{ aspect: 'harness-error', detail: String(err.stack || err) }],
+          errored: true,
+        })
       }
       if (++done % 200 === 0) console.log(`  ${done}/${corpus.length}`)
     }
@@ -335,9 +421,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 function loadCases() {
   if (!args.cases) return []
-  const files = fs.readdirSync(args.cases).filter((f) => f.endsWith('.json')).sort()
+  const files = fs
+    .readdirSync(args.cases)
+    .filter((f) => f.endsWith('.json'))
+    .sort()
   const all = []
-  for (const f of files) for (const c of JSON.parse(fs.readFileSync(path.join(args.cases, f), 'utf8'))) all.push({ ...c, __file: f })
+  for (const f of files)
+    for (const c of JSON.parse(fs.readFileSync(path.join(args.cases, f), 'utf8'))) all.push({ ...c, __file: f })
   return all.filter((c) => onlyOk(c.path) || (args.only && c.__file.startsWith(args.only.replace(/^\//, ''))))
 }
 
@@ -349,7 +439,8 @@ async function runCase(c) {
     const headers = {}
     const ct = c.contentType !== undefined ? c.contentType : body !== undefined ? 'application/json' : null
     if (ct) headers['content-type'] = ct
-    for (const [k, v] of Object.entries(resolveDeep(c.headers || {}, body))) if (v !== null) headers[k.toLowerCase()] = v
+    for (const [k, v] of Object.entries(resolveDeep(c.headers || {}, body)))
+      if (v !== null) headers[k.toLowerCase()] = v
     return { method: c.method, path: resolveTemplate(c.path, body), headers, body, timeoutMs: c.timeoutMs || 8000 }
   }
   let req
@@ -363,10 +454,29 @@ async function runCase(c) {
   const oldBefore = logLines(args['old-log']).length
   const newBefore = logLines(args['new-log']).length
   const [a, b] = await Promise.all([send(OLD, req), send(NEW, req)])
-  if (Math.max(a.ms, b.ms) > 2000) console.log('  slow case ' + c.__file + ' :: ' + c.name + ' old=' + (a.error || a.status) + '/' + a.ms + 'ms new=' + (b.error || b.status) + '/' + b.ms + 'ms')
+  if (Math.max(a.ms, b.ms) > 2000)
+    console.log(
+      '  slow case ' +
+        c.__file +
+        ' :: ' +
+        c.name +
+        ' old=' +
+        (a.error || a.status) +
+        '/' +
+        a.ms +
+        'ms new=' +
+        (b.error || b.status) +
+        '/' +
+        b.ms +
+        'ms'
+    )
   await sleep(c.timeoutMs ? 400 : 250) // un-awaited writes (dl_track, gallery_click, discord) land after the response
   const cmp = compareResponses({ url: c.path, path: c.path }, a, b)
-  const recs = (file, from) => logLines(file).slice(from).map((l) => JSON.parse(l)).filter((r) => !isDiscordHookCall(r))
+  const recs = (file, from) =>
+    logLines(file)
+      .slice(from)
+      .map((l) => JSON.parse(l))
+      .filter((r) => !isDiscordHookCall(r))
   const wa = recs(args['old-log'], oldBefore).map((r) => JSON.stringify(normalizeWrite(r)))
   const wb = recs(args['new-log'], newBefore).map((r) => JSON.stringify(normalizeWrite(r)))
   const sa = [...wa].sort()
@@ -374,12 +484,20 @@ async function runCase(c) {
   if (JSON.stringify(sa) !== JSON.stringify(sb)) {
     const onlyA = sa.filter((x) => !sb.includes(x))
     const onlyB = sb.filter((x) => !sa.includes(x))
-    cmp.diffs.push({ aspect: 'writes', detail: `old ${wa.length} records, new ${wb.length}; only-old: ${short(onlyA, 300)} only-new: ${short(onlyB, 300)}` })
+    cmp.diffs.push({
+      aspect: 'writes',
+      detail: `old ${wa.length} records, new ${wb.length}; only-old: ${short(onlyA, 300)} only-new: ${short(onlyB, 300)}`,
+    })
   } else if (JSON.stringify(wa) !== JSON.stringify(wb)) {
     cmp.diffs.push({ aspect: 'writes-order', detail: 'same records, different order' })
   }
   const label = { method: c.method, url: `${redact(c.path)} :: ${c.name}`, tag: 'case:' + c.__file }
-  record('case', label, prefixOf(resolveTemplate(c.path, '')), cmp, { oldStatus: a.status || a.error, newStatus: b.status || b.error, writesOld: wa.length, writesNew: wb.length })
+  record('case', label, prefixOf(resolveTemplate(c.path, '')), cmp, {
+    oldStatus: a.status || a.error,
+    newStatus: b.status || b.error,
+    writesOld: wa.length,
+    writesNew: wb.length,
+  })
   return { a, b, wa, wb }
 }
 
@@ -392,7 +510,10 @@ async function runCases() {
     try {
       await runCase(c)
     } catch (err) {
-      record('case', { method: c.method, url: `${redact(c.path)} :: ${c.name}` }, prefixOf(c.path), { diffs: [{ aspect: 'harness-error', detail: String(err.stack || err) }], errored: true })
+      record('case', { method: c.method, url: `${redact(c.path)} :: ${c.name}` }, prefixOf(c.path), {
+        diffs: [{ aspect: 'harness-error', detail: String(err.stack || err) }],
+        errored: true,
+      })
     }
   }
 }
@@ -409,24 +530,40 @@ async function runRateLimit() {
     for (let i = 0; i < N; i++) {
       const r = await send(base, { method: 'GET', path: '/search?q=rock', headers: { 'cf-connecting-ip': ip } })
       seq.push(r.status || r.error)
-      if (r.status === 429 && !first429) first429 = { status: r.status, retryAfter: r.headers['retry-after'], body: r.body.toString(), type: r.headers['content-type'] }
+      if (r.status === 429 && !first429)
+        first429 = {
+          status: r.status,
+          retryAfter: r.headers['retry-after'],
+          body: r.body.toString(),
+          type: r.headers['content-type'],
+        }
     }
     return { seq, first429 }
   }
   const [x, y] = await Promise.all([mk(OLD)(), mk(NEW)()])
   const diffs = []
   const idx = (s) => s.indexOf(429)
-  if (idx(x.seq) !== idx(y.seq)) diffs.push({ aspect: 'ratelimit-threshold', detail: `first 429 at request #${idx(x.seq) + 1} (old) vs #${idx(y.seq) + 1} (new)` })
+  if (idx(x.seq) !== idx(y.seq))
+    diffs.push({
+      aspect: 'ratelimit-threshold',
+      detail: `first 429 at request #${idx(x.seq) + 1} (old) vs #${idx(y.seq) + 1} (new)`,
+    })
   // Retry-After (and the 'try again in Ns' text) count down from the bucket's oldest entry, so two servers that were
   // hit a few hundred ms apart legitimately differ by a second: compare them with a 2s tolerance.
   // The 429 text embeds the same countdown ("Try again in 57s" vs "56s"), so it gets the same 2s tolerance; the
   // rest of the text must match exactly.
   const retry = (r) => (r ? { ...r, retryAfter: undefined, body: String(r.body).replace(/\d+s/, 'Ns') } : r)
   const ra = (r) => (r ? +r.retryAfter : NaN)
-  const secsInBody = (r) => (r ? +((/in (\d+)s/.exec(String(r.body)) || [])[1]) : NaN)
-  if (x.first429 && y.first429 && !(Math.abs(secsInBody(x.first429) - secsInBody(y.first429)) <= 2)) diffs.push({ aspect: 'ratelimit-body-seconds', detail: `old=${secsInBody(x.first429)} new=${secsInBody(y.first429)}` })
-  if (x.first429 && y.first429 && Math.abs(ra(x.first429) - ra(y.first429)) > 2) diffs.push({ aspect: 'ratelimit-retry-after', detail: `old=${ra(x.first429)} new=${ra(y.first429)}` })
-  if (JSON.stringify(retry(x.first429)) !== JSON.stringify(retry(y.first429))) diffs.push({ aspect: 'ratelimit-response', detail: `old=${short(x.first429, 200)} new=${short(y.first429, 200)}` })
+  const secsInBody = (r) => (r ? +(/in (\d+)s/.exec(String(r.body)) || [])[1] : NaN)
+  if (x.first429 && y.first429 && !(Math.abs(secsInBody(x.first429) - secsInBody(y.first429)) <= 2))
+    diffs.push({
+      aspect: 'ratelimit-body-seconds',
+      detail: `old=${secsInBody(x.first429)} new=${secsInBody(y.first429)}`,
+    })
+  if (x.first429 && y.first429 && Math.abs(ra(x.first429) - ra(y.first429)) > 2)
+    diffs.push({ aspect: 'ratelimit-retry-after', detail: `old=${ra(x.first429)} new=${ra(y.first429)}` })
+  if (JSON.stringify(retry(x.first429)) !== JSON.stringify(retry(y.first429)))
+    diffs.push({ aspect: 'ratelimit-response', detail: `old=${short(x.first429, 200)} new=${short(y.first429, 200)}` })
   record('ratelimit', { method: 'GET', url: `/search?q=rock x${N} same IP` }, '/search', { diffs, errored: false })
 }
 
@@ -439,19 +576,31 @@ async function runRateLimit() {
 
   const prefixes = Object.keys(counts).sort()
   const lines = []
-  lines.push(`parity run ${new Date().toISOString()}  old=${args.old} new=${args.new}  ${((Date.now() - t0) / 1000).toFixed(0)}s`)
+  lines.push(
+    `parity run ${new Date().toISOString()}  old=${args.old} new=${args.new}  ${((Date.now() - t0) / 1000).toFixed(0)}s`
+  )
   lines.push('')
   lines.push('prefix'.padEnd(28) + 'identical'.padStart(10) + 'different'.padStart(10) + 'errored'.padStart(9))
   const tot = { identical: 0, different: 0, errored: 0 }
   for (const p of prefixes) {
     const c = counts[p]
-    lines.push(p.padEnd(28) + String(c.identical).padStart(10) + String(c.different).padStart(10) + String(c.errored).padStart(9))
+    lines.push(
+      p.padEnd(28) + String(c.identical).padStart(10) + String(c.different).padStart(10) + String(c.errored).padStart(9)
+    )
     for (const k of Object.keys(tot)) tot[k] += c[k]
   }
-  lines.push('TOTAL'.padEnd(28) + String(tot.identical).padStart(10) + String(tot.different).padStart(10) + String(tot.errored).padStart(9))
+  lines.push(
+    'TOTAL'.padEnd(28) +
+      String(tot.identical).padStart(10) +
+      String(tot.different).padStart(10) +
+      String(tot.errored).padStart(9)
+  )
   lines.push('')
   lines.push(`distinct mismatch signatures (aspect + route prefix): ${sigs.size}`)
-  for (const s of [...sigs.values()].sort((a, b) => b.n - a.n)) lines.push(`  ${String(s.n).padStart(5)}x  ${s.aspect}  ${s.prefix}\n         e.g. ${redact(s.example)}\n         ${redact(short(s.detail, 260))}`)
+  for (const s of [...sigs.values()].sort((a, b) => b.n - a.n))
+    lines.push(
+      `  ${String(s.n).padStart(5)}x  ${s.aspect}  ${s.prefix}\n         e.g. ${redact(s.example)}\n         ${redact(short(s.detail, 260))}`
+    )
   if (bothFailed.length) {
     lines.push('')
     lines.push(`both servers failed identically (timeout/connection) ${bothFailed.length}:`)
@@ -465,7 +614,14 @@ async function runRateLimit() {
   }
   const summary = redact(lines.join('\n')) + '\n'
   fs.writeFileSync(path.join(OUT, 'summary.txt'), summary)
-  fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(redactDeep({ totals: tot, counts, signatures: [...sigs.values()], skipped, bothFailed, mismatches: results }), null, 1))
+  fs.writeFileSync(
+    path.join(OUT, 'report.json'),
+    JSON.stringify(
+      redactDeep({ totals: tot, counts, signatures: [...sigs.values()], skipped, bothFailed, mismatches: results }),
+      null,
+      1
+    )
+  )
   console.log('\n' + summary)
   for (const a of agents.values()) a.destroy()
   process.exit(0)

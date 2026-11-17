@@ -28,7 +28,15 @@ const unavailable = (what: string): KeyValidation => ({
 const extractKey = (authHeader: string): string =>
   authHeader.startsWith('Bearer ') ? authHeader.substring(7) : authHeader
 
-const validateKey = async (req: FastifyRequest): Promise<KeyValidation> => {
+/**
+ * `cacheOnly`: look the key up in the cached api_keys collection only, without the billed direct read a cache
+ * miss normally falls back to. Used for clients already failing validation at a high rate (utils/keyAuth.ts);
+ * the cost is that a key minted since the collection was last cached is not recognised for them.
+ */
+const validateKey = async (
+  req: FastifyRequest,
+  { cacheOnly = false }: { cacheOnly?: boolean } = {}
+): Promise<KeyValidation> => {
   const db = cachedFirestore()
 
   // Key must be provided
@@ -61,7 +69,7 @@ const validateKey = async (req: FastifyRequest): Promise<KeyValidation> => {
   // Check if key exists in database
   let keyDoc: CachedDocSnapshot<ApiKey>
   try {
-    keyDoc = await db.collection<ApiKey>('api_keys').doc(apiKey).get()
+    keyDoc = await db.collection<ApiKey>('api_keys').doc(apiKey, { cacheOnly }).get()
   } catch (err) {
     console.error('[VALIDATE KEY] Could not read api_keys:', err)
     return unavailable('your API key')

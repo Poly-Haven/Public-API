@@ -631,7 +631,7 @@ paths:
   /v2/similar/{id}:
     get:
       summary: Assets similar to one, early-access assets included.
-      description: Like `/similar/{id}`, wrapped in `{ message, data }`, except that early-access assets may appear in the results. Staging assets never do.
+      description: Like `/similar/{id}`, wrapped in `{ message, data }`, except that early-access assets may appear in the results, and each result is shaped like an item of `/v2/assets` (internal fields dropped, `thumbnail_url` added). Staging assets never do.
       tags:
         - v2
       parameters:
@@ -712,10 +712,13 @@ paths:
     get:
       summary: Releases of the Poly Haven Blender add-on.
       description: >-
-        All releases, or with `blender_version` only the highest one that Blender version can run. Public. Unrelated
-        to `/extensions`, the Blender extensions repository for the asset library.
+        All releases, or with `blender_version` only the highest one that Blender version can run. Needs any valid
+        API key (early access is not required). Not cached. Unrelated to `/extensions`, the Blender extensions
+        repository for the asset library.
       tags:
-        - v2
+        - v2 (keyed)
+      security:
+        - apiKey: []
       parameters:
         - name: blender_version
           in: query
@@ -744,6 +747,10 @@ paths:
                     type: array
                     items:
                       type: object
+        '403':
+          $ref: '#/components/responses/v2KeyRejected'
+        '429':
+          description: Over the per-key request limit (when enforced), or too many invalid keys from this IP. Has `Retry-After`.
         '503':
           $ref: '#/components/responses/v2Unavailable'
   /v2/key:
@@ -779,7 +786,7 @@ paths:
         '403':
           $ref: '#/components/responses/v2KeyRejected'
         '429':
-          description: Over the per-key request limit (when enforced). Has `Retry-After`.
+          description: Over the per-key request limit (when enforced), or too many invalid keys from this IP. Has `Retry-After`.
         '503':
           $ref: '#/components/responses/v2Unavailable'
   /v2/ea/files/{id}:

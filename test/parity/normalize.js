@@ -27,7 +27,13 @@ function setPath(obj, dotted, fn) {
   walk(obj, 0)
 }
 
-const sortedMultiset = (arr) => (Array.isArray(arr) ? [...arr].map((x) => JSON.stringify(x)).sort().map((s) => JSON.parse(s)) : arr)
+const sortedMultiset = (arr) =>
+  Array.isArray(arr)
+    ? [...arr]
+        .map((x) => JSON.stringify(x))
+        .sort()
+        .map((s) => JSON.parse(s))
+    : arr
 
 /*
  * JSON body rules. `match` receives the request pathname (before the query string).
@@ -53,12 +59,12 @@ const BODY_RULES = [
   },
   {
     match: (p) => p === '/collections' || p === '/collections/',
-    why: 'each collection\'s `assets` is shuffleArray(...).slice(0, 15): a random sample of up to 15, different per request, so only its length is comparable',
+    why: "each collection's `assets` is shuffleArray(...).slice(0, 15): a random sample of up to 15, different per request, so only its length is comparable",
     fn: (j) => setPath(j, '*.assets', (a) => (Array.isArray(a) ? PLACEHOLDER('random sample of ' + a.length) : a)),
   },
   {
     match: (p) => p === '/vaults' || p === '/vaults/',
-    why: 'each vault\'s `assets` is shuffleArray(...) of the full membership: same members, random order, so compare as a sorted multiset',
+    why: "each vault's `assets` is shuffleArray(...) of the full membership: same members, random order, so compare as a sorted multiset",
     fn: (j) => setPath(j, '*.assets', sortedMultiset),
   },
   {
@@ -71,7 +77,7 @@ const BODY_RULES = [
   },
   {
     match: (p) => /^\/v2\/superhive_/.test(p),
-    why: 'echoes the stored document: received_at is request-time; req_headers.host carries the instance\'s own port (3001 vs 3002); ip is the caller\'s socket address as the app sees it',
+    why: "echoes the stored document: received_at is request-time; req_headers.host carries the instance's own port (3001 vs 3002); ip is the caller's socket address as the app sees it",
     fn: (j) => {
       setPath(j, 'document.received_at', () => PLACEHOLDER('time'))
       setPath(j, 'document.req_headers.host', () => PLACEHOLDER('host'))
@@ -124,7 +130,14 @@ const COUNTER_KEYS = { download_count: 5 }
 // Walks two normalised bodies of the same shape and, where a counter differs by no more than its tolerance,
 // replaces both with the same placeholder so neither the value nor the key-order comparison trips on it.
 function alignCounters(a, b) {
-  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) !== Array.isArray(b)) return
+  if (
+    a === null ||
+    b === null ||
+    typeof a !== 'object' ||
+    typeof b !== 'object' ||
+    Array.isArray(a) !== Array.isArray(b)
+  )
+    return
   for (const k of Object.keys(a)) {
     if (!(k in b)) continue
     const tol = COUNTER_KEYS[k]
@@ -138,7 +151,11 @@ function alignCounters(a, b) {
 // 304 round trip is not meaningful there.
 const nonDeterministicBody = (pathname) => {
   const p = fold(pathname)
-  return BODY_RULES.some((r) => r.match(p)) || KEY_ORDER_RANDOM.some((r) => r.match(p)) || NUMERIC_TOLERANCE.some((r) => r.match(p))
+  return (
+    BODY_RULES.some((r) => r.match(p)) ||
+    KEY_ORDER_RANDOM.some((r) => r.match(p)) ||
+    NUMERIC_TOLERANCE.some((r) => r.match(p))
+  )
 }
 
 /*
@@ -164,7 +181,11 @@ const TIME_KEYS = new Set(['timestamp', 'datetime', 'created_at', 'last_edited',
 // machine either way; the call is dropped from the comparison rather than reported as a difference it is not. (The
 // new side's own records still show it, and the payload was compared against hookcord's on the wire separately.)
 function isDiscordHookCall(rec) {
-  return rec.op === 'http' && rec.method === 'POST' && /parity-discord-hook|discord(app)?\.com\/api\/webhooks\//.test(String(rec.url))
+  return (
+    rec.op === 'http' &&
+    rec.method === 'POST' &&
+    /parity-discord-hook|discord(app)?\.com\/api\/webhooks\//.test(String(rec.url))
+  )
 }
 
 function normalizeWrite(rec) {
@@ -180,7 +201,8 @@ function normalizeWrite(rec) {
   const walk = (node, inPatronsDoc) => {
     if (node === null || typeof node !== 'object') return
     for (const k of Object.keys(node)) {
-      if (TIME_KEYS.has(k) && (typeof node[k] === 'string' || typeof node[k] === 'number')) node[k] = PLACEHOLDER('time')
+      if (TIME_KEYS.has(k) && (typeof node[k] === 'string' || typeof node[k] === 'number'))
+        node[k] = PLACEHOLDER('time')
       else walk(node[k])
     }
   }
@@ -191,4 +213,16 @@ function normalizeWrite(rec) {
   return r
 }
 
-module.exports = { isDiscordHookCall, alignCounters, numericTolerance, nonDeterministicBody, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, BODY_RULES, KEY_ORDER_RANDOM, TEXT_RULES }
+module.exports = {
+  isDiscordHookCall,
+  alignCounters,
+  numericTolerance,
+  nonDeterministicBody,
+  normalizeBody,
+  normalizeText,
+  normalizeWrite,
+  keyOrderRandom,
+  BODY_RULES,
+  KEY_ORDER_RANDOM,
+  TEXT_RULES,
+}

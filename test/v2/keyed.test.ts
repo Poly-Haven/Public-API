@@ -11,14 +11,15 @@ import {
   REVOKED_KEY,
   bearer,
   getApp,
-  readSuperhiveKey,
+  SUPERHIVE_KEY,
+  SUPERHIVE_UID,
+  MIXED_KEY,
   writeLogSize,
   writesSince,
 } from './fixtures.ts'
 
-// The keyed endpoints (/v2/key, /v2/ea/*) and key minting. The Superhive key is read from api_keys at run time
-// and only ever used, never printed or compared in a way that would print it: assertions on anything that could
-// hold it are plain booleans.
+// The keyed endpoints (/v2/key, /v2/ea/*, /v2/extensions) and key minting. Every key here is a fixture made up
+// per run (test/v2/fixtures.ts), so nothing depends on which keys or early-access assets production holds today.
 
 type Json = { message?: string; error?: string; data?: unknown; meta?: unknown; [key: string]: unknown }
 type FilesBySlug = Record<string, Record<string, unknown>>
@@ -26,9 +27,10 @@ type Minted = { key: string; reused: boolean; patron_uid?: string; superhive_uid
 const dataOf = <T>(body: Json) => body.data as T
 
 let app: FastifyInstance
-let superhive: string
-let earlyAccess: string
-let released: string
+const superhive = SUPERHIVE_KEY
+// Fixtures (test/v2/fixtures.ts): a scheduled early-access asset and a released one, each with a files doc.
+const earlyAccess = FAKE.ea1
+const released = FAKE.released
 let assets: Record<string, Asset>
 
 const call = async (method: 'GET' | 'POST', url: string, headers: Record<string, string> = {}, payload?: object) => {
@@ -39,13 +41,7 @@ const call = async (method: 'GET' | 'POST', url: string, headers: Record<string,
 
 before(async () => {
   app = await getApp()
-  const key = await readSuperhiveKey()
-  if (!key) throw new Error('no active Superhive test key in api_keys')
-  superhive = key
   assets = dataOf<Record<string, Asset>>((await call('GET', '/v2/assets')).body)
-  const real = Object.entries(assets).filter(([slug]) => !slug.startsWith('zz_test_'))
-  released = real.find(([, a]) => a.date_published < Date.now() / 1000)![0]
-  earlyAccess = real.find(([, a]) => a.date_published > Date.now() / 1000)![0]
 })
 
 beforeEach(() => resetKeyLimits())
@@ -162,6 +158,28 @@ describe('GET /v2/ea/files', () => {
   })
 })
 
+describe('GET /v2/extensions', () => {
+  it('needs any valid key, early access or not, and is never cached', async () => {
+    for (const url of ['/v2/extensions', '/v2/extensions?blender_version=99.0']) {
+      for (const key of [superhive, NON_EA_KEY]) {
+        const { res, body, cache } = await call('GET', url, bearer(key))
+        assert.equal(res.statusCode, 200, url)
+        assert.equal(cache, 'private, no-store')
+        assert.equal(body.message, 'OK')
+        assert.ok(Array.isArray(body.data) && !('meta' in body))
+      }
+    }
+  })
+
+  it('refuses a missing, unknown or revoked key with a private 403', async () => {
+    for (const headers of [{}, bearer('f'.repeat(64)), bearer(REVOKED_KEY)]) {
+      const { res, cache } = await call('GET', '/v2/extensions', headers)
+      assert.equal(res.statusCode, 403)
+      assert.equal(cache, 'private, no-store')
+    }
+  })
+})
+
 describe('per-key rate limiting', () => {
   const fakeReq = (ip: string) => ({ headers: { 'cf-connecting-ip': ip }, ip }) as never
 
@@ -226,7 +244,7 @@ describe('POST /v2/create_key', () => {
     assert.equal((await call('POST', '/v2/create_key', {}, {})).res.statusCode, 403)
   })
 
-  it('mints a key for a patron with none, writing exactly one document', async () => {
+  it('mints a key for a patron with none, in a transaction that also writes the patron lock document', async () => {
     const before = writeLogSize()
     const { res, body } = await post({ patron_uid: FAKE.patron })
     assert.equal(res.statusCode, 200)
@@ -235,10 +253,15 @@ describe('POST /v2/create_key', () => {
     assert.equal(minted.reused, false)
     assert.equal(minted.patron_uid, FAKE.patron)
     const writes = writesSince(before)
-    assert.equal(writes.length, 1)
-    assert.equal(writes[0].op, 'set')
+    assert.deepEqual(
+      writes.map((w) => w.op),
+      ['txn.create', 'txn.set']
+    )
     assert.ok(writes[0].path === `api_keys/${minted.key}`)
     assert.equal(writes[0].data!.status, 'active')
+    assert.equal(writes[1].path, `api_key_patrons/${FAKE.patron}`)
+    assert.ok(writes[1].data!.key === minted.key)
+    assert.match(String(writes[1].data!.updated_at), /^\d{4}-\d\d-\d\dT/)
   })
 
   it('returns the existing active key instead of minting another', async () => {
@@ -260,12 +283,29 @@ describe('POST /v2/create_key', () => {
     const writes = writesSince(before)
     assert.deepEqual(
       writes.map((w) => w.op),
-      ['set', 'update']
+      ['txn.create', 'txn.set', 'txn.update']
     )
     assert.ok(writes[0].path === `api_keys/${minted.key}`)
-    assert.ok(writes[1].path === `api_keys/${EXISTING_PATRON_KEY}`)
-    assert.equal(writes[1].data!.status, 'revoked')
-    assert.match(String(writes[1].data!.revoked_at), /^\d{4}-\d\d-\d\dT/)
+    assert.equal(writes[1].path, `api_key_patrons/${FAKE.patronWithKey}`)
+    assert.ok(writes[2].path === `api_keys/${EXISTING_PATRON_KEY}`)
+    assert.equal(writes[2].data!.status, 'revoked')
+    assert.match(String(writes[2].data!.revoked_at), /^\d{4}-\d\d-\d\dT/)
+  })
+
+  it('leaves a key that also carries a superhive_uid alone: it is neither reused nor revoked', async () => {
+    for (const rotate of [false, true]) {
+      const before = writeLogSize()
+      const { res, body } = await post({ patron_uid: FAKE.patronWithMixedKey, rotate })
+      assert.equal(res.statusCode, 200)
+      const minted = dataOf<Minted>(body)
+      assert.ok(minted.key !== MIXED_KEY && minted.reused === false)
+      const writes = writesSince(before)
+      assert.deepEqual(
+        writes.map((w) => w.op),
+        ['txn.create', 'txn.set']
+      )
+      assert.ok(!writes.some((w) => w.path === `api_keys/${MIXED_KEY}`))
+    }
   })
 
   it('still mints Superhive keys unconditionally', async () => {
@@ -273,6 +313,7 @@ describe('POST /v2/create_key', () => {
     const { res, body } = await post({ superhive_uid: 424242 })
     assert.equal(res.statusCode, 200)
     assert.equal(dataOf<Minted>(body).superhive_uid, 424242)
+    assert.equal(SUPERHIVE_UID, 424242)
     const writes = writesSince(before)
     assert.deepEqual(
       writes.map((w) => w.op),

@@ -13,6 +13,7 @@
 //   addBodyParsers              express.json() / bodyParser.text() as mounted per route file: parsing only under
 //                               the mount points that had a parser (see JSON_MOUNTS), with body-parser's charset
 //                               and 400/413/415 rules; every other path ignores the body ({}).
+//   redactUrl                   a url with the Superhive webhook's secret path segment replaced, for log lines.
 //   noEtag                      marks a reply that Express would not have given an ETag (the app's ETag hook
 //                               skips it). res.send() always adds one; finalhandler and res.end() never do.
 import { STATUS_CODES } from 'node:http'
@@ -257,6 +258,12 @@ const addBodyParsers = (fastify: FastifyInstance) => {
   fastify.register(bodyHooks)
 }
 
+/**
+ * A request url that is safe to log: the Superhive webhook's path carries a shared secret (/v2/superhive_<secret>),
+ * which must not end up in PM2's log files. Matched case-insensitively because routing is.
+ */
+const redactUrl = (url: string): string => url.replace(/(\/v2\/superhive_)[^/?#]*/i, '$1[redacted]')
+
 export {
   addBodyParsers,
   skipOverride,
@@ -265,6 +272,7 @@ export {
   noEtag,
   notFoundMessage,
   qsParse,
+  redactUrl,
   redirect,
   sendErrorPage,
   sendText,

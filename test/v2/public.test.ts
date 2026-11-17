@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { before, describe, it } from 'node:test'
 import type { FastifyInstance } from 'fastify'
 import type { Asset } from '../../types/firestore.ts'
-import { FAKE, NON_EA_KEY, bearer, getApp, now, readSuperhiveKey } from './fixtures.ts'
+import { FAKE, NON_EA_KEY, SUPERHIVE_KEY, bearer, getApp, now } from './fixtures.ts'
 
 // The keyless v2 endpoints, against the real app and production Firestore (reads only: the write guard is
 // preloaded by `npm test`). Real assets are found at run time from /v2/assets rather than named here.
@@ -12,8 +12,9 @@ type Json = { message?: string; error?: string; data?: unknown; meta?: unknown; 
 let app: FastifyInstance
 let assets: Record<string, Asset>
 let released: string
-let earlyAccess: string
-let superhiveKey: string | null
+// Fixtures: a scheduled early-access asset, and a Superhive key.
+const earlyAccess = FAKE.ea1
+const superhiveKey = SUPERHIVE_KEY
 
 const get = async (url: string, headers: Record<string, string> = {}) => {
   const res = await app.inject({ method: 'GET', url, headers })
@@ -24,16 +25,10 @@ const maxAge = (cache: string) => Number(/max-age=(\d+)/.exec(cache)?.[1])
 
 before(async () => {
   app = await getApp()
-  superhiveKey = await readSuperhiveKey()
   const { body } = await get('/v2/assets')
   assets = body.data as Record<string, Asset>
   const real = Object.entries(assets).filter(([slug]) => !slug.startsWith('zz_test_'))
   released = real.find(([, a]) => a.date_published < now())![0]
-  // The soonest real early-access asset that is not a vault one, else any.
-  const ea = real
-    .filter(([, a]) => a.date_published > now())
-    .sort(([, a], [, b]) => a.date_published - b.date_published)
-  earlyAccess = ea[0][0]
 })
 
 describe('GET /v2/assets', () => {
@@ -160,6 +155,26 @@ describe('GET /v2/search', () => {
 })
 
 describe('GET /v2/similar/:id', () => {
+  it('shapes each result like an item of /v2/assets: no internal fields, with a thumbnail_url', async () => {
+    const { res, body } = await get(`/v2/similar/${FAKE.ea1}`)
+    assert.equal(res.statusCode, 200)
+    const similar = body.data as Record<string, Asset & { similarity: number | null }>
+    // Every fake asset carries the shared tag, so the fixture's neighbours are the other fixtures.
+    assert.ok(FAKE.released in similar, 'tag matching found a neighbour')
+    for (const [slug, item] of Object.entries(similar)) {
+      for (const field of ['old_id', 'reviewers', 'scale', 'staging']) assert.ok(!(field in item), `${slug}: ${field}`)
+      assert.match(item.thumbnail_url as string, /^https:\/\/cdn\.polyhaven\.com\/asset_img\/thumbs\//)
+      assert.ok('similarity' in item)
+    }
+  })
+
+  it('leaves v1 /similar as it was: the stored doc, internal fields included', async () => {
+    const res = await app.inject({ method: 'GET', url: `/similar/${released}` })
+    assert.equal(res.statusCode, 200)
+    const item = Object.values(res.json() as Record<string, Asset>)[0]
+    assert.ok(item && 'old_id' in item && !('thumbnail_url' in item))
+  })
+
   it('serves released and early-access ids, never lists staging, and 404s a staging id', async () => {
     for (const slug of [released, earlyAccess]) {
       const { res, body, cache } = await get(`/v2/similar/${slug}`)
@@ -191,17 +206,6 @@ describe('GET /v2/taxonomy', () => {
   })
 })
 
-describe('GET /v2/extensions', () => {
-  it('is public, without meta', async () => {
-    const { res, body, cache } = await get('/v2/extensions')
-    assert.equal(res.statusCode, 200)
-    assert.equal(cache, 'public, max-age=3600')
-    assert.equal(body.message, 'OK')
-    assert.ok(Array.isArray(body.data) && !('meta' in body))
-    assert.equal((await get('/v2/extensions?blender_version=99.0')).res.statusCode, 200)
-  })
-})
-
 describe('keyless means the same bytes for everyone', () => {
   it('ignores the Authorization header', async () => {
     const urls = [
@@ -212,9 +216,8 @@ describe('keyless means the same bytes for everyone', () => {
       '/v2/categories/textures',
       `/v2/similar/${released}`,
       '/v2/taxonomy',
-      '/v2/extensions',
     ]
-    const keys = [NON_EA_KEY, 'garbage', ...(superhiveKey ? [superhiveKey] : [])]
+    const keys = [NON_EA_KEY, 'garbage', superhiveKey]
     for (const url of urls) {
       const plain = await get(url)
       for (const key of keys) {

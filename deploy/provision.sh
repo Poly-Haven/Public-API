@@ -22,7 +22,12 @@ export DEBIAN_FRONTEND=noninteractive # apt must never stop to ask a question ov
 HOME_DIR="/home/$API_USER"
 APP_DIR="$HOME_DIR/api"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-as_api() { runuser -u "$API_USER" -- "$@"; } # run a command as the api user without a login shell
+# Run a command as the api user. `runuser -u` switches uid but leaves the environment alone, so HOME would still be
+# /root: git would look for (and try to write) config under root's home and npm would use root's cache and
+# ~/.npmrc, failing with permission errors or leaving root-owned files in the api user's tree. env sets HOME, USER
+# and LOGNAME as a login would, and the command starts in the api home, because the working directory is also
+# inherited and api cannot read /root (git and npm both complain when they cannot read their cwd).
+as_api() { runuser -u "$API_USER" -- env HOME="$HOME_DIR" USER="$API_USER" LOGNAME="$API_USER" bash -c 'cd "$HOME" && exec "$@"' bash "$@"; }
 
 echo "==> packages"
 apt-get update -qq
@@ -106,6 +111,12 @@ if [ -z "$src" ]; then
 fi
 [ -f "$src" ] || { echo "nginx conf not found; set NGINX_CONF_SRC" >&2; exit 1; }
 install -m 644 "$src" /etc/nginx/sites-available/api.polyhaven.com
+# The site includes this list (realip: only Cloudflare may say who the client is). Fetched fresh, with the
+# checked-in copy as the fallback if Cloudflare's site is unreachable; both live next to the site config.
+for d in "$SCRIPT_DIR/nginx" "$APP_DIR/deploy/nginx"; do
+  if [ -f "$d/refresh-cloudflare-ips.sh" ]; then bash "$d/refresh-cloudflare-ips.sh" /etc/nginx/cloudflare-ips.conf; break; fi
+done
+[ -f /etc/nginx/cloudflare-ips.conf ] || { echo "/etc/nginx/cloudflare-ips.conf missing: refresh-cloudflare-ips.sh not found" >&2; exit 1; }
 ln -sfn /etc/nginx/sites-available/api.polyhaven.com /etc/nginx/sites-enabled/api.polyhaven.com
 # Debian's stock site is also a default_server on :80; two defaults make nginx -t fail.
 rm -f /etc/nginx/sites-enabled/default

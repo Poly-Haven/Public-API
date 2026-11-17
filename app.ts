@@ -11,10 +11,12 @@ import fresh from 'fresh'
 import { parse as parseYaml } from 'yaml'
 
 import superhiveHook from './superhive_hook.ts'
+import { noStore, sendError } from './utils/v2Cache.ts'
 import {
   addBodyParsers,
   notFoundMessage,
   qsParse,
+  redactUrl,
   redirect,
   sendErrorPage,
   skipOverride,
@@ -118,6 +120,32 @@ export const buildApp = async (): Promise<FastifyInstance> => {
   // by the plugin, which would match only a single exact If-None-Match and does so for any status.
   fastify.register(etag, { weak: true, replyWith304: false })
 
+  // Routing is case-insensitive (Express parity, which v1's public URLs rely on), but Cloudflare's rules match
+  // paths case-sensitively. /V2/ea/files would therefore skip the rule that makes /v2/* respect the origin's
+  // Cache-Control and fall under the general cache-everything rule, which could store a keyed or private
+  // response for everyone. So the v2 namespace answers only to its literal lower-case prefix: any other casing
+  // is a 404 that no cache keeps. The percent-decoded path is checked too, since the router decodes it and an
+  // encoded /%56%32 would otherwise route to v2 while looking like something else to a rule.
+  // A plugin (see skipOverride) so it is queued after the CORS plugin and the 404 still carries its headers.
+  fastify.register(
+    skipOverride(async (instance: FastifyInstance) => {
+      instance.addHook('onRequest', async (req, reply) => {
+        const pathname = req.url.split(/[?#]/, 1)[0]
+        let decoded = pathname
+        try {
+          decoded = decodeURIComponent(pathname)
+        } catch {
+          // Bad percent-encoding: the router rejects it before any handler (see badUrl), so it cannot reach v2.
+        }
+        const v2Namespace = /^\/v2(\/|$)/i
+        if ((v2Namespace.test(pathname) || v2Namespace.test(decoded)) && !/^\/v2(\/|$)/.test(pathname)) {
+          noStore(reply)
+          return sendError(reply, 404, notFoundMessage(req))
+        }
+      })
+    })
+  )
+
   let debugRequests = false
   const isDev = process.env.NODE_ENV === 'development'
   // Logs the request url to the console
@@ -126,7 +154,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
       // Random emoji to make it easier to find in the logs, using the current second as the seed
       const emojiOptions = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸']
       const emoji = emojiOptions[new Date().getSeconds() % emojiOptions.length]
-      console.log(emoji, req.url)
+      console.log(emoji, redactUrl(req.url))
     }
   })
 
@@ -178,7 +206,7 @@ export const buildApp = async (): Promise<FastifyInstance> => {
   fastify.setErrorHandler((err: FastifyError, req, reply) => {
     let status = err.statusCode as number
     if (!(status >= 400 && status <= 599)) status = 500
-    if (status >= 500) console.error(`[ERROR] ${req.method} ${req.url}:`, err)
+    if (status >= 500) console.error(`[ERROR] ${req.method} ${redactUrl(req.url)}:`, err)
     return sendErrorPage(reply, status, STATUS_CODES[status] as string)
   })
 

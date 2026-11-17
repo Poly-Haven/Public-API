@@ -35,12 +35,25 @@ const loadDb = async () => {
 }
 const LOG = process.env.PARITY_WRITE_LOG
 
-const lines = () => (fs.existsSync(LOG) ? fs.readFileSync(LOG, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [])
+const lines = () =>
+  fs.existsSync(LOG)
+    ? fs
+        .readFileSync(LOG, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .map((l) => JSON.parse(l))
+    : []
 let pass = 0
 const check = (name, fn) =>
   Promise.resolve(fn()).then(
-    () => { pass++; console.log('  ok   ' + name) },
-    (e) => { console.log('  FAIL ' + name + ': ' + e.message); process.exitCode = 1 }
+    () => {
+      pass++
+      console.log('  ok   ' + name)
+    },
+    (e) => {
+      console.log('  FAIL ' + name + ': ' + e.message)
+      process.exitCode = 1
+    }
   )
 
 async function main() {
@@ -51,7 +64,17 @@ async function main() {
   const log = () => lines()
 
   await check('doc.set (merge) recorded with sentinels serialised', async () => {
-    const r = await ref.set({ a: 1, n: FieldValue.increment(2), at: FieldValue.serverTimestamp(), d: new Date(), u: FieldValue.arrayUnion('p', 'q'), x: FieldValue.delete() }, { merge: true })
+    const r = await ref.set(
+      {
+        a: 1,
+        n: FieldValue.increment(2),
+        at: FieldValue.serverTimestamp(),
+        d: new Date(),
+        u: FieldValue.arrayUnion('p', 'q'),
+        x: FieldValue.delete(),
+      },
+      { merge: true }
+    )
     assert(r.writeTime)
     const e = log().find((l) => l.op === 'set')
     assert.deepStrictEqual(e.path, 'parity_guard_selftest/x')
@@ -84,7 +107,12 @@ async function main() {
     b.set(ref, { b: 1 }).update(ref2, { b: 2 }).delete(ref)
     assert(!log().some((l) => l.op.startsWith('batch.')), 'recorded before commit')
     await b.commit()
-    assert.deepStrictEqual(log().filter((l) => l.op.startsWith('batch.')).map((l) => l.op), ['batch.set', 'batch.update', 'batch.delete'])
+    assert.deepStrictEqual(
+      log()
+        .filter((l) => l.op.startsWith('batch.'))
+        .map((l) => l.op),
+      ['batch.set', 'batch.update', 'batch.delete']
+    )
   })
   await check('runTransaction: real reads, recorded writes', async () => {
     const out = await db.runTransaction(async (t) => {
@@ -95,7 +123,12 @@ async function main() {
       return { exists: d1.exists || d2.exists }
     })
     assert.strictEqual(out.exists, false)
-    assert.deepStrictEqual(log().filter((l) => l.op.startsWith('txn.')).map((l) => l.op), ['txn.set', 'txn.update', 'txn.create'])
+    assert.deepStrictEqual(
+      log()
+        .filter((l) => l.op.startsWith('txn.'))
+        .map((l) => l.op),
+      ['txn.set', 'txn.update', 'txn.create']
+    )
   })
   await check('BulkWriter recorded', async () => {
     const bw = db.bulkWriter()
@@ -122,10 +155,13 @@ async function main() {
   await check('POST via https.request (hookcord-style) is recorded and answered', async () => {
     const https = require('https')
     const body = await new Promise((resolve, reject) => {
-      const req = https.request({ hostname: 'api.cloudflare.com', path: '/client/v4/zones/x/purge_cache', method: 'POST' }, (res) => {
-        let s = ''
-        res.on('data', (c) => (s += c)).on('end', () => resolve(s))
-      })
+      const req = https.request(
+        { hostname: 'api.cloudflare.com', path: '/client/v4/zones/x/purge_cache', method: 'POST' },
+        (res) => {
+          let s = ''
+          res.on('data', (c) => (s += c)).on('end', () => resolve(s))
+        }
+      )
       req.on('error', reject)
       req.end('{"purge_everything":true}')
     })
@@ -165,4 +201,10 @@ async function main() {
   console.log(`\n${pass} checks passed; ${log().length} records in ${LOG}`)
 }
 
-main().then(() => process.exit(process.exitCode || 0), (e) => { console.error(e); process.exit(1) })
+main().then(
+  () => process.exit(process.exitCode || 0),
+  (e) => {
+    console.error(e)
+    process.exit(1)
+  }
+)

@@ -39,9 +39,9 @@ describe('isHiddenFromV1', () => {
 
 describe('v1 routes under a freeze', () => {
   let app: FastifyInstance
-  let listed: string
-  let hidden: string
-  let eaSlugs: string[]
+  // Two fixture early-access hdris: one on the allowlist, one not.
+  const listed = FAKE.ea1
+  const hidden = FAKE.ea2
 
   const getJson = async (url: string) => {
     const res = await app.inject({ method: 'GET', url })
@@ -51,12 +51,6 @@ describe('v1 routes under a freeze', () => {
   before(async () => {
     app = await getApp()
     setV1Allowlist(null)
-    const { body } = await getJson('/assets?t=hdris&future=true')
-    const assets = body as Record<string, Asset>
-    eaSlugs = Object.entries(assets)
-      .filter(([slug, a]) => a.date_published > now() && !slug.startsWith('zz_test_'))
-      .map(([slug]) => slug)
-    ;[listed, hidden] = eaSlugs
   })
   beforeEach(() => setV1Allowlist({ frozen_at: '2026-12-31T00:00:00.000Z', slugs: [listed] }))
   after(() => setV1Allowlist())
@@ -92,6 +86,6 @@ describe('v1 routes under a freeze', () => {
     const { res, body } = await getJson('/search?q=sky&t=hdris&future=true')
     if (res.statusCode === 503) return t.skip('Workers AI is not configured here')
     const slugs = (body as { results: { slug: string }[] }).results.map((r) => r.slug)
-    for (const slug of eaSlugs.slice(1)) assert.ok(!slugs.includes(slug), 'a hidden asset was returned')
+    assert.ok(!slugs.includes(hidden), 'a hidden asset was returned')
   })
 })

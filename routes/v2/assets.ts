@@ -4,7 +4,7 @@ import type { Query } from '../../types/http.ts'
 import { listAssets } from '../../utils/assetList.ts'
 import { assetTypes as asset_types } from '../../utils/schemas.ts'
 import { publicCache, sendError, sendOk, sendUnavailable } from '../../utils/v2Cache.ts'
-import { hasPlainQuery } from '../../utils/v2Query.ts'
+import { hasPlainQuery, isAssetType } from '../../utils/v2Query.ts'
 
 /**
  * GET /v2/assets: every non-staging asset's metadata, early-access ones included. Keyless, and the same bytes
@@ -18,6 +18,9 @@ export default async function (fastify: FastifyInstance) {
     if (!hasPlainQuery(req)) return sendError(reply, 400, 'Query parameters must be plain values')
     const asset_type = req.query.type || req.query.t
     const categories = req.query.categories || req.query.c
+    if (!isAssetType(asset_type)) {
+      return sendError(reply, 400, `Unsupported asset type. Must be: ${Object.keys(asset_types).join('/')}`)
+    }
 
     let result
     try {

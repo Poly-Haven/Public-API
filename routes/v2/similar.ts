@@ -8,7 +8,7 @@ import { hasPlainQuery } from '../../utils/v2Query.ts'
 
 /**
  * GET /v2/similar/:id: /similar/:id as v1 answers it, except that early-access assets may appear in the results
- * (their metadata is public). Staging assets never do, and a staging id is a 404.
+ * (their metadata is public), shaped like the items of /v2/assets. Staging assets never do, and a staging id is a 404.
  */
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', async (req, reply) => sendError(reply, 400, 'Please format your request as /v2/similar/[asset_id]'))
@@ -27,6 +27,7 @@ export default async function (fastify: FastifyInstance) {
         vectorOnly: req.query.lane === 'vector',
         includeUpcoming: true,
         refuseStaging: true,
+        publicItems: true,
       })
     } catch (err) {
       return sendUnavailable(reply, 'V2 SIMILAR', err)

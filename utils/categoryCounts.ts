@@ -3,6 +3,7 @@ import cachedFirestore from './cachedFirestore.ts'
 import type { CachedQuery } from './cachedFirestore.ts'
 import { assetTypes as asset_types } from './schemas.ts'
 import { isHiddenFromV1 } from './v1Freeze.ts'
+import { maskVault, publicVaultIds } from './vaultStatus.ts'
 
 const db = cachedFirestore()
 
@@ -39,46 +40,28 @@ export const countCategories = async ({
     return null
   }
 
-  // Categories (1/2)
-  let original_categories_arr: string[] = []
-  let categories_arr: string[] = []
-  if (categories) {
-    // Firestore only supports using one 'array-contains' check. So we filter for the last one, and then will manually filter the rest later.
-    // TODO Reduce Firestore reads by first getting assets according to least-used category. Will need to separately track which categories are least used, maybe with cloud function.
-    original_categories_arr = categories.split(',').map((c) => c.trim())
-    categories_arr = Array.from(original_categories_arr) // Deep copy to keep original intact.
-    const last_cat = categories_arr.pop()
-    collectionRef = collectionRef.where('categories', 'array-contains', last_cat)
-  }
+  // Categories: the ones already chosen, which an asset must all carry. Filtered in memory on the vault-masked
+  // asset rather than by an `array-contains` clause on the stored one (see utils/assetList.ts), so a legacy
+  // `vault: <id>` category cannot confirm an unannounced vault, and the counts never include it.
+  const original_categories_arr = categories ? categories.split(',').map((c) => c.trim()) : []
 
   // Get data and convert to an object we can work with further
   const collection = await collectionRef.get()
-  let docs: Record<string, Asset> = {}
-  collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
-  })
-
-  // Filter unpublished
+  const publicVaults = await publicVaultIds()
   const now = Math.floor(Date.now() / 1000)
-  for (const id in docs) {
-    if (docs[id].staging) {
-      delete docs[id]
-    } else if (!includeUpcoming && docs[id].date_published > now) {
-      delete docs[id]
-    } else if (v1Freeze && isHiddenFromV1(id, docs[id], now)) {
-      delete docs[id]
-    }
-  }
-
-  // Categories (2/2)
-  // Filter out the remaining assets that aren't in all specifed categories
-  for (const cat of categories_arr) {
-    for (const id in docs) {
-      if (!docs[id].categories.includes(cat)) {
-        delete docs[id]
-      }
-    }
-  }
+  const docs: Record<string, Asset> = {}
+  collection.forEach((doc) => {
+    // maskVault copies when it changes anything, so the cached doc is never touched.
+    const asset = maskVault(doc.data(), publicVaults)
+    // Filter unpublished
+    if (asset.staging) return
+    if (!includeUpcoming && asset.date_published > now) return
+    if (v1Freeze && isHiddenFromV1(doc.id, asset, now)) return
+    // Filter out the assets that aren't in all specifed categories
+    if (!original_categories_arr.every((cat) => Array.isArray(asset.categories) && asset.categories.includes(cat)))
+      return
+    docs[doc.id] = asset
+  })
 
   // Combine and count occurances
   const all_categories: Record<string, number> = {}

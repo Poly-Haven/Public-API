@@ -16,7 +16,9 @@ if (!inFile || !outFile) {
 
 // First path segments that are real routes in the app (routes/*.js, routes/v2, plus app.js's own).
 const KNOWN = new Set(
-  ('assets author authors bl_repo categories clear_cache collections community_prizes corporate course_progress courses dl_track extensions files finances funding gallery gallery_click image_versions info legacy lighthouse_key milestones news patreon_hook patron_info patrons patrons_latest patrons_top ping popularity renders rss search similar sponsor stats taxonomy text timelines track_search translation_progress types vaults v2 api-docs debug llms.txt openapi.json hdris textures models hdris-simple textures-simple models-simple').split(' ')
+  'assets author authors bl_repo categories clear_cache collections community_prizes corporate course_progress courses dl_track extensions files finances funding gallery gallery_click image_versions info legacy lighthouse_key milestones news patreon_hook patron_info patrons patrons_latest patrons_top ping popularity renders rss search similar sponsor stats taxonomy text timelines track_search translation_progress types vaults v2 api-docs debug llms.txt openapi.json hdris textures models hdris-simple textures-simple models-simple'.split(
+    ' '
+  )
 )
 const SMALL_GROUPS = new Set(['stats', 'popularity']) // expensive routes: 15 each
 const PER_GROUP = 60
@@ -31,7 +33,11 @@ for (const l of lines) {
   rows.push({ count: +m[1], method: m[2].toUpperCase(), url: m[3] })
 }
 
-const seg = (url) => url.split('?')[0].split('/').filter((x, i) => i > 0 || x !== '')
+const seg = (url) =>
+  url
+    .split('?')[0]
+    .split('/')
+    .filter((x, i) => i > 0 || x !== '')
 const group = (url) => {
   const s = seg(url)[0]
   return s === undefined ? '' : s
@@ -39,7 +45,11 @@ const group = (url) => {
 const keySet = (url) => {
   const q = url.split('?')[1]
   if (!q) return ''
-  return q.split('&').map((p) => p.split('=')[0]).sort().join(',')
+  return q
+    .split('&')
+    .map((p) => p.split('=')[0])
+    .sort()
+    .join(',')
 }
 const second = (url) => seg(url)[1] || ''
 const byCount = (a, b) => b.count - a.count || (a.url < b.url ? -1 : 1)
@@ -102,7 +112,9 @@ for (const g of [...groups.keys()].sort()) {
   const list = groups.get(g)
   if (g === 'v2') {
     // few and all distinct: keep them all, with each key variant
-    for (const r of list.sort(byCount)) for (const auth of ['none', 'unknown', 'ea', 'plain']) add({ method: 'GET', url: r.url, auth, tag: 'v2' }, bucketName(g))
+    for (const r of list.sort(byCount))
+      for (const auth of ['none', 'unknown', 'ea', 'plain'])
+        add({ method: 'GET', url: r.url, auth, tag: 'v2' }, bucketName(g))
     continue
   }
   const limit = SMALL_GROUPS.has(g) ? 15 : PER_GROUP
@@ -110,7 +122,8 @@ for (const g of [...groups.keys()].sort()) {
 }
 
 // HEAD (all that are real routes), OPTIONS (preflight): up to 8 per group.
-for (const r of headRows) if (KNOWN.has(group(r.url)) || group(r.url) === '') add({ method: 'HEAD', url: r.url, tag: 'head' }, 'HEAD')
+for (const r of headRows)
+  if (KNOWN.has(group(r.url)) || group(r.url) === '') add({ method: 'HEAD', url: r.url, tag: 'head' }, 'HEAD')
 const optByGroup = new Map()
 for (const r of optRows) {
   const g = group(r.url)
@@ -136,8 +149,28 @@ for (const g of [...optByGroup.keys()].sort()) {
   }
 }
 // A preflight for a POST route, and a preflight with no requested headers.
-add({ method: 'OPTIONS', url: '/patron_info', headers: { origin: 'https://polyhaven.com', 'access-control-request-method': 'PATCH', 'access-control-request-headers': 'content-type' }, tag: 'preflight' }, 'OPTIONS')
-add({ method: 'OPTIONS', url: '/assets?t=hdris', headers: { origin: 'https://example.org', 'access-control-request-method': 'GET' }, tag: 'preflight' }, 'OPTIONS')
+add(
+  {
+    method: 'OPTIONS',
+    url: '/patron_info',
+    headers: {
+      origin: 'https://polyhaven.com',
+      'access-control-request-method': 'PATCH',
+      'access-control-request-headers': 'content-type',
+    },
+    tag: 'preflight',
+  },
+  'OPTIONS'
+)
+add(
+  {
+    method: 'OPTIONS',
+    url: '/assets?t=hdris',
+    headers: { origin: 'https://example.org', 'access-control-request-method': 'GET' },
+    tag: 'preflight',
+  },
+  'OPTIONS'
+)
 add({ method: 'GET', url: '/assets?t=hdris', headers: { origin: 'https://example.org' }, tag: 'cors' }, 'cors-get')
 
 // Junk / scanner URLs: one most-frequent URL per distinct unknown first segment, up to 40.
@@ -153,18 +186,87 @@ for (const r of junk) add({ method: 'GET', url: r.url, tag: 'junk' }, 'junk')
 // Hand-written edge cases.
 const longQuery = '/assets?' + Array.from({ length: 200 }, (_, i) => 'k' + i + '=' + 'v'.repeat(20)).join('&')
 const edges = [
-  '/', '/llms.txt', '/openapi.json', '/api-docs/swagger.json', '/v2/superhive_wrong', '/v2/superhive_wrong/',
-  '/assets/', '/Assets', '/ASSETS?t=hdris', '/info/Abandoned_Factory_Canteen_01', '/info/', '//assets', '///info/x', '/assets//',
-  '/info/%E0%A4%A', '/info/%', '/assets?t=%E0%A4%A', '/assets?%', '/info/%2e%2e/assets', '/info/..%2fassets', '/info/a%00b',
-  '/assets?type[]=hdris', '/assets?type=hdris&type=textures', '/assets?t=hdris&t=textures', '/assets?t[a]=1', '/assets?t=', '/assets?',
-  '/assets?t=hdris&c=', '/assets?c=a&c=b', '/search?q=a&q=b', '/search?q[]=rock', '/search?q=', '/search', '/search?q=rock&limit=-5', '/search?q=rock&limit=abc',
-  longQuery, '/search?q=' + 'x'.repeat(600), '/info/' + 'a'.repeat(1500), '/files/' + 'a'.repeat(300),
-  '/ping/', '/ping?x=1', '/PING', '/types', '/types/', '/categories/hdris', '/categories/nonexistent', '/info/nonexistent_asset_zz',
-  '/files/nonexistent_asset_zz', '/author/nonexistent_zz', '/sponsor', '/sponsor/', '/sponsor/nonexistent_zz', '/sponsor/corp_nonexistent_zz',
-  '/rss', '/rss?x=1', '/stats/nonexistent', '/popularity/2099-01', '/popularity/notamonth', '/gallery/render/nonexistent_zz', '/renders/nonexistent_zz',
-  '/similar/nonexistent_zz', '/courses/nonexistent_zz', '/timelines/nonexistent_zz', '/text/nonexistent_zz', '/taxonomy/nonexistent',
-  '/bl_repo/', '/bl_repo/index.json', '/bl_repo/nonexistent', '/clear_cache', '/dl_track', '/patron_info', '/lighthouse_key', '/lighthouse_key/open',
-  '/tmp', '/api-docs', '/api-docs/', '/debug/on', '/v2', '/v2/', '/v2/assets', '/v2/files/nonexistent_zz',
+  '/',
+  '/llms.txt',
+  '/openapi.json',
+  '/api-docs/swagger.json',
+  '/v2/superhive_wrong',
+  '/v2/superhive_wrong/',
+  '/assets/',
+  '/Assets',
+  '/ASSETS?t=hdris',
+  '/info/Abandoned_Factory_Canteen_01',
+  '/info/',
+  '//assets',
+  '///info/x',
+  '/assets//',
+  '/info/%E0%A4%A',
+  '/info/%',
+  '/assets?t=%E0%A4%A',
+  '/assets?%',
+  '/info/%2e%2e/assets',
+  '/info/..%2fassets',
+  '/info/a%00b',
+  '/assets?type[]=hdris',
+  '/assets?type=hdris&type=textures',
+  '/assets?t=hdris&t=textures',
+  '/assets?t[a]=1',
+  '/assets?t=',
+  '/assets?',
+  '/assets?t=hdris&c=',
+  '/assets?c=a&c=b',
+  '/search?q=a&q=b',
+  '/search?q[]=rock',
+  '/search?q=',
+  '/search',
+  '/search?q=rock&limit=-5',
+  '/search?q=rock&limit=abc',
+  longQuery,
+  '/search?q=' + 'x'.repeat(600),
+  '/info/' + 'a'.repeat(1500),
+  '/files/' + 'a'.repeat(300),
+  '/ping/',
+  '/ping?x=1',
+  '/PING',
+  '/types',
+  '/types/',
+  '/categories/hdris',
+  '/categories/nonexistent',
+  '/info/nonexistent_asset_zz',
+  '/files/nonexistent_asset_zz',
+  '/author/nonexistent_zz',
+  '/sponsor',
+  '/sponsor/',
+  '/sponsor/nonexistent_zz',
+  '/sponsor/corp_nonexistent_zz',
+  '/rss',
+  '/rss?x=1',
+  '/stats/nonexistent',
+  '/popularity/2099-01',
+  '/popularity/notamonth',
+  '/gallery/render/nonexistent_zz',
+  '/renders/nonexistent_zz',
+  '/similar/nonexistent_zz',
+  '/courses/nonexistent_zz',
+  '/timelines/nonexistent_zz',
+  '/text/nonexistent_zz',
+  '/taxonomy/nonexistent',
+  '/bl_repo/',
+  '/bl_repo/index.json',
+  '/bl_repo/nonexistent',
+  '/clear_cache',
+  '/dl_track',
+  '/patron_info',
+  '/lighthouse_key',
+  '/lighthouse_key/open',
+  '/tmp',
+  '/api-docs',
+  '/api-docs/',
+  '/debug/on',
+  '/v2',
+  '/v2/',
+  '/v2/assets',
+  '/v2/files/nonexistent_zz',
 ]
 for (const u of edges) add({ method: 'GET', url: u, tag: 'edge' }, 'edge')
 add({ method: 'HEAD', url: '/assets?t=hdris', tag: 'edge' }, 'edge')
@@ -180,7 +282,9 @@ add({ method: 'POST', url: '/ping', tag: 'edge' }, 'edge')
 add({ method: 'PATCH', url: '/types', tag: 'edge' }, 'edge')
 
 fs.writeFileSync(outFile, JSON.stringify(out, null, 0))
-const lines2 = Object.keys(stats).sort().map((k) => k.padEnd(28) + stats[k])
+const lines2 = Object.keys(stats)
+  .sort()
+  .map((k) => k.padEnd(28) + stats[k])
 lines2.push('TOTAL'.padEnd(28) + out.length)
 fs.writeFileSync(outFile.replace(/\.json$/, '.stats.txt'), lines2.join('\n') + '\n')
 console.log(lines2.join('\n'))

@@ -2,6 +2,7 @@ import type { Asset } from '../types/firestore.ts'
 import type { CachedQuery } from './cachedFirestore.ts'
 import cachedFirestore from './cachedFirestore.ts'
 import * as embeddingIndex from './embeddingIndex.ts'
+import { publicAsset } from './assetList.ts'
 import { publicVaultIds, maskVault } from './vaultStatus.ts'
 
 const db = cachedFirestore()
@@ -120,6 +121,11 @@ interface SimilarParams {
   includeUpcoming: boolean
   /** Answer "not found" for a staging asset itself, rather than giving it a strip (v1 does, for the staging preview). */
   refuseStaging?: boolean
+  /**
+   * Shape each result as /v2/assets shapes its items (publicAsset: internal fields dropped, thumbnail_url added)
+   * rather than as v1 /similar always has, which hands back the stored doc with only the vault masked.
+   */
+  publicItems?: boolean
 }
 
 /**
@@ -132,6 +138,7 @@ const findSimilar = async ({
   vectorOnly,
   includeUpcoming,
   refuseStaging = false,
+  publicItems = false,
 }: SimilarParams): Promise<Record<string, Asset & { similarity: number | null }> | null> => {
   let collectionRef: CachedQuery<Asset> = db.collection<Asset>('assets')
 
@@ -225,7 +232,8 @@ const findSimilar = async ({
     // Copy before adding similarity. doc.data() hands back the live cached object, so writing to it
     // leaks this request's score into every other route that reads the cached assets collection.
     similar[slug] = {
-      ...maskVault(docs[slug], publicVaults),
+      // Staging assets were removed from docs above, so publicAsset (null only for staging) always answers.
+      ...(publicItems ? (publicAsset(slug, docs[slug], publicVaults) as Asset) : maskVault(docs[slug], publicVaults)),
       similarity: score === null ? null : Math.round(score * 10000) / 10000,
     }
   }

@@ -63,14 +63,11 @@ export const listAssets = async ({
     return { ok: false, error: { kind: 'type' } }
   }
 
-  // Categories (1/2)
-  let categories_arr: string[] = []
-  if (categories) {
-    // Firestore only supports using one 'array-contains' check. So we filter for the last one, and then will manually filter the rest later.
-    categories_arr = categories.split(',').map((c) => c.trim())
-    const last_cat = categories_arr.pop()
-    collectionRef = collectionRef.where('categories', 'array-contains', last_cat)
-  }
+  // Categories. The legacy comma-separated list, every one of which an asset must carry. Not handed to the
+  // collection as an `array-contains` clause: that would test the stored categories, and the unannounced-vault
+  // masking below has to happen first, or `?c=vault: <id>` could confirm which vault an asset is in. Filtered
+  // in memory on the masked copy instead (the cache does the same either way).
+  const categories_arr = categories ? categories.split(',').map((c) => c.trim()) : []
 
   // Get data and convert to an object we can work with further.
   // doc.data() returns the live cached object, so copy each one before touching it, dropping the
@@ -79,8 +76,8 @@ export const listAssets = async ({
   const collection = await collectionRef.get()
   const now = Math.floor(Date.now() / 1000)
   // Assets in a vault that hasn't been announced are listed like any other early-access asset, but
-  // attributed only to "an upcoming vault". Masked here, before applyFilters, so ?vault=<id> can't
-  // be used to confirm a guessed vault name.
+  // attributed only to "an upcoming vault". Masked here, before the category filter and applyFilters, so
+  // neither ?categories= nor ?vault=<id> can be used to confirm a guessed vault name.
   const publicVaults = await publicVaultIds()
   const docs: Record<string, Asset> = {}
   collection.forEach((doc) => {
@@ -88,18 +85,12 @@ export const listAssets = async ({
     if (raw.staging) return
     if (!includeUpcoming && raw.date_published > now) return
     if (v1Freeze && isHiddenFromV1(doc.id, raw, now)) return
-    docs[doc.id] = publicAsset(doc.id, raw, publicVaults) as Asset
-  })
-
-  // Categories (2/2)
-  // Filter out the remaining assets that aren't in all specifed categories
-  for (const cat of categories_arr) {
-    for (const id in docs) {
-      if (!docs[id].categories.includes(cat)) {
-        delete docs[id]
-      }
+    const asset = publicAsset(doc.id, raw, publicVaults) as Asset
+    // Assets that aren't in all the specified categories (as the public sees them).
+    if (categories_arr.every((cat) => Array.isArray(asset.categories) && asset.categories.includes(cat))) {
+      docs[doc.id] = asset
     }
-  }
+  })
 
   // New single-path category system: ?category= (inclusive of descendants, canonical or slug path),
   // ?collection=, ?vault=, and any attribute key for this type (e.g. ?weather=clear&indoor=true).

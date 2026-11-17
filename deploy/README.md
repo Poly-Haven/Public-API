@@ -106,13 +106,24 @@ curl -s -X POST http://$A_IP/clear_cache -H 'Host: x' -o /dev/null -w '%{http_co
 
 `/ping` must show `"runtime":"v24.x"` (or your NODE_MAJOR), the node's own `node` id, and the expected commit. Look at `pm2 logs app --lines 50 --nostream` for errors. Test a reload does not drop requests: `pm2 reload ecosystem.config.cjs --update-env` while `while true; do curl -s -o /dev/null -w '%{http_code} ' 127.0.0.1/ping -H 'Host: api.polyhaven.com'; sleep 0.2; done` runs: no 502s.
 
+Client IP: the app takes the client's address from `CF-Connecting-IP`, and the node's ports 80/443 are open to the whole internet, so nginx does not pass the header through. `api.polyhaven.com.conf` includes `/etc/nginx/cloudflare-ips.conf` (one `set_real_ip_from` per Cloudflare range) with `real_ip_header CF-Connecting-IP`, so only a connection from a Cloudflare address can name the client, and then sets `CF-Connecting-IP` and `X-Forwarded-For` to nginx's own `$remote_addr` for the app. A request that did not come through Cloudflare therefore shows up with its real socket address, whatever headers it sent. Check it (a request from your workstation does not come from a Cloudflare address, so the header it sends must be ignored):
+
+```
+ssh api@$A_IP 'sudo nginx -t'
+curl -s -H 'Host: api.polyhaven.com' -H 'CF-Connecting-IP: 203.0.113.7' -H 'X-Forwarded-For: 203.0.113.7' http://$A_IP/ping -o /dev/null -w '%{http_code}
+'
+ssh api@$A_IP 'sudo tail -n 3 /var/log/nginx/access.log'     # the default log format shows $remote_addr: your workstation's address, not 203.0.113.7
+```
+
+`provision.sh` writes `/etc/nginx/cloudflare-ips.conf` from https://www.cloudflare.com/ips-v4 and /ips-v6 (falling back to the checked-in `deploy/nginx/cloudflare-ips.conf` if the fetch fails). Cloudflare rarely changes the list, and announces it in advance. To refresh a node: `sudo bash ~api/api/deploy/nginx/refresh-cloudflare-ips.sh && sudo nginx -t && sudo systemctl reload nginx`; to refresh the checked-in copy, run the script with that file as its argument and commit the result. If a range were missing, requests from it would be counted under the Cloudflare edge address instead of the visitor's (rate limits would lump visitors together), which is the safe direction to fail in.
+
 Rollback: `pm2 delete app`. Nothing is live.
 
 ## 5. Deploy plumbing, before touching master
 
 Do this in the `fastify` branch; the workflow file in this branch already targets `SSH_HOST_API_A` / `SSH_HOST_API_B`.
 
-1. HUMAN: in GitHub repo Settings > Secrets, create `SSH_HOST_API_A` = `$A_IP`, `SSH_HOST_API_B` = `$B_IP`. Keep `SSH_USERNAME` = `api`. Recommended: generate a deploy key (`ssh-keygen -t ed25519 -f deploykey -N ''`), append the public half to `~api/.ssh/authorized_keys` on both nodes, store the private half as `SSH_KEY`, and delete `SSH_PASSWORD` (the new nodes have no password for `api` anyway). With neither `SSH_KEY` nor `SSH_PASSWORD` the deploy cannot authenticate. These must exist before the merge in step 7.
+1. HUMAN: in GitHub repo Settings > Secrets, create `SSH_HOST_API_A` = `$A_IP`, `SSH_HOST_API_B` = `$B_IP`. Keep `SSH_USERNAME` = `api`. Recommended: generate a deploy key (`ssh-keygen -t ed25519 -f deploykey -N ''`), append the public half to `~api/.ssh/authorized_keys` on both nodes, store the private half as `SSH_KEY`, and delete `SSH_PASSWORD` (the new nodes have no password for `api` anyway). With neither `SSH_KEY` nor `SSH_PASSWORD` the deploy cannot authenticate. These must exist before the merge in step 7. Also recommended: pin each node's host key with `SSH_FINGERPRINT_API_A` / `SSH_FINGERPRINT_API_B`, the `SHA256:...` value from `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` run on that node. The workflow passes them to `appleboy/ssh-action`'s `fingerprint` input; left unset, the action does not verify the host at all, so a man in the middle could capture the deploy key.
 2. Make sure the old secrets `SSH_HOST_API3` / `SSH_HOST_API5` are not needed any more (the workflow no longer references them). Leave them until step 10.
 3. Verify the deploy path on the new nodes by hand, exactly what the workflow runs: `ssh api@$A_IP 'cd ~/api && git pull --ff-only && bash deploy.sh'` and the same on B (they are on `fastify`, already up to date, so it only exercises `deploy.sh` and `pm2 reload`). Then `/ping` again.
 
@@ -155,7 +166,7 @@ Rollback: set the record's content back to the old IP. The old nodes are still r
 Today a page rule bypasses cache for `api.polyhaven.com/v2/*`, and the general `api.polyhaven.com/*` rule forces a 12h edge TTL. The v2 routes now send their own `Cache-Control`: `public, max-age=<computed>` on the public endpoints, `private` / `no-store` on the keyed ones. Desired behaviour:
 
 - `/v2/*` is eligible for cache and uses the origin's `Cache-Control` for both edge and browser TTL ("respect origin"; Cache Rules: Eligible for cache, Edge TTL = "Use cache-control header if present, bypass cache if not present", Browser TTL = respect origin). Not "Cache Everything with an override TTL".
-- The general rule (12h edge TTL) must not apply to `/v2/*`. Page Rules apply only the first matching rule by priority, so the `/v2/*` rule has to sit above the general one; with Cache Rules, add an exclusion (`not starts_with(http.request.uri.path, "/v2/")`) to the general rule.
+- The general rule (12h edge TTL) must not apply to `/v2/*`. Page Rules apply only the first matching rule by priority, so the `/v2/*` rule has to sit above the general one; with Cache Rules, add an exclusion (`not starts_with(lower(http.request.uri.path), "/v2/")`) to the general rule. Match the path lower-cased (`lower(http.request.uri.path)`) in the `/v2/` rule as well: Cloudflare compares paths case-sensitively, so a rule written as `starts_with(http.request.uri.path, "/v2/")` would not see `/V2/ea/files` and the general cache-everything rule could store a keyed response publicly. The app backs this up: any path that is `/v2` in a different case, or percent-encoded to look different, is a 404 with `Cache-Control: no-store`, so there is nothing for a rule to mis-cache. Do both.
 - Keyed responses (`private` / `no-store`) must stay uncached: Cloudflare does not store those under this setting, but verify it (below), because a cached keyed response is a key leak.
 - Query string stays in the cache key (the default).
 
@@ -164,6 +175,8 @@ Do this after step 8 so the old Express v2 (which sends no cache headers) is nev
 ```
 curl -sI https://api.polyhaven.com/v2/<a public v2 endpoint> | grep -i 'cache-control\|cf-cache-status\|age'    # twice: MISS/EXPIRED then HIT, max-age matches the origin value
 curl -sI -H 'Authorization: Bearer <a valid test key>' https://api.polyhaven.com/v2/<a keyed endpoint> | grep -i 'cache-control\|cf-cache-status'    # private/no-store, cf-cache-status DYNAMIC or BYPASS, never HIT
+curl -sI https://api.polyhaven.com/V2/assets | grep -i 'HTTP/\|cache-control\|cf-cache-status'    # upper-case path: 404, no-store, never HIT (twice, to be sure)
+curl -sI -H 'Authorization: Bearer <a valid test key>' https://api.polyhaven.com/V2/ea/files | grep -i 'HTTP/\|cache-control\|cf-cache-status'    # same: 404 no-store, and certainly not a 200
 ```
 
 Also confirm that admin's publish purge covers the v2 URLs. It purges exact URLs only, so any v2 URL not in its list is stale for up to its `max-age` after a publish. If it does not, the `max-age` is the staleness bound; decide whether that is acceptable.

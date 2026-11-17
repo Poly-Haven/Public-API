@@ -27,7 +27,12 @@ export interface CachedCollection<T> extends CachedQuery<T> {
   orderBy(): never
   /** Not implemented: throws. Slice in memory after get(). */
   limit(): never
-  doc(docId: string): { get(): Promise<CachedDocSnapshot<T>> }
+  /**
+   * `cacheOnly` skips the direct Firestore read that a miss normally falls back to (the doc then simply does
+   * not exist as far as the answer goes). For callers that must not spend a billed read on an id they have
+   * reason to distrust.
+   */
+  doc(docId: string, options?: { cacheOnly?: boolean }): { get(): Promise<CachedDocSnapshot<T>> }
 }
 export interface CachedDb {
   collection<T extends object = DocumentData>(collectionName: string): CachedCollection<T>
@@ -50,6 +55,39 @@ const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 // the moment the flush was supposed to guarantee freshness.
 let cacheGeneration = 0
 // const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
+
+// Ids the direct Firestore fallback found missing, so a flood of requests for ids that do not exist (a spray of
+// made-up API keys or asset ids) costs one billed read per id per minute instead of one per request. Keyed
+// `${collection}/${id}`; a Map's insertion order makes the first key the oldest. Per node, like the rest.
+const MISSING_TTL = 60 * 1000
+const MAX_MISSING = 20000
+const missingDocs = new Map<string, number>()
+const missingKey = (collectionName: string, docId: string) => `${collectionName}/${docId}`
+
+const isKnownMissing = (collectionName: string, docId: string) => {
+  const key = missingKey(collectionName, docId)
+  const expires = missingDocs.get(key)
+  if (expires === undefined) return false
+  if (expires > Date.now()) return true
+  missingDocs.delete(key)
+  return false
+}
+
+const rememberMissing = (collectionName: string, docId: string) => {
+  const key = missingKey(collectionName, docId)
+  // Re-inserted so a refreshed entry counts as the newest.
+  missingDocs.delete(key)
+  if (missingDocs.size >= MAX_MISSING) missingDocs.delete(missingDocs.keys().next().value as string)
+  missingDocs.set(key, Date.now() + MISSING_TTL)
+}
+
+/**
+ * Forget that a doc was missing. For code that has just created it (create_key mints an API key and hands it
+ * out at once): without this the node that minted it would keep answering "no such key" for up to a minute.
+ */
+function forgetMissing(collectionName: string, docId: string) {
+  missingDocs.delete(missingKey(collectionName, docId))
+}
 const SECRET_ID_COLLECTIONS = new Set(['api_keys'])
 const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
 
@@ -83,6 +121,8 @@ function clearCache() {
   // Before clearing, so any read already in flight sees the new value when it resolves.
   cacheGeneration++
   collectionsCache.clear()
+  // A publish may be what made a missing doc exist.
+  missingDocs.clear()
   for (const fn of clearListeners) {
     // A listener that throws must not stop the flush, or one bad subscriber pins every cache.
     try {
@@ -339,7 +379,7 @@ function cachedFirestore(): CachedDb {
             `cachedFirestore does not implement limit (on '${collectionName}'). Slice in memory after .get(), or use the direct firestore client.`
           )
         },
-        doc: (docId: string) => {
+        doc: (docId: string, options?: { cacheOnly?: boolean }) => {
           // Some collections are keyed by a secret (an API key is its own doc id), and these lines
           // land in the PM2 logs, so only a prefix of those ids is ever logged.
           const logId = SECRET_ID_COLLECTIONS.has(collectionName) ? `${docId.slice(0, 8)}...` : docId
@@ -354,6 +394,12 @@ function cachedFirestore(): CachedDb {
                   id: docId,
                   exists: true,
                   data: () => docData as T,
+                }
+              } else if (options?.cacheOnly || isKnownMissing(collectionName, docId)) {
+                return {
+                  id: docId,
+                  exists: false,
+                  data: () => null,
                 }
               } else {
                 // Document not found in cache, check directly from Firestore
@@ -379,6 +425,7 @@ function cachedFirestore(): CachedDb {
                       data: () => freshDocData as T,
                     }
                   } else {
+                    rememberMissing(collectionName, docId)
                     return {
                       id: docId,
                       exists: false,
@@ -410,5 +457,6 @@ function cachedFirestore(): CachedDb {
 cachedFirestore.clearCache = clearCache
 cachedFirestore.getCacheStats = getCacheStats
 cachedFirestore.onClear = onClear
+cachedFirestore.forgetMissing = forgetMissing
 
 export default cachedFirestore

@@ -23,3 +23,19 @@ else
 fi
 
 pm2 reload ecosystem.config.cjs --update-env
+
+# Health gate. `pm2 reload` returns once the new worker has said it is ready, but a worker can be up and still be
+# the wrong one (a reload that fell back to the old process, a crash loop that PM2 is masking). Require /ping to
+# answer from the commit just checked out, and fail the script (and so the workflow, before it touches the next
+# node) if that does not happen. /ping's `commit` is "<sha> <subject>", read once when the worker started.
+expected="$(git rev-parse HEAD)"
+for _ in $(seq 1 30); do
+  reported="$(curl -fsS --max-time 3 http://127.0.0.1:3000/ping 2>/dev/null | sed -n 's/.*"commit":"\([0-9a-f]\{40\}\).*/\1/p')" || true
+  if [ "$reported" = "$expected" ]; then
+    echo "healthy: /ping reports ${expected:0:7}"
+    exit 0
+  fi
+  sleep 1
+done
+echo "deploy FAILED: /ping did not report ${expected:0:7} within 30s (reported: ${reported:-nothing})" >&2
+exit 1

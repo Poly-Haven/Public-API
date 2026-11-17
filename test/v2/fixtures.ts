@@ -1,10 +1,12 @@
-// Shared set-up for the v2 tests. They read production Firestore, which holds no staging asset and no key that
-// lacks early access, so those cases are made up: a few documents added in this process only, to the results
-// of the collection reads the API's cache makes (assets, files, api_keys) and to the one api_keys query that
-// POST /v2/create_key makes for a patron. Nothing is written anywhere (the write guard is preloaded).
+// Shared set-up for the v2 tests. They read production Firestore for the real-data shapes, but everything a
+// test depends on the state of is made up, so the suite passes whatever production holds today: a staging
+// asset, two scheduled early-access assets (with files docs), a released one, an asset in an unannounced vault,
+// keys that lack early access or are revoked, a Superhive key. They are documents added in this process only,
+// to the results of the collection reads the API's cache makes (assets, files, api_keys) and to the api_keys
+// query that POST /v2/create_key makes for a patron. Nothing is written anywhere (the write guard is preloaded).
 import fs from 'node:fs'
 import crypto from 'node:crypto'
-import { CollectionReference, Query } from 'firebase-admin/firestore'
+import { CollectionReference, DocumentReference, Query } from 'firebase-admin/firestore'
 import type { FastifyInstance } from 'fastify'
 
 export const now = () => Math.floor(Date.now() / 1000)
@@ -17,20 +19,39 @@ export const FAKE = {
   patron: 'zz_test_patron',
   /** A patron whose key the create_key query finds. */
   patronWithKey: 'zz_test_patron_with_key',
+  /** A patron whose only active key also carries a superhive_uid (create_key must leave it alone). */
+  patronWithMixedKey: 'zz_test_patron_mixed_key',
+  /** Two early-access assets, released well in the future (hdris, like the default fake asset). */
+  ea1: 'zz_test_ea_one',
+  ea2: 'zz_test_ea_two',
+  /** In a vault that has no doc, so it counts as unannounced. */
+  vaulted: 'zz_test_vaulted',
 }
+/** Distinctive on purpose: a fuzzy keyword search for it must not match anything else. */
+export const VAULT = 'qxjz_marker'
+/** Carried by every fake asset, so /similar (which falls back to tag matching for an asset without a vector) has something to match. */
+export const SHARED_TAG = 'zz_test_shared_tag'
+export const SUPERHIVE_UID = 424242
 
 const randomKey = () => crypto.randomBytes(32).toString('hex')
 /** Valid, active, belongs to a patron who does not exist (so: no early access). Fresh per run, not a real credential. */
 export const NON_EA_KEY = randomKey()
 export const REVOKED_KEY = randomKey()
 export const EXISTING_PATRON_KEY = randomKey()
+export const MIXED_KEY = randomKey()
+/** Valid, active, a Superhive customer's (so: early access). Fresh per run, not a real credential. */
+export const SUPERHIVE_KEY = randomKey()
 
 const asset = (extra: Record<string, unknown>) => ({
   name: 'Test asset',
   type: 0,
   categories: [],
-  tags: [],
+  tags: [SHARED_TAG],
   authors: {},
+  // Internal fields that publicAsset must strip.
+  old_id: 'old',
+  reviewers: ['someone'],
+  scale: 1,
   ...extra,
 })
 
@@ -39,14 +60,54 @@ const fakeDocs: Record<string, { id: string; data: Record<string, unknown> }[]> 
     { id: FAKE.staging, data: asset({ staging: true, date_published: now() - 86400 }) },
     { id: FAKE.soon, data: asset({ date_published: now() + 600 }) },
     { id: FAKE.released, data: asset({ date_published: now() - 86400 }) },
+    { id: FAKE.ea1, data: asset({ date_published: now() + 7200 }) },
+    { id: FAKE.ea2, data: asset({ date_published: now() + 7200 }) },
+    {
+      id: FAKE.vaulted,
+      data: asset({
+        date_published: now() + 7200,
+        name: 'Zzvaulted',
+        vault: VAULT,
+        categories: [`vault: ${VAULT}`],
+        tags: [SHARED_TAG, 'qxjz marker', VAULT],
+      }),
+    },
   ],
-  files: [FAKE.staging, FAKE.soon, FAKE.released].map((id) => ({
+  files: [FAKE.staging, FAKE.soon, FAKE.released, FAKE.ea1, FAKE.ea2, FAKE.vaulted].map((id) => ({
     id,
     data: { blend: { url: `https://example.test/${id}` } },
   })),
   api_keys: [
     { id: NON_EA_KEY, data: { status: 'active', patron_uid: FAKE.patron, ref: 'nonea0test0' } },
     { id: REVOKED_KEY, data: { status: 'revoked', patron_uid: FAKE.patron, ref: 'revoked0tst' } },
+    { id: SUPERHIVE_KEY, data: { status: 'active', superhive_uid: SUPERHIVE_UID, ref: 'superhive0t' } },
+  ],
+}
+
+/** Active keys of a patron, as create_key's api_keys query finds them. */
+const patronKeys: Record<string, { id: string; data: Record<string, unknown> }[]> = {
+  [FAKE.patronWithKey]: [
+    {
+      id: EXISTING_PATRON_KEY,
+      data: {
+        status: 'active',
+        patron_uid: FAKE.patronWithKey,
+        ref: 'existing0key',
+        created_at: '2026-01-01T00:00:00.000Z',
+      },
+    },
+  ],
+  [FAKE.patronWithMixedKey]: [
+    {
+      id: MIXED_KEY,
+      data: {
+        status: 'active',
+        patron_uid: FAKE.patronWithMixedKey,
+        superhive_uid: SUPERHIVE_UID,
+        ref: 'mixed0key00',
+        created_at: '2026-01-01T00:00:00.000Z',
+      },
+    },
   ],
 }
 
@@ -75,19 +136,25 @@ export const installFixtures = () => {
     return snapshotOf([...real.docs, ...extra]) as unknown as typeof real
   }
 
-  // create_key's "active keys of this patron" query, answered for one made-up patron only.
+  // Single-document reads, which v1's /files/:id makes straight on the client. The fakes answer for their own ids only.
+  const docGet = DocumentReference.prototype.get
+  DocumentReference.prototype.get = async function (this: DocumentReference) {
+    const fake = (fakeDocs[this.parent.id] || []).find((doc) => doc.id === this.id)
+    if (fake)
+      return { id: fake.id, exists: true, data: () => fake.data } as unknown as Awaited<ReturnType<typeof docGet>>
+    return docGet.call(this)
+  } as typeof DocumentReference.prototype.get
+
+  // create_key's "active keys of this patron" query, answered for the made-up patrons only.
   const queryGet = Query.prototype.get
   Query.prototype.get = async function (this: Query) {
     const { _queryOptions: options } = this as unknown as InternalQuery
     const patronFilter = options.filters.find((f) => f.field.segments[0] === 'patron_uid')
-    if (options.collectionId === 'api_keys' && patronFilter?.value === FAKE.patronWithKey) {
-      const data = {
-        status: 'active',
-        patron_uid: FAKE.patronWithKey,
-        ref: 'existing0key',
-        created_at: '2026-01-01T00:00:00.000Z',
-      }
-      return snapshotOf([{ id: EXISTING_PATRON_KEY, data: () => data }]) as unknown as ReturnType<typeof queryGet.call>
+    const keys = typeof patronFilter?.value === 'string' ? patronKeys[patronFilter.value] : undefined
+    if (options.collectionId === 'api_keys' && keys) {
+      return snapshotOf(keys.map(({ id, data }) => ({ id, data: () => data }))) as unknown as ReturnType<
+        typeof queryGet.call
+      >
     }
     return queryGet.call(this)
   } as typeof Query.prototype.get
@@ -103,19 +170,6 @@ export const getApp = () => {
   process.env.NODE_ENV = 'production'
   appPromise ||= import('../../app.ts').then((mod) => mod.buildApp())
   return appPromise
-}
-
-/** The Superhive key in production api_keys, read at runtime and never printed. Null if there is none. */
-export const readSuperhiveKey = async (): Promise<string | null> => {
-  const { default: firestore } = await import('../../firestore.ts')
-  const snapshot = await firestore().collection('api_keys').get()
-  let found: string | null = null
-  // The fixtures above are added to the same read, but never carry a superhive_uid.
-  snapshot.forEach((doc) => {
-    const data = doc.data()
-    if (!found && data.superhive_uid && data.status === 'active') found = doc.id
-  })
-  return found
 }
 
 /** What the write guard recorded since `fromByte`, as parsed JSON lines. */

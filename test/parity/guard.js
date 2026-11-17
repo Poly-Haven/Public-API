@@ -22,7 +22,8 @@ const https = require('https')
 const { Readable, Writable } = require('stream')
 
 const LOG = process.env.PARITY_WRITE_LOG
-if (!LOG) throw new Error('[parity-guard] PARITY_WRITE_LOG is not set; refusing to start without a place to record writes')
+if (!LOG)
+  throw new Error('[parity-guard] PARITY_WRITE_LOG is not set; refusing to start without a place to record writes')
 fs.mkdirSync(path.dirname(path.resolve(LOG)), { recursive: true })
 
 let addCounter = 0
@@ -49,7 +50,8 @@ function ser(v) {
   if (Array.isArray(v)) return v.map(ser)
   const name = v.constructor && v.constructor.name
   if (SENTINELS[name]) return SENTINELS[name](v)
-  if (name && /Transform$/.test(name)) return { $fieldValue: name.replace(/Transform$/, ''), raw: JSON.parse(JSON.stringify(v)) }
+  if (name && /Transform$/.test(name))
+    return { $fieldValue: name.replace(/Transform$/, ''), raw: JSON.parse(JSON.stringify(v)) }
   if (name === 'DocumentReference') return { $ref: v.path }
   if (name === 'GeoPoint') return { $geo: [v.latitude, v.longitude] }
   if (Buffer.isBuffer(v)) return { $bytes: v.length }
@@ -185,7 +187,8 @@ function patchModule(modPath) {
       FS.runTransaction = function (updateFunction) {
         const db = this
         const t = {
-          get: (target, ...rest) => (target && typeof target.get === 'function' ? target.get() : db.getAll(target, ...rest)),
+          get: (target, ...rest) =>
+            target && typeof target.get === 'function' ? target.get() : db.getAll(target, ...rest),
           getAll: (...refs) => db.getAll(...refs),
         }
         for (const name of ['set', 'update', 'create', 'delete']) {
@@ -232,7 +235,9 @@ const { adminPath, modules } = locateFirestoreModules()
 const summary = []
 for (const m of modules) summary.push(m + ' [' + patchModule(m).length + ' patches]')
 if (!summary.length) throw new Error('[parity-guard] no @google-cloud/firestore module patched')
-console.error('[parity-guard] firebase-admin=' + adminPath + ' patched Firestore modules: ' + summary.join(' ; ') + ' log=' + LOG)
+console.error(
+  '[parity-guard] firebase-admin=' + adminPath + ' patched Firestore modules: ' + summary.join(' ; ') + ' log=' + LOG
+)
 
 // ------------------------------------------------------------------------------------------------ http blocking
 
@@ -249,15 +254,28 @@ class FakeRequest extends Writable {
     this.headers = {}
     this.on('finish', () => setImmediate(() => this.__respond()))
   }
-  setHeader(k, v) { this.headers[String(k).toLowerCase()] = v; return this }
-  getHeader(k) { return this.headers[String(k).toLowerCase()] }
-  removeHeader(k) { delete this.headers[String(k).toLowerCase()] }
-  getHeaders() { return this.headers }
-  setTimeout() { return this }
+  setHeader(k, v) {
+    this.headers[String(k).toLowerCase()] = v
+    return this
+  }
+  getHeader(k) {
+    return this.headers[String(k).toLowerCase()]
+  }
+  removeHeader(k) {
+    delete this.headers[String(k).toLowerCase()]
+  }
+  getHeaders() {
+    return this.headers
+  }
+  setTimeout() {
+    return this
+  }
   setNoDelay() {}
   setSocketKeepAlive() {}
   flushHeaders() {}
-  abort() { this.destroy() }
+  abort() {
+    this.destroy()
+  }
   __respond() {
     const res = Readable.from([Buffer.from('{}')])
     res.statusCode = 200
@@ -284,7 +302,12 @@ function describe(defaultProto, args) {
   const proto = opts.protocol || defaultProto
   const host = String(opts.hostname || opts.host || 'localhost').replace(/:\d+$/, '')
   const p = opts.path || '/'
-  return { method: String(opts.method || 'GET').toUpperCase(), host, path: p, url: `${proto}//${host}${opts.port ? ':' + opts.port : ''}${p}` }
+  return {
+    method: String(opts.method || 'GET').toUpperCase(),
+    host,
+    path: p,
+    url: `${proto}//${host}${opts.port ? ':' + opts.port : ''}${p}`,
+  }
 }
 
 function wrapRequest(mod, defaultProto) {
@@ -311,7 +334,11 @@ if (typeof globalThis.fetch === 'function') {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     const method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase()
     const u = new URL(url)
-    if (method === 'GET' || method === 'HEAD' || (method === 'POST' && ALLOWED_POST(u.hostname, u.pathname + u.search))) {
+    if (
+      method === 'GET' ||
+      method === 'HEAD' ||
+      (method === 'POST' && ALLOWED_POST(u.hostname, u.pathname + u.search))
+    ) {
       return realFetch.apply(this, arguments)
     }
     record({ op: 'http', method, url })
