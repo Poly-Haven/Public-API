@@ -9,9 +9,13 @@ import type { FastifyReply } from 'fastify'
 // depends on it is the 403 on /v2/files/:id, whose max-age is capped at the asset's release time. Everything
 // else (listings, info, search, similar, categories) includes early-access metadata regardless of the date.
 // So no purge-at-release job is needed for v2.
+//
+// Publishing is what changes the rest, and admin's publish purge (utils/purgeAssetCache.ts) covers the v2 URLs
+// as it does v1's. So the TTL matches v1's 12h: each hour shorter is more origin requests from every edge
+// location, and the nodes are small.
 
-/** Seconds a public v2 response may be cached for. */
-export const V2_MAX_AGE = 3600
+/** Seconds a public v2 response may be cached for. Same 12h as the zone gives v1. */
+export const V2_MAX_AGE = 43200
 /** Seconds a 400 or 404 may be cached for: long enough to absorb a hammered bad URL, short enough that a just-published asset appears soon. */
 export const V2_ERROR_MAX_AGE = 300
 /** Floor for a capped TTL, so an asset about to be released is not re-requested every second. */

@@ -442,7 +442,7 @@ paths:
             Cache-Control:
               schema:
                 type: string
-                example: public, max-age=3600
+                example: public, max-age=43200
           content:
             application/json:
               schema:

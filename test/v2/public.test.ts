@@ -36,7 +36,7 @@ describe('GET /v2/assets', () => {
     const { res, body, cache } = await get('/v2/assets')
     assert.equal(res.statusCode, 200)
     assert.equal(body.message, 'OK')
-    assert.equal(cache, 'public, max-age=3600')
+    assert.equal(cache, 'public, max-age=43200')
     assert.ok(!('meta' in body))
     assert.ok(!res.headers['x-ph-early-access'])
     assert.ok(assets[earlyAccess].date_published > now(), 'early-access asset is listed')
@@ -64,7 +64,7 @@ describe('GET /v2/info/:id', () => {
     for (const slug of [released, earlyAccess]) {
       const { res, body, cache } = await get(`/v2/info/${slug}`)
       assert.equal(res.statusCode, 200)
-      assert.equal(cache, 'public, max-age=3600')
+      assert.equal(cache, 'public, max-age=43200')
       assert.equal(body.message, 'OK')
       assert.deepEqual(body.data, assets[slug])
     }
@@ -90,7 +90,7 @@ describe('GET /v2/files/:id', () => {
   it('serves the files of a released asset', async () => {
     const { res, body, cache } = await get(`/v2/files/${released}`)
     assert.equal(res.statusCode, 200)
-    assert.equal(cache, 'public, max-age=3600')
+    assert.equal(cache, 'public, max-age=43200')
     assert.equal(body.message, 'OK')
     assert.ok(body.data && typeof body.data === 'object' && Object.keys(body.data).length > 0)
     assert.ok(!('meta' in body))
@@ -103,7 +103,7 @@ describe('GET /v2/files/:id', () => {
     assert.equal(real.body.message, 'Asset is in early access')
     assert.equal(real.body.early_access_until, assets[earlyAccess].date_published)
     const secondsToRelease = assets[earlyAccess].date_published - now()
-    assert.ok(maxAge(real.cache) <= Math.max(60, secondsToRelease) && maxAge(real.cache) <= 3600)
+    assert.ok(maxAge(real.cache) <= Math.max(60, secondsToRelease) && maxAge(real.cache) <= 43200)
     assert.match(real.cache, /^public, max-age=\d+$/)
 
     // Released in 10 minutes: the cached 403 must expire with the embargo, not an hour later.
@@ -129,7 +129,7 @@ describe('GET /v2/categories/:type', () => {
   it('counts early-access assets too', async () => {
     const { res, body, cache } = await get('/v2/categories/hdris')
     assert.equal(res.statusCode, 200)
-    assert.equal(cache, 'public, max-age=3600')
+    assert.equal(cache, 'public, max-age=43200')
     const counts = body.data as Record<string, number>
     const hdris = Object.values(assets).filter((a) => a.type === 0)
     assert.equal(counts.all, hdris.length)
@@ -143,7 +143,7 @@ describe('GET /v2/search', () => {
     const { res, body, cache } = await get('/v2/search?q=forest&t=hdris&limit=20')
     if (res.statusCode === 503) return t.skip('Workers AI is not configured here')
     assert.equal(res.statusCode, 200)
-    assert.equal(cache, 'public, max-age=3600')
+    assert.equal(cache, 'public, max-age=43200')
     assert.equal(body.message, 'OK')
     assert.ok(!('meta' in body))
     const results = (body.data as { results: { slug: string }[] }).results
@@ -179,7 +179,7 @@ describe('GET /v2/similar/:id', () => {
     for (const slug of [released, earlyAccess]) {
       const { res, body, cache } = await get(`/v2/similar/${slug}`)
       assert.equal(res.statusCode, 200)
-      assert.equal(cache, 'public, max-age=3600')
+      assert.equal(cache, 'public, max-age=43200')
       const similar = body.data as Record<string, Asset>
       assert.ok(Object.keys(similar).length > 0 && !(slug in similar) && !(FAKE.staging in similar))
     }
@@ -194,7 +194,7 @@ describe('GET /v2/taxonomy', () => {
   it('wraps the v1 bodies', async () => {
     const all = await get('/v2/taxonomy')
     assert.equal(all.res.statusCode, 200)
-    assert.equal(all.cache, 'public, max-age=3600')
+    assert.equal(all.cache, 'public, max-age=43200')
     const v1 = (await app.inject({ method: 'GET', url: '/taxonomy' })).json()
     assert.deepEqual(all.body.data, v1)
 
