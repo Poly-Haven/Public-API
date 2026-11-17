@@ -1,7 +1,7 @@
-const express = require('express')
 const fs = require('fs')
 const path = require('path')
-const router = express.Router()
+
+const { mountPath } = require('../utils/http')
 
 /**
  * Poly Haven's remote asset library for Blender (5.3+).
@@ -51,21 +51,24 @@ try {
 // everything under _v1 is addressed by `?hash=` and can sit in a cache far longer.
 const META = '/_asset-library-meta.json'
 
-router.get('/*', (req, res) => {
-  const body = files[req.path === '/' ? META : req.path]
-  if (!body) {
-    return res.status(404).json({
-      error: '404 Not Found',
-      message: 'No such asset library file. The library root is /bl_repo/',
-    })
+module.exports = async function (fastify) {
+  const serve = async (req, reply) => {
+    // Relative to the mount, like Express's req.path: raw (not percent-decoded) and case-preserved.
+    const reqPath = mountPath(fastify.prefix, req)
+    const body = files[reqPath === '/' ? META : reqPath]
+    if (!body) {
+      return reply.code(404).send({
+        error: '404 Not Found',
+        message: 'No such asset library file. The library root is /bl_repo/',
+      })
+    }
+    reply.header(
+      'Cache-Control',
+      reqPath === META ? 'public, max-age=120' : 'public, max-age=86400, stale-while-revalidate=604800'
+    )
+    return reply.type('application/json; charset=utf-8').send(body)
   }
-  res.set(
-    'Cache-Control',
-    req.path === META
-      ? 'public, max-age=120'
-      : 'public, max-age=86400, stale-while-revalidate=604800'
-  )
-  res.type('application/json').send(body)
-})
-
-module.exports = router
+  // '/*' alone would not answer the bare /bl_repo or /bl_repo/, which Express's '/*' did.
+  fastify.get('/', serve)
+  fastify.get('/*', serve)
+}

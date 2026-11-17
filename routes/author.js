@@ -1,24 +1,23 @@
 const escape = require('escape-html')
-const express = require('express')
-const router = express.Router()
 
 const firestore = require('../firestore')
+const { sendText } = require('../utils/http')
 
 const db = firestore()
 
-router.get('/', (req, res) => {
-  res.status(400).send(`Please format your request as /author/[id]`)
-})
+module.exports = async function (fastify) {
+  fastify.get('/', async (req, reply) => {
+    return sendText(reply, 400, `Please format your request as /author/[id]`)
+  })
 
-router.get('/:id', async (req, res) => {
-  const asset_id = req.params.id
+  fastify.get('/:id', async (req, reply) => {
+    const asset_id = req.params.id
 
-  const doc = await db.collection('authors').doc(asset_id).get()
-  if (!doc.exists) {
-    res.status(404).send(`No author with id ${escape(asset_id)}`)
-  } else {
-    res.status(200).json(doc.data())
-  }
-})
-
-module.exports = router
+    const doc = await db.collection('authors').doc(asset_id).get()
+    if (!doc.exists) {
+      return sendText(reply, 404, `No author with id ${escape(asset_id)}`)
+    } else {
+      return reply.code(200).send(doc.data())
+    }
+  })
+}

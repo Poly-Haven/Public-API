@@ -1,6 +1,3 @@
-const express = require('express')
-const router = express.Router()
-
 const cachedFirestore = require('../utils/cachedFirestore')
 const { publicVaultIds } = require('../utils/vaultStatus')
 
@@ -18,31 +15,31 @@ const db = cachedFirestore()
 // checksums via its rescan.
 const DOC_ID = 'site'
 
-router.get('/', async (req, res) => {
-  const doc = await db.collection('image_versions').doc(DOC_ID).get()
+module.exports = async function (fastify) {
+  fastify.get('/', async (req, reply) => {
+    const doc = await db.collection('image_versions').doc(DOC_ID).get()
 
-  // An empty manifest is a valid answer, not an error: consumers fall back to unversioned URLs,
-  // which is exactly the behaviour that predates this endpoint. Returning 404 would instead make
-  // every caller special-case it.
-  const all = doc.exists ? doc.data() : {}
+    // An empty manifest is a valid answer, not an error: consumers fall back to unversioned URLs,
+    // which is exactly the behaviour that predates this endpoint. Returning 404 would instead make
+    // every caller special-case it.
+    const all = doc.exists ? doc.data() : {}
 
-  // A vault's banner is vaults/<id>.png, and polyhaven.com bakes this manifest's vaults/ entries
-  // into every asset page - so banner art uploaded ahead of an announcement would publish the
-  // vault's name sitewide. Banners are only served once their vault is public. Subfolders
-  // (vaults/icons/, the roadmap's milestone icons) are not vault ids and pass through.
-  const publicVaults = await publicVaultIds()
-  const versions = {}
-  for (const [path, version] of Object.entries(all)) {
-    const banner = path.match(/^vaults\/([^/]+)\.[a-z0-9]+$/i)
-    if (banner && !publicVaults.has(banner[1])) continue
-    versions[path] = version
-  }
+    // A vault's banner is vaults/<id>.png, and polyhaven.com bakes this manifest's vaults/ entries
+    // into every asset page - so banner art uploaded ahead of an announcement would publish the
+    // vault's name sitewide. Banners are only served once their vault is public. Subfolders
+    // (vaults/icons/, the roadmap's milestone icons) are not vault ids and pass through.
+    const publicVaults = await publicVaultIds()
+    const versions = {}
+    for (const [path, version] of Object.entries(all)) {
+      const banner = path.match(/^vaults\/([^/]+)\.[a-z0-9]+$/i)
+      if (banner && !publicVaults.has(banner[1])) continue
+      versions[path] = version
+    }
 
-  // Must be >= 43200. This zone silently rewrites any shorter max-age up to 43200 and drops
-  // s-maxage, so asking for less would be a promise the edge discards. The manifest changes only
-  // when someone replaces an image, and that path purges this URL explicitly.
-  res.set('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
-  res.status(200).json(versions)
-})
-
-module.exports = router
+    // Must be >= 43200. This zone silently rewrites any shorter max-age up to 43200 and drops
+    // s-maxage, so asking for less would be a promise the edge discards. The manifest changes only
+    // when someone replaces an image, and that path purges this URL explicitly.
+    reply.header('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
+    return reply.code(200).send(versions)
+  })
+}

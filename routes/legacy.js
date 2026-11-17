@@ -1,6 +1,3 @@
-const express = require('express')
-const router = express.Router()
-
 const simpleData = async (type) => {
   // Reads the whole assets collection filtered by type, so use the shared cache.
   const cachedFirestore = require('../utils/cachedFirestore')
@@ -16,27 +13,27 @@ const simpleData = async (type) => {
   return docs
 }
 
-router.get('/hdris', async (req, res) => {
-  const data = require('../constants/legacy/hdris.json')
-  res.status(200).json(data)
-})
-router.get('/textures', async (req, res) => {
-  const data = require('../constants/legacy/textures.json')
-  res.status(200).json(data)
-})
-router.get('/models', async (req, res) => {
-  const data = require('../constants/legacy/models.json')
-  res.status(200).json(data)
-})
+module.exports = async function (fastify) {
+  fastify.get('/hdris', async (req, reply) => {
+    const data = require('../constants/legacy/hdris.json')
+    return reply.code(200).send(data)
+  })
+  fastify.get('/textures', async (req, reply) => {
+    const data = require('../constants/legacy/textures.json')
+    return reply.code(200).send(data)
+  })
+  fastify.get('/models', async (req, reply) => {
+    const data = require('../constants/legacy/models.json')
+    return reply.code(200).send(data)
+  })
 
-router.get('/hdris-simple', async (req, res) => {
-  res.status(200).json(await simpleData(0))
-})
-router.get('/textures-simple', async (req, res) => {
-  res.status(200).json(await simpleData(1))
-})
-router.get('/models-simple', async (req, res) => {
-  res.status(200).json(await simpleData(2))
-})
-
-module.exports = router
+  fastify.get('/hdris-simple', async (req, reply) => {
+    return reply.code(200).send(await simpleData(0))
+  })
+  fastify.get('/textures-simple', async (req, reply) => {
+    return reply.code(200).send(await simpleData(1))
+  })
+  fastify.get('/models-simple', async (req, reply) => {
+    return reply.code(200).send(await simpleData(2))
+  })
+}

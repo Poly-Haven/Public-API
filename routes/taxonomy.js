@@ -1,6 +1,4 @@
 const escape = require('escape-html')
-const express = require('express')
-const router = express.Router()
 
 const taxonomy = require('../taxonomy.json')
 const attributes = require('../attributes.json')
@@ -18,31 +16,30 @@ const asset_types = require('../asset_types.json')
 
 const typeNames = Object.keys(asset_types).filter((t) => t !== 'all')
 
-// GET /taxonomy  ->  { types: {hdris: [...], textures: [...], models: [...]}, attributes: {...} }
-router.get('/', (req, res) => {
-  res.status(200).json({
-    types: taxonomy.types,
-    attributes: attributes.types,
-  })
-})
-
-// GET /taxonomy/:asset_type  ->  { type, categories: [...], attributes: {...} }
-router.get('/:asset_type', (req, res) => {
-  const asset_type = req.params.asset_type
-
-  if (!(asset_type in asset_types) || asset_type === 'all') {
-    res.status(400).json({
-      error: '400 Bad Request',
-      message: `Unsupported asset type: ${escape(asset_type)}. Must be: ${typeNames.join('/')}`,
+module.exports = async function (fastify) {
+  // GET /taxonomy  ->  { types: {hdris: [...], textures: [...], models: [...]}, attributes: {...} }
+  fastify.get('/', async (req, reply) => {
+    return reply.code(200).send({
+      types: taxonomy.types,
+      attributes: attributes.types,
     })
-    return
-  }
-
-  res.status(200).json({
-    type: asset_type,
-    categories: taxonomy.types[asset_type],
-    attributes: attributes.types[asset_type],
   })
-})
 
-module.exports = router
+  // GET /taxonomy/:asset_type  ->  { type, categories: [...], attributes: {...} }
+  fastify.get('/:asset_type', async (req, reply) => {
+    const asset_type = req.params.asset_type
+
+    if (!(asset_type in asset_types) || asset_type === 'all') {
+      return reply.code(400).send({
+        error: '400 Bad Request',
+        message: `Unsupported asset type: ${escape(asset_type)}. Must be: ${typeNames.join('/')}`,
+      })
+    }
+
+    return reply.code(200).send({
+      type: asset_type,
+      categories: taxonomy.types[asset_type],
+      attributes: attributes.types[asset_type],
+    })
+  })
+}

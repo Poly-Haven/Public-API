@@ -1,6 +1,3 @@
-const express = require('express')
-const router = express.Router()
-
 const firestore = require('../firestore')
 
 const db = firestore()
@@ -32,131 +29,129 @@ const clampInt = (value, fallback, max) => {
   return Number.isFinite(n) && n > 0 ? Math.min(n, max) : fallback
 }
 
-router.get('/', async (req, res) => {
-  const assetID = req.query.assetID
-  const limit = req.query.limit
+module.exports = async function (fastify) {
+  fastify.get('/', async (req, reply) => {
+    const assetID = req.query.assetID
+    const limit = req.query.limit
 
-  let collectionRef = db.collection('gallery')
+    let collectionRef = db.collection('gallery')
 
-  // Get all renders if request is for a specific asset, otherwise only favourited ones
-  if (assetID) {
-    collectionRef = collectionRef.where('assets_used', 'array-contains', assetID)
-  }
-
-  if (parseInt(limit)) {
-    // If a limit is requested, we probably only want the best stuff.
-    collectionRef = collectionRef.where('favourite', '==', true)
-  }
-
-  const collection = await collectionRef.get()
-  let docs = {}
-  collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
-  })
-
-  // Filter unpublished
-  for (const id in docs) {
-    if (docs[id].approval_pending) {
-      delete docs[id]
+    // Get all renders if request is for a specific asset, otherwise only favourited ones
+    if (assetID) {
+      collectionRef = collectionRef.where('assets_used', 'array-contains', assetID)
     }
-  }
 
-  // Sort by popularity
-  let sortedKeys = Object.keys(docs).sort(function (a, b) {
-    return popularity(docs[b].clicks, docs[b].date_added) - popularity(docs[a].clicks, docs[a].date_added)
-  })
-  let data = sortedKeys.map((k) => publicRender(k, docs[k]))
+    if (parseInt(limit)) {
+      // If a limit is requested, we probably only want the best stuff.
+      collectionRef = collectionRef.where('favourite', '==', true)
+    }
 
-  data = data.slice(0, parseInt(limit) || 150) // More than this and the browser starts to chug.
+    const collection = await collectionRef.get()
+    let docs = {}
+    collection.forEach((doc) => {
+      docs[doc.id] = doc.data()
+    })
 
-  res.status(200).json(data)
-})
+    // Filter unpublished
+    for (const id in docs) {
+      if (docs[id].approval_pending) {
+        delete docs[id]
+      }
+    }
 
-// The first screen of polyhaven.com/gallery: the most popular renders, plus the cursor that
-// /gallery/feed continues from.
-//
-// `next` skips the run of newest renders that are already in `items`, so the feed starts with the
-// first render the visitor hasn't seen. It is always a number (one past the newest render when
-// that render isn't in `items`), so the site never asks for an uncursored feed page. An approval
-// changes this response, which admin purges, and so moves the site onto new feed URLs rather than
-// invalidating cached ones. Only a deletion changes an existing feed page.
-//
-// Reads the whole collection, like `/`. admin purges this URL on approval.
-router.get('/top', async (req, res) => {
-  const limit = clampInt(req.query.limit, 60, 150)
+    // Sort by popularity
+    let sortedKeys = Object.keys(docs).sort(function (a, b) {
+      return popularity(docs[b].clicks, docs[b].date_added) - popularity(docs[a].clicks, docs[a].date_added)
+    })
+    let data = sortedKeys.map((k) => publicRender(k, docs[k]))
 
-  const collection = await db.collection('gallery').get()
-  const docs = []
-  collection.forEach((doc) => {
-    const d = doc.data()
-    if (!d.approval_pending) docs.push({ id: doc.id, data: d })
+    data = data.slice(0, parseInt(limit) || 150) // More than this and the browser starts to chug.
+
+    return reply.code(200).send(data)
   })
 
-  docs.sort((a, b) => popularity(b.data.clicks, b.data.date_added) - popularity(a.data.clicks, a.data.date_added))
-  const top = docs.slice(0, limit)
-  const inTop = new Set(top.map((d) => d.id))
+  // The first screen of polyhaven.com/gallery: the most popular renders, plus the cursor that
+  // /gallery/feed continues from.
+  //
+  // `next` skips the run of newest renders that are already in `items`, so the feed starts with the
+  // first render the visitor hasn't seen. It is always a number (one past the newest render when
+  // that render isn't in `items`), so the site never asks for an uncursored feed page. An approval
+  // changes this response, which admin purges, and so moves the site onto new feed URLs rather than
+  // invalidating cached ones. Only a deletion changes an existing feed page.
+  //
+  // Reads the whole collection, like `/`. admin purges this URL on approval.
+  fastify.get('/top', async (req, reply) => {
+    const limit = clampInt(req.query.limit, 60, 150)
 
-  const newestFirst = docs.slice().sort((a, b) => b.data.date_added - a.data.date_added)
-  let next = newestFirst.length ? newestFirst[0].data.date_added + 1 : null
-  for (const d of newestFirst) {
-    if (!inTop.has(d.id)) break
-    next = d.data.date_added
-  }
-  if (next !== null && inTop.size === docs.length) next = null // everything is already in `items`
+    const collection = await db.collection('gallery').get()
+    const docs = []
+    collection.forEach((doc) => {
+      const d = doc.data()
+      if (!d.approval_pending) docs.push({ id: doc.id, data: d })
+    })
 
-  res.status(200).json({ items: top.map((d) => publicRender(d.id, d.data)), next })
-})
+    docs.sort((a, b) => popularity(b.data.clicks, b.data.date_added) - popularity(a.data.clicks, a.data.date_added))
+    const top = docs.slice(0, limit)
+    const inTop = new Set(top.map((d) => d.id))
 
-// Every approved render, newest approval first (`date_added` is set at approval), a page at a time.
-//
-// GET /gallery/feed?before=<date_added>&limit=48 -> { items, next }
-// `next` is the `before` for the following page, or null after the last one.
-//
-// The cursor is a value rather than a document, so each page's URL is fixed and the edge caches
-// it: there are only ~40 pages for the whole archive. Pending renders are in the same collection,
-// interleaved by submission time, so a few extra docs are read and the pending ones dropped. That
-// avoids a composite index for what is, at any moment, a handful of documents.
-const FEED_SLACK = 10
-router.get('/feed', async (req, res) => {
-  const limit = clampInt(req.query.limit, 48, 100)
-  const before = req.query.before !== undefined ? Number(req.query.before) : null
-  if (before !== null && !Number.isFinite(before)) {
-    res.set('Cache-Control', 'no-store')
-    res.status(400).json({ error: '400 Bad Request', message: '`before` must be a number' })
-    return
-  }
+    const newestFirst = docs.slice().sort((a, b) => b.data.date_added - a.data.date_added)
+    let next = newestFirst.length ? newestFirst[0].data.date_added + 1 : null
+    for (const d of newestFirst) {
+      if (!inTop.has(d.id)) break
+      next = d.data.date_added
+    }
+    if (next !== null && inTop.size === docs.length) next = null // everything is already in `items`
 
-  let query = db.collection('gallery').orderBy('date_added', 'desc')
-  if (before !== null) query = query.startAfter(before)
-  const scanned = []
-  ;(await query.limit(limit + FEED_SLACK).get()).forEach((doc) => scanned.push({ id: doc.id, data: doc.data() }))
+    return reply.code(200).send({ items: top.map((d) => publicRender(d.id, d.data)), next })
+  })
 
-  const approved = scanned.filter((d) => !d.data.approval_pending)
-  let items, next
-  if (approved.length > limit) {
-    items = approved.slice(0, limit)
-    next = items[items.length - 1].data.date_added
-  } else {
-    items = approved
-    // A full scan means there may be more; a short one means this was the end.
-    next = scanned.length === limit + FEED_SLACK ? scanned[scanned.length - 1].data.date_added : null
-  }
+  // Every approved render, newest approval first (`date_added` is set at approval), a page at a time.
+  //
+  // GET /gallery/feed?before=<date_added>&limit=48 -> { items, next }
+  // `next` is the `before` for the following page, or null after the last one.
+  //
+  // The cursor is a value rather than a document, so each page's URL is fixed and the edge caches
+  // it: there are only ~40 pages for the whole archive. Pending renders are in the same collection,
+  // interleaved by submission time, so a few extra docs are read and the pending ones dropped. That
+  // avoids a composite index for what is, at any moment, a handful of documents.
+  const FEED_SLACK = 10
+  fastify.get('/feed', async (req, reply) => {
+    const limit = clampInt(req.query.limit, 48, 100)
+    const before = req.query.before !== undefined ? Number(req.query.before) : null
+    if (before !== null && !Number.isFinite(before)) {
+      reply.header('Cache-Control', 'no-store')
+      return reply.code(400).send({ error: '400 Bad Request', message: '`before` must be a number' })
+    }
 
-  res.status(200).json({ items: items.map((d) => publicRender(d.id, d.data)), next })
-})
+    let query = db.collection('gallery').orderBy('date_added', 'desc')
+    if (before !== null) query = query.startAfter(before)
+    const scanned = []
+    ;(await query.limit(limit + FEED_SLACK).get()).forEach((doc) => scanned.push({ id: doc.id, data: doc.data() }))
 
-// One render, for a ?render=<id> link to a render that isn't on the first screen.
-router.get('/render/:id', async (req, res) => {
-  // Uncacheable unless found: a render that's still pending would otherwise be a cached 404
-  // after it's approved.
-  res.set('Cache-Control', 'no-store')
-  const doc = await db.collection('gallery').doc(String(req.params.id)).get()
-  if (!doc.exists || doc.data().approval_pending) {
-    res.status(404).json({ error: '404 Not Found', message: 'No such render' })
-    return
-  }
-  res.removeHeader('Cache-Control')
-  res.status(200).json(publicRender(doc.id, doc.data()))
-})
+    const approved = scanned.filter((d) => !d.data.approval_pending)
+    let items, next
+    if (approved.length > limit) {
+      items = approved.slice(0, limit)
+      next = items[items.length - 1].data.date_added
+    } else {
+      items = approved
+      // A full scan means there may be more; a short one means this was the end.
+      next = scanned.length === limit + FEED_SLACK ? scanned[scanned.length - 1].data.date_added : null
+    }
 
-module.exports = router
+    return reply.code(200).send({ items: items.map((d) => publicRender(d.id, d.data)), next })
+  })
+
+  // One render, for a ?render=<id> link to a render that isn't on the first screen.
+  fastify.get('/render/:id', async (req, reply) => {
+    // Uncacheable unless found: a render that's still pending would otherwise be a cached 404
+    // after it's approved.
+    reply.header('Cache-Control', 'no-store')
+    const doc = await db.collection('gallery').doc(String(req.params.id)).get()
+    if (!doc.exists || doc.data().approval_pending) {
+      return reply.code(404).send({ error: '404 Not Found', message: 'No such render' })
+    }
+    reply.removeHeader('Cache-Control')
+    return reply.code(200).send(publicRender(doc.id, doc.data()))
+  })
+}

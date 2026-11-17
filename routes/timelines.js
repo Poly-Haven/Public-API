@@ -1,45 +1,40 @@
-const express = require('express')
-const router = express.Router()
-
 const firestore = require('../firestore')
+const { sendText } = require('../utils/http')
 
 const db = firestore()
 
-router.get('/', async (req, res) => {
-  const collection = await db.collection('timelines').get()
-  let docs = {}
-  collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
+module.exports = async function (fastify) {
+  fastify.get('/', async (req, reply) => {
+    const collection = await db.collection('timelines').get()
+    let docs = {}
+    collection.forEach((doc) => {
+      docs[doc.id] = doc.data()
+    })
+
+    return reply.code(200).send(docs)
   })
 
-  res.status(200).json(docs)
-})
+  fastify.get('/:id', async (req, reply) => {
+    const timeline_id = req.params.id
 
-router.get('/:id', async (req, res) => {
-  const timeline_id = req.params.id
+    if (!timeline_id) {
+      return sendText(reply, 400, `No timeline with that ID`)
+    }
 
-  if (!timeline_id) {
-    res.status(400).send(`No timeline with that ID`)
-    return
-  }
+    const MAX_ID_LENGTH = 50
+    if (timeline_id.length > MAX_ID_LENGTH) {
+      return sendText(reply, 400, `No timeline with that ID`)
+    }
 
-  const MAX_ID_LENGTH = 50
-  if (timeline_id.length > MAX_ID_LENGTH) {
-    res.status(400).send(`No timeline with that ID`)
-    return
-  }
+    const validPattern = /^[a-zA-Z0-9_-]+$/
+    if (!validPattern.test(timeline_id)) {
+      return sendText(reply, 400, `No timeline with that ID`)
+    }
 
-  const validPattern = /^[a-zA-Z0-9_-]+$/
-  if (!validPattern.test(timeline_id)) {
-    res.status(400).send(`No timeline with that ID`)
-    return
-  }
-
-  const doc = await db.collection('timelines').doc(timeline_id).get()
-  if (!doc.exists) {
-    return res.status(404).json({ error: 'Timeline not found' })
-  }
-  res.status(200).json(doc.data())
-})
-
-module.exports = router
+    const doc = await db.collection('timelines').doc(timeline_id).get()
+    if (!doc.exists) {
+      return reply.code(404).send({ error: 'Timeline not found' })
+    }
+    return reply.code(200).send(doc.data())
+  })
+}

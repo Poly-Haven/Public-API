@@ -1,7 +1,6 @@
 const escape = require('escape-html')
-const express = require('express')
-const router = express.Router()
 
+const { sendText } = require('../utils/http')
 const { runSearch, SearchError } = require('../utils/assetSearch')
 const { rateLimit } = require('../utils/rateLimit')
 
@@ -32,37 +31,35 @@ const { rateLimit } = require('../utils/rateLimit')
  * daily, so that is a known and accepted cost of not paying for wildcard purge. If it ever matters,
  * the fix is a corpus version in the cache key (&v=<hash>) so a publish changes the key space.
  */
-router.get('/', async (req, res) => {
-  const limiter = rateLimit(req)
-  if (!limiter.allowed) {
-    res.set('Retry-After', String(limiter.retryAfter))
-    res.status(429).send(`Too many searches. Try again in ${limiter.retryAfter}s.`)
-    return
-  }
-
-  try {
-    const result = await runSearch({
-      query: req.query.q || req.query.query,
-      assetType: req.query.type || req.query.t,
-      includeUpcoming: Boolean(req.query.future),
-      minScore: req.query.min,
-      // Clamped: slice(0, -50) would drop the BEST matches and report a total that disagrees with
-      // results.length. No caller sends a negative limit, but this is a documented public endpoint
-      // and a client generated from the spec could.
-      limit: Math.max(0, parseInt(req.query.limit, 10) || 0),
-      // hybrid=0 gives the pure semantic ranking, for comparing the fusion against the vectors alone.
-      hybrid: req.query.hybrid !== '0' && req.query.hybrid !== 'false',
-    })
-    res.set('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
-    res.status(200).json(result)
-  } catch (err) {
-    if (err instanceof SearchError) {
-      res.status(err.status).send(escape(err.message))
-      return
+module.exports = async function (fastify) {
+  fastify.get('/', async (req, reply) => {
+    const limiter = rateLimit(req)
+    if (!limiter.allowed) {
+      reply.header('Retry-After', String(limiter.retryAfter))
+      return sendText(reply, 429, `Too many searches. Try again in ${limiter.retryAfter}s.`)
     }
-    console.error('[SEARCH] failed:', err)
-    res.status(500).send('Search is temporarily unavailable')
-  }
-})
 
-module.exports = router
+    try {
+      const result = await runSearch({
+        query: req.query.q || req.query.query,
+        assetType: req.query.type || req.query.t,
+        includeUpcoming: Boolean(req.query.future),
+        minScore: req.query.min,
+        // Clamped: slice(0, -50) would drop the BEST matches and report a total that disagrees with
+        // results.length. No caller sends a negative limit, but this is a documented public endpoint
+        // and a client generated from the spec could.
+        limit: Math.max(0, parseInt(req.query.limit, 10) || 0),
+        // hybrid=0 gives the pure semantic ranking, for comparing the fusion against the vectors alone.
+        hybrid: req.query.hybrid !== '0' && req.query.hybrid !== 'false',
+      })
+      reply.header('Cache-Control', 'public, max-age=43200, s-maxage=43200, stale-while-revalidate=86400')
+      return reply.code(200).send(result)
+    } catch (err) {
+      if (err instanceof SearchError) {
+        return sendText(reply, err.status, escape(err.message))
+      }
+      console.error('[SEARCH] failed:', err)
+      return sendText(reply, 500, 'Search is temporarily unavailable')
+    }
+  })
+}

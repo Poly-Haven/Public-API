@@ -1,10 +1,9 @@
 const escape = require('escape-html')
-const express = require('express')
-const router = express.Router()
 
 const cachedFirestore = require('../utils/cachedFirestore')
 const embeddingIndex = require('../utils/embeddingIndex')
 const { publicVaultIds, maskVault } = require('../utils/vaultStatus')
+const { sendText } = require('../utils/http')
 
 const db = cachedFirestore()
 
@@ -99,144 +98,140 @@ const tagRanking = (this_asset, docs) => {
   return ranked.sort((a, b) => b[1] - a[1])
 }
 
-router.get('/', (req, res) => {
-  res.status(400).send(`Please format your request as /similar/[asset_id]`)
-})
-
-router.get('/:id', async (req, res) => {
-  const asset_id = req.params.id
-
-  if (!asset_id) {
-    res.status(400).send(`No asset with that ID`)
-    return
-  }
-
-  const MAX_ID_LENGTH = 50
-  if (asset_id.length > MAX_ID_LENGTH) {
-    res.status(400).send(`No asset with that ID`)
-    return
-  }
-
-  const validPattern = /^[a-zA-Z0-9_-]+$/
-  if (!validPattern.test(asset_id)) {
-    res.status(400).send(`No asset with that ID`)
-    return
-  }
-
-  // Clamped: every asset now has a score against every other one, so an uncapped `num` would
-  // serve the whole library - on a route the edge caches for three days.
-  const requested = parseInt(req.query.num, 10)
-  const num = Math.min(Math.max(Number.isFinite(requested) ? requested : DEFAULT_NUM, 1), MAX_NUM)
-
-  // Pure vector ranking, for comparing the two. Mirrors /search?hybrid=0.
-  const vectorOnly = req.query.lane === 'vector'
-
-  let collectionRef = db.collection('assets')
-
-  const collection = await collectionRef.get()
-  let docs = {}
-  collection.forEach((doc) => {
-    docs[doc.id] = doc.data()
+module.exports = async function (fastify) {
+  fastify.get('/', (req, reply) => {
+    return sendText(reply, 400, `Please format your request as /similar/[asset_id]`)
   })
 
-  if (!docs[asset_id]) {
-    // This route reads the shared 10-minute collection cache and has no per-document
-    // fallback, so a just-created asset is genuinely absent here for a while - and unlike a
-    // permanent 404 that one must not be cached. Whether the edge honours this depends on the
-    // zone's cache rules, which currently rewrite Cache-Control; the publish purge covers
-    // /similar/<slug> either way.
-    res.set('Cache-Control', 'no-store')
-    res.status(404).send(`No asset with id ${escape(asset_id)}`)
-    return
-  }
-  // Captured before the gates below, so an early-access asset's own page still gets a strip.
-  const this_asset = docs[asset_id]
+  fastify.get('/:id', async (req, reply) => {
+    const asset_id = req.params.id
 
-  // Filter what may not be shown: staging, and anything not yet public - which includes every
-  // vaulted asset, parked on its year-3000 date.
-  const now = Math.floor(Date.now() / 1000)
-  for (const id in docs) {
-    if (docs[id].staging || docs[id].date_published > now) {
-      delete docs[id]
+    if (!asset_id) {
+      return sendText(reply, 400, `No asset with that ID`)
     }
-  }
-  delete docs[asset_id]
-  const allowed = new Set(Object.keys(docs))
 
-  /**
-   * Two lanes, and unlike /search they are not fused.
-   *
-   * Cosine against the asset's own embedding leads, because it reads the whole of an asset's
-   * metadata as meaning rather than as strings - it is what puts `brick_wall_02` on
-   * `brick_wall_001` where counting shared tags returned `large_red_bricks`.
-   *
-   * But it reads the category path and description loudest, which is wrong whenever those describe
-   * one facet of an asset and its tags describe another. `nqweba_dawn` is a road-with-backplates
-   * HDRI filed under Coast & Water/Rivers & Lakes/Dams & Reservoirs: the vectors return lakeside
-   * scenery and bury every road in the library past rank 178.
-   *
-   * RRF, which /search uses, is the wrong tool for that shape. Fusing these two lanes on
-   * `nqweba_dawn` returns neither the lakesides nor the roads but the assets both lanes were
-   * lukewarm about - RRF is built to penalise "loved by one lane, ignored by the other", which is
-   * exactly the signal worth keeping here. A strip of six tiles does not need one compromise
-   * ranking; it can afford to spend a tile on the other lane's best answer.
-   *
-   * So: the vector ranking fills the strip, and the last slot goes to the metadata lane's top pick
-   * - if that pick is still plausibly similar. At most one tile in six differs from the pure vector
-   * ranking, and on the assets where the metadata lane has nothing plausible to add, none does.
-   */
-  const queryVector = await embeddingIndex.getVector(asset_id)
-  let ranked
-  let reserved = null
-  if (queryVector) {
-    const { results, scores } = await embeddingIndex.search({
-      queryVector,
-      isAllowed: (slug) => allowed.has(slug),
+    const MAX_ID_LENGTH = 50
+    if (asset_id.length > MAX_ID_LENGTH) {
+      return sendText(reply, 400, `No asset with that ID`)
+    }
+
+    const validPattern = /^[a-zA-Z0-9_-]+$/
+    if (!validPattern.test(asset_id)) {
+      return sendText(reply, 400, `No asset with that ID`)
+    }
+
+    // Clamped: every asset now has a score against every other one, so an uncapped `num` would
+    // serve the whole library - on a route the edge caches for three days.
+    const requested = parseInt(req.query.num, 10)
+    const num = Math.min(Math.max(Number.isFinite(requested) ? requested : DEFAULT_NUM, 1), MAX_NUM)
+
+    // Pure vector ranking, for comparing the two. Mirrors /search?hybrid=0.
+    const vectorOnly = req.query.lane === 'vector'
+
+    let collectionRef = db.collection('assets')
+
+    const collection = await collectionRef.get()
+    let docs = {}
+    collection.forEach((doc) => {
+      docs[doc.id] = doc.data()
     })
-    ranked = results
 
-    if (!vectorOnly && num >= RESERVED_MIN_NUM && results.length > num) {
-      const idf = buildIdf(Object.values(docs))
-      const pick = metadataRanking(this_asset, docs, idf, (slug) => scores.get(slug))[0]
-      // Measured against the best VECTOR score, which is not necessarily ranked[0] once the
-      // puresky pin has moved something with a lower cosine to the front.
-      const floor = Math.max(results[0][1] - RESERVED_MAX_DROP, RESERVED_MIN_SCORE)
-      if (pick && (scores.get(pick[0]) || 0) >= floor) reserved = [pick[0], scores.get(pick[0])]
+    if (!docs[asset_id]) {
+      // This route reads the shared 10-minute collection cache and has no per-document
+      // fallback, so a just-created asset is genuinely absent here for a while - and unlike a
+      // permanent 404 that one must not be cached. Whether the edge honours this depends on the
+      // zone's cache rules, which currently rewrite Cache-Control; the publish purge covers
+      // /similar/<slug> either way.
+      reply.header('Cache-Control', 'no-store')
+      return sendText(reply, 404, `No asset with id ${escape(asset_id)}`)
     }
-  } else {
-    ranked = tagRanking(this_asset, docs)
-  }
+    // Captured before the gates below, so an early-access asset's own page still gets a strip.
+    const this_asset = docs[asset_id]
 
-  // The puresky variant is the same shot under a clear sky - always the most useful neighbour an
-  // HDRI has, and nothing in the metadata the vectors read says so. Pinned rather than scored, so
-  // the similarity reported stays the real one.
-  const puresky = asset_id + '_puresky'
-  if (allowed.has(puresky)) {
-    const pinned = ranked.find(([slug]) => slug === puresky)
-    ranked = [pinned || [puresky, null], ...ranked.filter(([slug]) => slug !== puresky)]
-  }
-
-  // The reserved slot is spent last, on the full list, so it displaces the weakest tile rather
-  // than the puresky pin - and only if the metadata lane's pick is not already on the strip.
-  let selected = ranked.slice(0, num)
-  if (reserved && !selected.some(([slug]) => slug === reserved[0])) {
-    selected = [...ranked.slice(0, num - 1), reserved]
-  }
-
-  // Everything left is public, so an unannounced vault can only reach here on an asset that was
-  // published first and put in the vault later. Masked anyway, the same as every other response.
-  const publicVaults = await publicVaultIds()
-  const similar = {}
-  for (const [slug, score] of selected) {
-    // Copy before adding similarity. doc.data() hands back the live cached object, so writing to it
-    // leaks this request's score into every other route that reads the cached assets collection.
-    similar[slug] = {
-      ...maskVault(docs[slug], publicVaults),
-      similarity: score === null ? null : Math.round(score * 10000) / 10000,
+    // Filter what may not be shown: staging, and anything not yet public - which includes every
+    // vaulted asset, parked on its year-3000 date.
+    const now = Math.floor(Date.now() / 1000)
+    for (const id in docs) {
+      if (docs[id].staging || docs[id].date_published > now) {
+        delete docs[id]
+      }
     }
-  }
+    delete docs[asset_id]
+    const allowed = new Set(Object.keys(docs))
 
-  res.status(200).json(similar)
-})
+    /**
+     * Two lanes, and unlike /search they are not fused.
+     *
+     * Cosine against the asset's own embedding leads, because it reads the whole of an asset's
+     * metadata as meaning rather than as strings - it is what puts `brick_wall_02` on
+     * `brick_wall_001` where counting shared tags returned `large_red_bricks`.
+     *
+     * But it reads the category path and description loudest, which is wrong whenever those describe
+     * one facet of an asset and its tags describe another. `nqweba_dawn` is a road-with-backplates
+     * HDRI filed under Coast & Water/Rivers & Lakes/Dams & Reservoirs: the vectors return lakeside
+     * scenery and bury every road in the library past rank 178.
+     *
+     * RRF, which /search uses, is the wrong tool for that shape. Fusing these two lanes on
+     * `nqweba_dawn` returns neither the lakesides nor the roads but the assets both lanes were
+     * lukewarm about - RRF is built to penalise "loved by one lane, ignored by the other", which is
+     * exactly the signal worth keeping here. A strip of six tiles does not need one compromise
+     * ranking; it can afford to spend a tile on the other lane's best answer.
+     *
+     * So: the vector ranking fills the strip, and the last slot goes to the metadata lane's top pick
+     * - if that pick is still plausibly similar. At most one tile in six differs from the pure vector
+     * ranking, and on the assets where the metadata lane has nothing plausible to add, none does.
+     */
+    const queryVector = await embeddingIndex.getVector(asset_id)
+    let ranked
+    let reserved = null
+    if (queryVector) {
+      const { results, scores } = await embeddingIndex.search({
+        queryVector,
+        isAllowed: (slug) => allowed.has(slug),
+      })
+      ranked = results
 
-module.exports = router
+      if (!vectorOnly && num >= RESERVED_MIN_NUM && results.length > num) {
+        const idf = buildIdf(Object.values(docs))
+        const pick = metadataRanking(this_asset, docs, idf, (slug) => scores.get(slug))[0]
+        // Measured against the best VECTOR score, which is not necessarily ranked[0] once the
+        // puresky pin has moved something with a lower cosine to the front.
+        const floor = Math.max(results[0][1] - RESERVED_MAX_DROP, RESERVED_MIN_SCORE)
+        if (pick && (scores.get(pick[0]) || 0) >= floor) reserved = [pick[0], scores.get(pick[0])]
+      }
+    } else {
+      ranked = tagRanking(this_asset, docs)
+    }
+
+    // The puresky variant is the same shot under a clear sky - always the most useful neighbour an
+    // HDRI has, and nothing in the metadata the vectors read says so. Pinned rather than scored, so
+    // the similarity reported stays the real one.
+    const puresky = asset_id + '_puresky'
+    if (allowed.has(puresky)) {
+      const pinned = ranked.find(([slug]) => slug === puresky)
+      ranked = [pinned || [puresky, null], ...ranked.filter(([slug]) => slug !== puresky)]
+    }
+
+    // The reserved slot is spent last, on the full list, so it displaces the weakest tile rather
+    // than the puresky pin - and only if the metadata lane's pick is not already on the strip.
+    let selected = ranked.slice(0, num)
+    if (reserved && !selected.some(([slug]) => slug === reserved[0])) {
+      selected = [...ranked.slice(0, num - 1), reserved]
+    }
+
+    // Everything left is public, so an unannounced vault can only reach here on an asset that was
+    // published first and put in the vault later. Masked anyway, the same as every other response.
+    const publicVaults = await publicVaultIds()
+    const similar = {}
+    for (const [slug, score] of selected) {
+      // Copy before adding similarity. doc.data() hands back the live cached object, so writing to it
+      // leaks this request's score into every other route that reads the cached assets collection.
+      similar[slug] = {
+        ...maskVault(docs[slug], publicVaults),
+        similarity: score === null ? null : Math.round(score * 10000) / 10000,
+      }
+    }
+
+    return reply.code(200).send(similar)
+  })
+}

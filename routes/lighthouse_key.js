@@ -8,9 +8,7 @@
 // switches) and community.polyhaven.com (utils/steamKeys.ts, contributor claims). Keep them in step.
 
 const crypto = require('crypto')
-const express = require('express')
 const admin = require('firebase-admin')
-const router = express.Router()
 
 const firestore = require('../firestore')
 
@@ -19,8 +17,6 @@ const db = firestore()
 const FieldValue = admin.firestore.FieldValue
 
 require('dotenv').config()
-
-router.use(express.json())
 
 const PREFIX = process.env.STEAM_KEYS_COLLECTION_PREFIX || ''
 const COL = {
@@ -103,7 +99,7 @@ const validUuid = (uuid) => typeof uuid === 'string' && /^[A-Za-z0-9_-]{1,64}$/.
 
 // Authenticates the request and works out who this is and what they're allowed to do. Returns null when
 // the request should get the same 404 as an unknown route.
-const resolve = async (req, res) => {
+const resolve = async (req) => {
   const { uuid, key } = req.body || {}
   if (!validUuid(uuid) || typeof key !== 'string') return null
   const hash = crypto.createHmac('sha256', process.env.PATRON_INFO_KEY).update(uuid).digest('hex')
@@ -207,42 +203,44 @@ const claim = async (ctx, email) => {
 
 // ---------------------------------------------------------------------------------------------------
 
-const handle = (fn) => async (req, res, next) => {
+// callNotFound hands the request to the app's 404 handler, identical to any unknown route (so no headers are
+// set before this).
+const handle = (fn) => async (req, reply) => {
   try {
-    const ctx = await resolve(req, res)
-    if (!ctx) return next() // Express's own 404, identical to any unknown route (so no headers set before this)
+    const ctx = await resolve(req)
+    if (!ctx) return reply.callNotFound()
     const result = await fn(ctx, req)
-    if (result.state === 'closed') return next()
-    res.set('Cache-Control', 'no-store')
-    res.status(result.state === 'busy' ? 503 : 200).json(result)
+    if (result.state === 'closed') return reply.callNotFound()
+    reply.header('Cache-Control', 'no-store')
+    return reply.code(result.state === 'busy' ? 503 : 200).send(result)
   } catch (err) {
     console.error('[LIGHTHOUSE KEY]', err)
-    res.set('Cache-Control', 'no-store')
-    res.status(503).json({ state: 'error' })
+    reply.header('Cache-Control', 'no-store')
+    return reply.code(503).send({ state: 'error' })
   }
 }
 
-// Unauthenticated: lets the page decide on its 404 before anyone logs in.
-router.post('/open', async (req, res) => {
-  res.set('Cache-Control', 'no-store')
-  const config = await getConfig()
-  res.json({ open: config.open })
-})
-
-router.post(
-  '/',
-  handle((ctx) => status(ctx))
-)
-
-router.post(
-  '/claim',
-  handle(async (ctx, req) => {
-    if (req.body.terms_version !== TERMS_VERSION) {
-      const s = await status(ctx)
-      return s.state === 'eligible' ? { ...s, state: 'terms_changed' } : s
-    }
-    return claim(ctx, req.body.email)
+module.exports = async function (fastify) {
+  // Unauthenticated: lets the page decide on its 404 before anyone logs in.
+  fastify.post('/open', async (req, reply) => {
+    reply.header('Cache-Control', 'no-store')
+    const config = await getConfig()
+    return reply.send({ open: config.open })
   })
-)
 
-module.exports = router
+  fastify.post(
+    '/',
+    handle((ctx) => status(ctx))
+  )
+
+  fastify.post(
+    '/claim',
+    handle(async (ctx, req) => {
+      if (req.body.terms_version !== TERMS_VERSION) {
+        const s = await status(ctx)
+        return s.state === 'eligible' ? { ...s, state: 'terms_changed' } : s
+      }
+      return claim(ctx, req.body.email)
+    })
+  )
+}

@@ -1,6 +1,4 @@
-const express = require('express')
 const fetch = require('node-fetch')
-const router = express.Router()
 const subMonths = require('date-fns/subMonths')
 const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
 
@@ -11,6 +9,7 @@ const cachedFirestore = require('../utils/cachedFirestore')
 const attributeSchema = require('../attributes.json')
 const { resolveCategory } = require('../utils/assetFilters')
 const softwareMatcher = require('../utils/softwareMatcher')
+const { sendText } = require('../utils/http')
 
 const db = firestore()
 // For whole-collection reads of `assets`, which several routes here sweep on every request.
@@ -67,376 +66,6 @@ const assetsPublishedInDateRange = async (date_from, date_to) => {
 
   return days
 }
-
-router.get('/downloads', async (req, res) => {
-  const slug = req.query.slug
-  const type = req.query.type
-  let date_from = req.query.date_from
-  let date_to = req.query.date_to
-
-  const badRequest = (message) => res.status(400).json({ error: '400 Bad Request', message })
-
-  if (!DOWNLOAD_TYPES.includes(type)) {
-    return badRequest(`type is required, and must be one of: ${DOWNLOAD_TYPES.join(', ')}`)
-  }
-  // type=ASSET is 2.6M of the 2.9M documents, so it is never served unfiltered.
-  if (type === 'ASSET' && !slug) {
-    return badRequest('slug is required when type=ASSET')
-  }
-  for (const [name, value] of [
-    ['date_from', date_from],
-    ['date_to', date_to],
-  ]) {
-    if (value !== undefined && !isDay(value)) {
-      return badRequest(`${name} must be a YYYY-MM-DD date`)
-    }
-  }
-  if (date_from && date_to && date_from > date_to) {
-    return badRequest('date_from must not be after date_to')
-  }
-  // A slug pins the query to one series (~1 document/day), so only an unpinned
-  // query over one of the wider types needs a ceiling on its date range.
-  if (!slug && !UNCAPPED_DOWNLOAD_TYPES.includes(type)) {
-    // Fill in whichever bound is missing first, so that supplying only one of
-    // them can't sidestep the span check below.
-    date_to = date_to || new Date().toISOString().split('T')[0]
-    date_from = date_from || dayOffset(date_to, -MAX_RANGE_DAYS)
-    if (date_from < dayOffset(date_to, -MAX_RANGE_DAYS)) {
-      return badRequest(
-        `date range must be at most ${MAX_RANGE_DAYS} days for type=${type} without a slug. ` +
-          `Request a narrower range, or pass a slug.`
-      )
-    }
-  }
-
-  let collectionRef = db.collection('downloads_daily')
-
-  collectionRef = slug ? collectionRef.where('slug', '==', slug) : collectionRef
-  collectionRef = type ? collectionRef.where('type', '==', type) : collectionRef
-  collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
-  collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
-
-  const collection = await collectionRef.get()
-  let docs = []
-  collection.forEach((doc) => {
-    docs.push(doc.data())
-  })
-
-  res.status(200).json(docs)
-})
-
-router.get('/relativetype', async (req, res) => {
-  const date_from = req.query.date_from
-  const date_to = req.query.date_to
-
-  let collectionRef = db.collection('downloads_daily')
-
-  const types = {
-    T0: 'hdris',
-    T1: 'textures',
-    T2: 'models',
-  }
-
-  collectionRef = collectionRef.where('type', '==', 'TYPE')
-  collectionRef = collectionRef.where('slug', 'in', Object.keys(types))
-  collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
-  collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
-
-  const collection = await collectionRef.get()
-  let stats = {}
-  collection.forEach((doc) => {
-    stats[doc.id] = doc.data()
-  })
-
-  const assetsPublished = await assetsPublishedInDateRange(date_from, date_to)
-
-  let returnData = {}
-  for (const [day, nums] of Object.entries(assetsPublished)) {
-    let downloadsPerAsset = {}
-    let total = 0
-    for (const [k, type] of Object.entries(types)) {
-      if (!stats[`${day}_${k}`]) continue
-      const downloadsPer = stats[`${day}_${k}`].unique / nums[type]
-      downloadsPerAsset[type] = downloadsPer
-      total += downloadsPer
-    }
-    let relative = {}
-    for (const [type, value] of Object.entries(downloadsPerAsset)) {
-      relative[type] = (value / total) * 100
-    }
-    if (Object.keys(relative).length) {
-      returnData[day] = relative
-    }
-  }
-
-  res.status(200).json(returnData)
-})
-
-router.get('/relativecategory', async (req, res) => {
-  let collectionRef = cachedDb.collection('assets')
-
-  const collection = await collectionRef.get()
-  let assets = {}
-  collection.forEach((doc) => {
-    assets[doc.id] = doc.data()
-  })
-
-  const types = ['hdris', 'textures', 'models']
-
-  const returnData = {
-    hdris: {},
-    textures: {},
-    models: {},
-  }
-
-  // First store all downloads/day per asset with each cat
-  for (const asset of Object.values(assets)) {
-    for (const cat of asset.categories) {
-      const t = types[asset.type]
-      const secondsPublished = Date.now() / 1000 - asset.date_published
-      const daysPublished = secondsPublished / 24 / 60 / 60
-      if (daysPublished < 1) continue
-      const downloadsPerDay = asset.download_count / daysPublished
-      if (!Object.keys(returnData[t]).includes(cat)) {
-        returnData[t][cat] = []
-      }
-      returnData[t][cat].push(downloadsPerDay)
-    }
-  }
-
-  // Filter out categories with less than 3 assets
-  for (const [t, typeData] of Object.entries(returnData)) {
-    for (const [c, data] of Object.entries(typeData)) {
-      if (data.length < 3) {
-        delete returnData[t][c]
-      }
-    }
-  }
-
-  // Then average the downloads/day for each cat
-  const average = (array) => array.reduce((a, b) => a + b) / array.length
-  for (const [t, typeData] of Object.entries(returnData)) {
-    for (const [c, data] of Object.entries(typeData)) {
-      returnData[t][c] = { count: data.length, avg: average(data) }
-    }
-  }
-
-  res.status(200).json(returnData)
-})
-
-/**
- * Popularity of the single-path taxonomy: aggregates per category node and per attribute value.
- *
- * The successor to /relativecategory, which is keyed by the legacy multi-value `categories` array.
- * Both are served in parallel until nothing reads the old one any more.
- *
- * Category counts are INCLUSIVE, matching how the library browses: an asset in
- * "Nature/Trees/Oaks" counts towards "Nature", "Nature/Trees" and "Nature/Trees/Oaks". `direct` is
- * how many sit exactly on that node, so the pair shows where in a branch the assets actually live.
- * Only nodes with at least one asset appear - an empty category has no popularity to report.
- *
- * `avg` is the mean of each asset's lifetime downloads per day, the old chart's measure except that
- * an asset's days are counted from DOWNLOAD_TRACKING_START at the earliest.
- *
- * Attribute buckets mirror what the library can actually filter by, so a chart point maps onto a
- * real query. Booleans report both sides (absent means false); enums report only the values that
- * were assessed, and each attribute's `assessed` against the type's entry in `totals` says how much
- * of the type the chart covers. A multi-value attribute counts an asset once per value it carries,
- * so its buckets deliberately sum to more than `assessed`.
- *
- * Reads `assets` through cachedFirestore, the same 10-minute whole-collection cache /assets and
- * /relativecategory already share, so this route adds no Firestore reads of its own.
- */
-router.get('/taxonomy', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600')
-
-  const collection = await cachedDb.collection('assets').get()
-  const now = Date.now() / 1000
-
-  const byType = () => ({ hdris: {}, textures: {}, models: {} })
-  const categories = byType()
-  const attributes = byType()
-  const totals = { hdris: 0, textures: 0, models: 0 }
-
-  // Every bucket accumulates a downloads/day sum, turned into a mean at the end.
-  const bump = (bucket, key, dpd) => {
-    const b = (bucket[key] = bucket[key] || { count: 0, sum: 0 })
-    b.count++
-    b.sum += dpd
-    return b
-  }
-
-  for (const [type, spec] of Object.entries(attributeSchema.types)) {
-    if (!attributes[type]) continue
-    for (const [key, def] of Object.entries(spec)) {
-      attributes[type][key] = { type: def.type, enum: def.enum || null, assessed: 0, values: {} }
-    }
-  }
-
-  collection.forEach((doc) => {
-    const asset = doc.data()
-    const type = TYPE_NAMES[asset.type]
-    if (!type || asset.staging) return
-    if (asset.date_published > now) return // not published yet
-    const days = (now - asset.date_published) / 86400
-    // A brand new asset's downloads/day is dominated by its launch spike, so it would land far off
-    // the top of the chart and drag its category's mean with it.
-    if (days < 1) return
-    // download_count only started counting on DOWNLOAD_TRACKING_START, so an older asset divided by
-    // its full age reads ~1.7x too low (2017 HDRIs averaged half the rate of 2021+ ones before this).
-    const dpd = (asset.download_count || 0) / ((now - Math.max(asset.date_published, DOWNLOAD_TRACKING_START)) / 86400)
-
-    totals[type]++
-
-    // Categories, rolled up the path. Validated against the taxonomy so a stale or hand-edited
-    // path cannot invent a chart point for a category that does not exist.
-    const path = typeof asset.category === 'string' ? asset.category : ''
-    if (path && resolveCategory(type, path) === path) {
-      const parts = path.split('/')
-      for (let i = 1; i <= parts.length; i++) {
-        const node = bump(categories[type], parts.slice(0, i).join('/'), dpd)
-        if (i === parts.length) node.direct = (node.direct || 0) + 1
-      }
-    }
-
-    // Attributes
-    const attrs = asset.attributes || {}
-    for (const [key, agg] of Object.entries(attributes[type])) {
-      const value = attrs[key]
-      if (agg.type === 'boolean') {
-        // Only ever stored when true, so absent means false - and false is a real answer here,
-        // which is the whole point of comparing the two sides.
-        bump(agg.values, value === true || value === 'true' ? 'true' : 'false', dpd)
-        agg.assessed++
-        continue
-      }
-      if (agg.type === 'string[]') {
-        const list = Array.isArray(value) ? value : value === undefined || value === null || value === '' ? [] : [value]
-        // Empty is not a value - it means the asset was never assessed for this attribute, the same
-        // as an absent enum. "No wear or dirt" is the `clean` tag, so it arrives as a real value.
-        if (!list.length) continue
-        for (const v of new Set(list.map((x) => String(x)))) bump(agg.values, v, dpd)
-        agg.assessed++
-        continue
-      }
-      // enum and enum|null: absent or null means never assessed, and there is nothing to plot.
-      if (value === undefined || value === null || value === '') continue
-      bump(agg.values, String(value), dpd)
-      agg.assessed++
-    }
-  })
-
-  const finalise = (bucket) => {
-    for (const b of Object.values(bucket)) {
-      b.avg = b.sum / b.count
-      delete b.sum
-    }
-  }
-  for (const type of TYPE_NAMES) {
-    finalise(categories[type])
-    for (const agg of Object.values(attributes[type])) finalise(agg.values)
-  }
-
-  res.status(200).json({ totals, categories, attributes })
-})
-
-router.get('/cfmonth', async (req, res) => {
-  // pageViews and bandwidth data for the previous month
-
-  const isoDay = (date) => date.toISOString().substring(0, 10) // YYYY-MM-DD
-
-  const now = Date.now()
-  const toDate = isoDay(new Date(now))
-  const fromDate = isoDay(subMonths(now, 1))
-
-  const zones = [process.env.CLOUDFLARE_ZONE, process.env.CLOUDFLARE_ZONE_ORG]
-
-  let pageViews = 0
-  let bytes = 0
-  let users = 0
-
-  for (const zone of zones) {
-    const query = `
-    {
-    viewer {
-      zones(filter: {zoneTag: "${zone}"}) {
-        httpRequests1dGroups(
-          orderBy: [date_ASC],
-          limit: 1000,
-          filter: {
-            date_geq: "${fromDate}",
-            date_lt: "${toDate}",
-          }
-        ) {
-          date: dimensions {
-            date
-          }
-          sum {
-            pageViews
-            bytes
-          }
-          uniq {
-            uniques
-          }
-        }
-      }
-    }
-  }
-  `
-    const result = await fetch('https://api.cloudflare.com/client/v4/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AUTH-EMAIL': process.env.CLOUDFLARE_API_EMAIL,
-        authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
-      },
-      body: JSON.stringify({ query: query }),
-    }).then((r) => r.json())
-
-    for (const day of result.data.viewer.zones[0].httpRequests1dGroups) {
-      pageViews += day.sum.pageViews
-      bytes += day.sum.bytes
-      users += day.uniq.uniques
-    }
-  }
-
-  res.status(200).json({
-    pageviews: pageViews,
-    terabytes: bytes / 1000 / 1000 / 1000 / 1000,
-    users: users,
-  })
-})
-
-router.get('/cfdaily', async (req, res) => {
-  const date_from = req.query.date_from
-  const date_to = req.query.date_to
-
-  let collectionRef = db.collection('cloudflare_analytics')
-
-  collectionRef = date_from ? collectionRef.where('__name__', '>=', date_from) : collectionRef
-  collectionRef = date_to ? collectionRef.where('__name__', '<=', date_to) : collectionRef
-
-  const collection = await collectionRef.get()
-  let docs = {}
-  collection.forEach((doc) => {
-    const data = doc.data()
-    for (const site of Object.values(data)) {
-      if (!site.data) continue
-      const d = site.data.viewer.zones[0].httpRequests1dGroups[0]
-      if (!d) continue
-      try {
-        delete d.sum.countryMap
-        delete d.sum.responseStatusMap
-        delete d.sum.ipClassMap
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    docs[doc.id] = data
-  })
-
-  res.status(200).json(docs)
-})
 
 /**
  * Asset downloads per day as Cloudflare sees them, by asset type and by source, beside dlTrack's
@@ -510,30 +139,6 @@ const computeCfDownloads = async () => {
 
   return days
 }
-
-router.get('/cfdownloads', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600')
-
-  if (cfDownloadsCache && Date.now() - cfDownloadsCache.time < CF_DOWNLOADS_TTL) {
-    return res.status(200).json(cfDownloadsCache.data)
-  }
-
-  if (!cfDownloadsPending) {
-    cfDownloadsPending = computeCfDownloads().finally(() => {
-      cfDownloadsPending = null
-    })
-  }
-
-  try {
-    const data = await cfDownloadsPending
-    cfDownloadsCache = { data, time: Date.now() }
-    res.status(200).json(data)
-  } catch (e) {
-    console.error('[STATS] cfdownloads failed:', e)
-    res.set('Cache-Control', 'no-store')
-    res.status(500).send('Failed to fetch Cloudflare download stats')
-  }
-})
 
 /**
  * What our audience actually makes things with, from the `software` field on gallery submissions.
@@ -715,31 +320,6 @@ const computeSoftware = async () => {
   }
 }
 
-router.get('/software', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600')
-
-  if (softwareCache && Date.now() - softwareCache.time < SOFTWARE_TTL) {
-    return res.status(200).json(softwareCache.data)
-  }
-
-  // Sweeping the whole `gallery` collection is ~1.9k document reads, and the answer is identical for
-  // every caller, so concurrent misses share one computation rather than each starting their own.
-  if (!softwarePending) {
-    softwarePending = computeSoftware().finally(() => {
-      softwarePending = null
-    })
-  }
-
-  try {
-    const data = await softwarePending
-    softwareCache = { data, time: Date.now() }
-    res.status(200).json(data)
-  } catch (e) {
-    console.error(e)
-    res.status(500).send('Failed to calculate software stats')
-  }
-})
-
 // Searches are rolled up nightly by admin's /api/cron/searchGapStats and served from one document.
 //
 // This used to sweep the last 50,000 `searches` documents on every request, with no Cache-Control
@@ -759,30 +339,6 @@ router.get('/software', async (req, res) => {
 // why both are needed and why an average of the two is not a third signal.
 const SEARCHES_TTL = 30 * 60 * 1000
 let searchesCache = null
-
-router.get('/searches', async (req, res) => {
-  if (searchesCache && Date.now() - searchesCache.time < SEARCHES_TTL) {
-    res.set('Cache-Control', 'public, max-age=600, s-maxage=3600')
-    return res.status(200).json(searchesCache.data)
-  }
-
-  try {
-    const doc = await db.collection('search_stats').doc('rollup').get()
-    if (!doc.exists) {
-      // Before the cron's first run, or if it has been failing. An explicit miss the stats page can
-      // skip beats a chart drawn from the half of the data that is still available.
-      res.set('Cache-Control', 'no-store')
-      return res.status(503).send('Search stats have not been rolled up yet')
-    }
-    const data = doc.data()
-    searchesCache = { data, time: Date.now() }
-    res.set('Cache-Control', 'public, max-age=600, s-maxage=3600')
-    res.status(200).json(data)
-  } catch (e) {
-    console.error('[STATS] searches rollup failed:', e)
-    res.status(500).send('Failed to fetch search stats')
-  }
-})
 
 // /post_download takes no parameters and hands the same few numbers to every caller, yet computing
 // it costs well over a thousand document reads. polyhaven.com asks for it once per asset page, so a
@@ -862,49 +418,491 @@ const computePostDownload = async () => {
   return returnData
 }
 
-router.get('/post_download', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600')
+module.exports = async function (fastify) {
+  fastify.get('/downloads', async (req, reply) => {
+    const slug = req.query.slug
+    const type = req.query.type
+    let date_from = req.query.date_from
+    let date_to = req.query.date_to
 
-  if (postDownloadCache && Date.now() - postDownloadCache.time < POST_DOWNLOAD_TTL) {
-    res.status(200).json(postDownloadCache.data)
-    return
-  }
+    const badRequest = (message) => reply.code(400).send({ error: '400 Bad Request', message })
 
-  if (!postDownloadPending) {
-    postDownloadPending = computePostDownload().finally(() => {
-      postDownloadPending = null
-    })
-  }
-
-  try {
-    const data = await postDownloadPending
-    postDownloadCache = { data, time: Date.now() }
-    res.status(200).json(data)
-  } catch (e) {
-    console.error(e)
-    res.status(500).send('Failed to calculate post-download stats')
-  }
-})
-
-router.get('/patron_count', async (req, res) => {
-  const collection = await db.collection('patron_counts').get()
-  const summary = {}
-
-  collection.forEach((doc) => {
-    const month = doc.id
-    const monthData = doc.data()
-    const monthSummary = {}
-
-    for (const day in monthData) {
-      const dayData = monthData[day]
-      const values = Object.values(dayData)
-      monthSummary[day] = values.length ? Math.max(...values) : 0
+    if (!DOWNLOAD_TYPES.includes(type)) {
+      return badRequest(`type is required, and must be one of: ${DOWNLOAD_TYPES.join(', ')}`)
+    }
+    // type=ASSET is 2.6M of the 2.9M documents, so it is never served unfiltered.
+    if (type === 'ASSET' && !slug) {
+      return badRequest('slug is required when type=ASSET')
+    }
+    for (const [name, value] of [
+      ['date_from', date_from],
+      ['date_to', date_to],
+    ]) {
+      if (value !== undefined && !isDay(value)) {
+        return badRequest(`${name} must be a YYYY-MM-DD date`)
+      }
+    }
+    if (date_from && date_to && date_from > date_to) {
+      return badRequest('date_from must not be after date_to')
+    }
+    // A slug pins the query to one series (~1 document/day), so only an unpinned
+    // query over one of the wider types needs a ceiling on its date range.
+    if (!slug && !UNCAPPED_DOWNLOAD_TYPES.includes(type)) {
+      // Fill in whichever bound is missing first, so that supplying only one of
+      // them can't sidestep the span check below.
+      date_to = date_to || new Date().toISOString().split('T')[0]
+      date_from = date_from || dayOffset(date_to, -MAX_RANGE_DAYS)
+      if (date_from < dayOffset(date_to, -MAX_RANGE_DAYS)) {
+        return badRequest(
+          `date range must be at most ${MAX_RANGE_DAYS} days for type=${type} without a slug. ` +
+            `Request a narrower range, or pass a slug.`
+        )
+      }
     }
 
-    summary[month] = monthSummary
+    let collectionRef = db.collection('downloads_daily')
+
+    collectionRef = slug ? collectionRef.where('slug', '==', slug) : collectionRef
+    collectionRef = type ? collectionRef.where('type', '==', type) : collectionRef
+    collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
+    collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
+
+    const collection = await collectionRef.get()
+    let docs = []
+    collection.forEach((doc) => {
+      docs.push(doc.data())
+    })
+
+    return reply.code(200).send(docs)
   })
 
-  res.status(200).json(summary)
-})
+  fastify.get('/relativetype', async (req, reply) => {
+    const date_from = req.query.date_from
+    const date_to = req.query.date_to
 
-module.exports = router
+    let collectionRef = db.collection('downloads_daily')
+
+    const types = {
+      T0: 'hdris',
+      T1: 'textures',
+      T2: 'models',
+    }
+
+    collectionRef = collectionRef.where('type', '==', 'TYPE')
+    collectionRef = collectionRef.where('slug', 'in', Object.keys(types))
+    collectionRef = date_from ? collectionRef.where('day', '>=', date_from) : collectionRef
+    collectionRef = date_to ? collectionRef.where('day', '<=', date_to) : collectionRef
+
+    const collection = await collectionRef.get()
+    let stats = {}
+    collection.forEach((doc) => {
+      stats[doc.id] = doc.data()
+    })
+
+    const assetsPublished = await assetsPublishedInDateRange(date_from, date_to)
+
+    let returnData = {}
+    for (const [day, nums] of Object.entries(assetsPublished)) {
+      let downloadsPerAsset = {}
+      let total = 0
+      for (const [k, type] of Object.entries(types)) {
+        if (!stats[`${day}_${k}`]) continue
+        const downloadsPer = stats[`${day}_${k}`].unique / nums[type]
+        downloadsPerAsset[type] = downloadsPer
+        total += downloadsPer
+      }
+      let relative = {}
+      for (const [type, value] of Object.entries(downloadsPerAsset)) {
+        relative[type] = (value / total) * 100
+      }
+      if (Object.keys(relative).length) {
+        returnData[day] = relative
+      }
+    }
+
+    return reply.code(200).send(returnData)
+  })
+
+  fastify.get('/relativecategory', async (req, reply) => {
+    let collectionRef = cachedDb.collection('assets')
+
+    const collection = await collectionRef.get()
+    let assets = {}
+    collection.forEach((doc) => {
+      assets[doc.id] = doc.data()
+    })
+
+    const types = ['hdris', 'textures', 'models']
+
+    const returnData = {
+      hdris: {},
+      textures: {},
+      models: {},
+    }
+
+    // First store all downloads/day per asset with each cat
+    for (const asset of Object.values(assets)) {
+      for (const cat of asset.categories) {
+        const t = types[asset.type]
+        const secondsPublished = Date.now() / 1000 - asset.date_published
+        const daysPublished = secondsPublished / 24 / 60 / 60
+        if (daysPublished < 1) continue
+        const downloadsPerDay = asset.download_count / daysPublished
+        if (!Object.keys(returnData[t]).includes(cat)) {
+          returnData[t][cat] = []
+        }
+        returnData[t][cat].push(downloadsPerDay)
+      }
+    }
+
+    // Filter out categories with less than 3 assets
+    for (const [t, typeData] of Object.entries(returnData)) {
+      for (const [c, data] of Object.entries(typeData)) {
+        if (data.length < 3) {
+          delete returnData[t][c]
+        }
+      }
+    }
+
+    // Then average the downloads/day for each cat
+    const average = (array) => array.reduce((a, b) => a + b) / array.length
+    for (const [t, typeData] of Object.entries(returnData)) {
+      for (const [c, data] of Object.entries(typeData)) {
+        returnData[t][c] = { count: data.length, avg: average(data) }
+      }
+    }
+
+    return reply.code(200).send(returnData)
+  })
+
+  /**
+   * Popularity of the single-path taxonomy: aggregates per category node and per attribute value.
+   *
+   * The successor to /relativecategory, which is keyed by the legacy multi-value `categories` array.
+   * Both are served in parallel until nothing reads the old one any more.
+   *
+   * Category counts are INCLUSIVE, matching how the library browses: an asset in
+   * "Nature/Trees/Oaks" counts towards "Nature", "Nature/Trees" and "Nature/Trees/Oaks". `direct` is
+   * how many sit exactly on that node, so the pair shows where in a branch the assets actually live.
+   * Only nodes with at least one asset appear - an empty category has no popularity to report.
+   *
+   * `avg` is the mean of each asset's lifetime downloads per day, the old chart's measure except that
+   * an asset's days are counted from DOWNLOAD_TRACKING_START at the earliest.
+   *
+   * Attribute buckets mirror what the library can actually filter by, so a chart point maps onto a
+   * real query. Booleans report both sides (absent means false); enums report only the values that
+   * were assessed, and each attribute's `assessed` against the type's entry in `totals` says how much
+   * of the type the chart covers. A multi-value attribute counts an asset once per value it carries,
+   * so its buckets deliberately sum to more than `assessed`.
+   *
+   * Reads `assets` through cachedFirestore, the same 10-minute whole-collection cache /assets and
+   * /relativecategory already share, so this route adds no Firestore reads of its own.
+   */
+  fastify.get('/taxonomy', async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=3600')
+
+    const collection = await cachedDb.collection('assets').get()
+    const now = Date.now() / 1000
+
+    const byType = () => ({ hdris: {}, textures: {}, models: {} })
+    const categories = byType()
+    const attributes = byType()
+    const totals = { hdris: 0, textures: 0, models: 0 }
+
+    // Every bucket accumulates a downloads/day sum, turned into a mean at the end.
+    const bump = (bucket, key, dpd) => {
+      const b = (bucket[key] = bucket[key] || { count: 0, sum: 0 })
+      b.count++
+      b.sum += dpd
+      return b
+    }
+
+    for (const [type, spec] of Object.entries(attributeSchema.types)) {
+      if (!attributes[type]) continue
+      for (const [key, def] of Object.entries(spec)) {
+        attributes[type][key] = { type: def.type, enum: def.enum || null, assessed: 0, values: {} }
+      }
+    }
+
+    collection.forEach((doc) => {
+      const asset = doc.data()
+      const type = TYPE_NAMES[asset.type]
+      if (!type || asset.staging) return
+      if (asset.date_published > now) return // not published yet
+      const days = (now - asset.date_published) / 86400
+      // A brand new asset's downloads/day is dominated by its launch spike, so it would land far off
+      // the top of the chart and drag its category's mean with it.
+      if (days < 1) return
+      // download_count only started counting on DOWNLOAD_TRACKING_START, so an older asset divided by
+      // its full age reads ~1.7x too low (2017 HDRIs averaged half the rate of 2021+ ones before this).
+      const dpd = (asset.download_count || 0) / ((now - Math.max(asset.date_published, DOWNLOAD_TRACKING_START)) / 86400)
+
+      totals[type]++
+
+      // Categories, rolled up the path. Validated against the taxonomy so a stale or hand-edited
+      // path cannot invent a chart point for a category that does not exist.
+      const path = typeof asset.category === 'string' ? asset.category : ''
+      if (path && resolveCategory(type, path) === path) {
+        const parts = path.split('/')
+        for (let i = 1; i <= parts.length; i++) {
+          const node = bump(categories[type], parts.slice(0, i).join('/'), dpd)
+          if (i === parts.length) node.direct = (node.direct || 0) + 1
+        }
+      }
+
+      // Attributes
+      const attrs = asset.attributes || {}
+      for (const [key, agg] of Object.entries(attributes[type])) {
+        const value = attrs[key]
+        if (agg.type === 'boolean') {
+          // Only ever stored when true, so absent means false - and false is a real answer here,
+          // which is the whole point of comparing the two sides.
+          bump(agg.values, value === true || value === 'true' ? 'true' : 'false', dpd)
+          agg.assessed++
+          continue
+        }
+        if (agg.type === 'string[]') {
+          const list = Array.isArray(value) ? value : value === undefined || value === null || value === '' ? [] : [value]
+          // Empty is not a value - it means the asset was never assessed for this attribute, the same
+          // as an absent enum. "No wear or dirt" is the `clean` tag, so it arrives as a real value.
+          if (!list.length) continue
+          for (const v of new Set(list.map((x) => String(x)))) bump(agg.values, v, dpd)
+          agg.assessed++
+          continue
+        }
+        // enum and enum|null: absent or null means never assessed, and there is nothing to plot.
+        if (value === undefined || value === null || value === '') continue
+        bump(agg.values, String(value), dpd)
+        agg.assessed++
+      }
+    })
+
+    const finalise = (bucket) => {
+      for (const b of Object.values(bucket)) {
+        b.avg = b.sum / b.count
+        delete b.sum
+      }
+    }
+    for (const type of TYPE_NAMES) {
+      finalise(categories[type])
+      for (const agg of Object.values(attributes[type])) finalise(agg.values)
+    }
+
+    return reply.code(200).send({ totals, categories, attributes })
+  })
+
+  fastify.get('/cfmonth', async (req, reply) => {
+    // pageViews and bandwidth data for the previous month
+
+    const isoDay = (date) => date.toISOString().substring(0, 10) // YYYY-MM-DD
+
+    const now = Date.now()
+    const toDate = isoDay(new Date(now))
+    const fromDate = isoDay(subMonths(now, 1))
+
+    const zones = [process.env.CLOUDFLARE_ZONE, process.env.CLOUDFLARE_ZONE_ORG]
+
+    let pageViews = 0
+    let bytes = 0
+    let users = 0
+
+    for (const zone of zones) {
+      const query = `
+      {
+      viewer {
+        zones(filter: {zoneTag: "${zone}"}) {
+          httpRequests1dGroups(
+            orderBy: [date_ASC],
+            limit: 1000,
+            filter: {
+              date_geq: "${fromDate}",
+              date_lt: "${toDate}",
+            }
+          ) {
+            date: dimensions {
+              date
+            }
+            sum {
+              pageViews
+              bytes
+            }
+            uniq {
+              uniques
+            }
+          }
+        }
+      }
+    }
+    `
+      const result = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AUTH-EMAIL': process.env.CLOUDFLARE_API_EMAIL,
+          authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        },
+        body: JSON.stringify({ query: query }),
+      }).then((r) => r.json())
+
+      for (const day of result.data.viewer.zones[0].httpRequests1dGroups) {
+        pageViews += day.sum.pageViews
+        bytes += day.sum.bytes
+        users += day.uniq.uniques
+      }
+    }
+
+    return reply.code(200).send({
+      pageviews: pageViews,
+      terabytes: bytes / 1000 / 1000 / 1000 / 1000,
+      users: users,
+    })
+  })
+
+  fastify.get('/cfdaily', async (req, reply) => {
+    const date_from = req.query.date_from
+    const date_to = req.query.date_to
+
+    let collectionRef = db.collection('cloudflare_analytics')
+
+    collectionRef = date_from ? collectionRef.where('__name__', '>=', date_from) : collectionRef
+    collectionRef = date_to ? collectionRef.where('__name__', '<=', date_to) : collectionRef
+
+    const collection = await collectionRef.get()
+    let docs = {}
+    collection.forEach((doc) => {
+      const data = doc.data()
+      for (const site of Object.values(data)) {
+        if (!site.data) continue
+        const d = site.data.viewer.zones[0].httpRequests1dGroups[0]
+        if (!d) continue
+        try {
+          delete d.sum.countryMap
+          delete d.sum.responseStatusMap
+          delete d.sum.ipClassMap
+        } catch (err) {
+          console.error(err)
+        }
+      }
+      docs[doc.id] = data
+    })
+
+    return reply.code(200).send(docs)
+  })
+
+  fastify.get('/cfdownloads', async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=3600')
+
+    if (cfDownloadsCache && Date.now() - cfDownloadsCache.time < CF_DOWNLOADS_TTL) {
+      return reply.code(200).send(cfDownloadsCache.data)
+    }
+
+    if (!cfDownloadsPending) {
+      cfDownloadsPending = computeCfDownloads().finally(() => {
+        cfDownloadsPending = null
+      })
+    }
+
+    try {
+      const data = await cfDownloadsPending
+      cfDownloadsCache = { data, time: Date.now() }
+      return reply.code(200).send(data)
+    } catch (e) {
+      console.error('[STATS] cfdownloads failed:', e)
+      reply.header('Cache-Control', 'no-store')
+      return sendText(reply, 500, 'Failed to fetch Cloudflare download stats')
+    }
+  })
+
+  fastify.get('/software', async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=3600')
+
+    if (softwareCache && Date.now() - softwareCache.time < SOFTWARE_TTL) {
+      return reply.code(200).send(softwareCache.data)
+    }
+
+    // Sweeping the whole `gallery` collection is ~1.9k document reads, and the answer is identical for
+    // every caller, so concurrent misses share one computation rather than each starting their own.
+    if (!softwarePending) {
+      softwarePending = computeSoftware().finally(() => {
+        softwarePending = null
+      })
+    }
+
+    try {
+      const data = await softwarePending
+      softwareCache = { data, time: Date.now() }
+      return reply.code(200).send(data)
+    } catch (e) {
+      console.error(e)
+      return sendText(reply, 500, 'Failed to calculate software stats')
+    }
+  })
+
+  fastify.get('/searches', async (req, reply) => {
+    if (searchesCache && Date.now() - searchesCache.time < SEARCHES_TTL) {
+      reply.header('Cache-Control', 'public, max-age=600, s-maxage=3600')
+      return reply.code(200).send(searchesCache.data)
+    }
+
+    try {
+      const doc = await db.collection('search_stats').doc('rollup').get()
+      if (!doc.exists) {
+        // Before the cron's first run, or if it has been failing. An explicit miss the stats page can
+        // skip beats a chart drawn from the half of the data that is still available.
+        reply.header('Cache-Control', 'no-store')
+        return sendText(reply, 503, 'Search stats have not been rolled up yet')
+      }
+      const data = doc.data()
+      searchesCache = { data, time: Date.now() }
+      reply.header('Cache-Control', 'public, max-age=600, s-maxage=3600')
+      return reply.code(200).send(data)
+    } catch (e) {
+      console.error('[STATS] searches rollup failed:', e)
+      return sendText(reply, 500, 'Failed to fetch search stats')
+    }
+  })
+
+  fastify.get('/post_download', async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=3600')
+
+    if (postDownloadCache && Date.now() - postDownloadCache.time < POST_DOWNLOAD_TTL) {
+      return reply.code(200).send(postDownloadCache.data)
+    }
+
+    if (!postDownloadPending) {
+      postDownloadPending = computePostDownload().finally(() => {
+        postDownloadPending = null
+      })
+    }
+
+    try {
+      const data = await postDownloadPending
+      postDownloadCache = { data, time: Date.now() }
+      return reply.code(200).send(data)
+    } catch (e) {
+      console.error(e)
+      return sendText(reply, 500, 'Failed to calculate post-download stats')
+    }
+  })
+
+  fastify.get('/patron_count', async (req, reply) => {
+    const collection = await db.collection('patron_counts').get()
+    const summary = {}
+
+    collection.forEach((doc) => {
+      const month = doc.id
+      const monthData = doc.data()
+      const monthSummary = {}
+
+      for (const day in monthData) {
+        const dayData = monthData[day]
+        const values = Object.values(dayData)
+        monthSummary[day] = values.length ? Math.max(...values) : 0
+      }
+
+      summary[month] = monthSummary
+    })
+
+    return reply.code(200).send(summary)
+  })
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "name": "no authorization",
+    "method": "POST",
+    "path": "/debug/on",
+    "headers": {}
+  },
+  {
+    "name": "wrong key",
+    "method": "POST",
+    "path": "/debug/on",
+    "headers": {
+      "authorization": "Bearer nope"
+    }
+  },
+  {
+    "name": "key without Bearer prefix",
+    "method": "POST",
+    "path": "/debug/on",
+    "headers": {
+      "authorization": "{{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "empty Bearer",
+    "method": "POST",
+    "path": "/debug/on",
+    "headers": {
+      "authorization": "Bearer "
+    }
+  },
+  {
+    "name": "invalid state",
+    "method": "POST",
+    "path": "/debug/maybe",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "state on",
+    "method": "POST",
+    "path": "/debug/on",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "state off",
+    "method": "POST",
+    "path": "/debug/off",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "state OFF upper case",
+    "method": "POST",
+    "path": "/debug/OFF",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "trailing slash",
+    "method": "POST",
+    "path": "/debug/off/",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "no state segment",
+    "method": "POST",
+    "path": "/debug",
+    "headers": {
+      "authorization": "Bearer {{env:DL_KEY}}"
+    }
+  },
+  {
+    "name": "GET debug/on",
+    "method": "GET",
+    "path": "/debug/on",
+    "headers": {}
+  }
+]

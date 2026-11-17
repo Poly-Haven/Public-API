@@ -1,6 +1,3 @@
-const express = require('express')
-const router = express.Router()
-
 const extensions = require('../extensions.json')
 
 /**
@@ -21,10 +18,10 @@ const extensions = require('../extensions.json')
  * Note this is unrelated to /v2/extensions, which serves the paid add-on.
  */
 
-// GET /extensions  ->  { version, blocklist, data: [...] }
-router.get('/', (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600')
-  res.status(200).json(extensions)
-})
-
-module.exports = router
+module.exports = async function (fastify) {
+  // GET /extensions  ->  { version, blocklist, data: [...] }
+  fastify.get('/', async (req, reply) => {
+    reply.header('Cache-Control', 'public, max-age=3600')
+    return reply.code(200).send(extensions)
+  })
+}
