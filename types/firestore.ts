@@ -104,7 +104,7 @@ export interface CorporateSponsor {
   logo?: string
 }
 
-/** gallery/{id}: a user-submitted render. Staff-only fields are stripped by routes/gallery.js. */
+/** gallery/{id}: a user-submitted render. Staff-only fields are stripped by routes/gallery.ts. */
 export interface GalleryRender {
   approval_pending?: boolean
   clicks: number
@@ -177,6 +177,9 @@ export interface ExtensionDoc {
 
 /** patron_counts/{YYYY-MM}: day of month -> tier -> active patrons. */
 export type PatronCountsDoc = Record<string, Record<string, number>>
+
+/** image_versions/site: path -> short content hash, for the images not attached to an asset. */
+export type ImageVersionsDoc = Record<string, string>
 
 /** cloudflare_analytics/{day}: site -> GraphQL response, only the fields /stats/cfdaily trims. */
 export interface CloudflareAnalyticsDoc {
