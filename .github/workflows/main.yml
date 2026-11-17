@@ -7,29 +7,52 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # keep equal to NODE_MAJOR in deploy/provision.sh
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  deploy:
+    needs: test
     runs-on: ubuntu-latest
 
+    # Auth: set the SSH_KEY secret (a private deploy key whose public half is in ~api/.ssh/authorized_keys on each
+    # node) and delete SSH_PASSWORD. With SSH_KEY unset the action falls back to the password. Both secrets are
+    # passed so either works; prefer the key. Required secrets: SSH_HOST_API_A, SSH_HOST_API_B, SSH_USERNAME, and
+    # one of SSH_KEY / SSH_PASSWORD. They must exist BEFORE this workflow is merged to master (see deploy/README.md).
+    #
+    # Nodes go one after the other. script_stop (plus set -e in the script) aborts on the first failing command, and
+    # a failed step skips the next node, so a bad deploy never takes both nodes down.
     steps:
-      - name: Deploy API3
-        uses: appleboy/ssh-action@v0.1.2
+      - name: Deploy API A
+        uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{secrets.SSH_HOST_API3}}
+          host: ${{ secrets.SSH_HOST_API_A }}
           username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
           password: ${{ secrets.SSH_PASSWORD }}
           script_stop: true
           script: |
+            set -euo pipefail
             cd ~/api
-            git pull
+            git pull --ff-only
             bash deploy.sh
-      - name: Deploy API5
-        uses: appleboy/ssh-action@v0.1.2
+      - name: Deploy API B
+        uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{secrets.SSH_HOST_API5}}
+          host: ${{ secrets.SSH_HOST_API_B }}
           username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
           password: ${{ secrets.SSH_PASSWORD }}
           script_stop: true
           script: |
+            set -euo pipefail
             cd ~/api
-            git pull
+            git pull --ff-only
             bash deploy.sh
