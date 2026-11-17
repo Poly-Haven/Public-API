@@ -15,5 +15,12 @@ GUARD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/guard.js"
 mkdir -p "$(dirname "$LOG")"
 : > "$LOG"
 cd "$APPDIR"
+# The Fastify app starts from server.js; the Express baseline from app.js.
+ENTRY=server.js
+[ -f server.js ] || ENTRY=app.js
+# The Patreon hook posts to a Discord webhook. The Express baseline did that through hookcord/snekfetch, which opens
+# raw TLS sockets the guard cannot see (it would have reached the real channel), so both apps get a dead address
+# here instead of the real URL from .env (a variable already in the environment wins over .env).
+export DISCORD_PATRON_HOOK="${PARITY_DISCORD_HOOK:-http://127.0.0.1:9/parity-discord-hook}"
 # NODE_ENV=production so the app's dev-only behaviour (request logging, /tmp route) is off.
-NODE_ENV=production PORT="$PORT" PARITY_WRITE_LOG="$LOG" exec node -r "$GUARD" app.js
+NODE_ENV=production PORT="$PORT" PARITY_WRITE_LOG="$LOG" exec node -r "$GUARD" "$ENTRY"

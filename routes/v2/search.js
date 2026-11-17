@@ -1,8 +1,8 @@
-const { runSearch, SearchError } = require('../../utils/assetSearch')
-const { rateLimit } = require('../../utils/rateLimit')
-const validateKey = require('../../utils/validateKey')
+import { runSearch, SearchError } from '../../utils/assetSearch.ts'
+import { rateLimit } from '../../utils/rateLimit.ts'
+import validateKey from '../../utils/validateKey.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   /**
    * Key-gated semantic search, over the same index as /search.
    *

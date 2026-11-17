@@ -1,11 +1,11 @@
-const firestore = require('../firestore')
-const cachedFirestore = require('../utils/cachedFirestore')
+import firestore from '../firestore.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
 
 const db = firestore()
 // Only the full assets sweep below goes through the shared cache.
 const cachedDb = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const colMilestones = await db.collection('milestones').get()
     let milestones = []

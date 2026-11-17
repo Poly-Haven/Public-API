@@ -14,10 +14,25 @@ const assert = require('assert')
 const { createRequire } = require('module')
 
 const cwdRequire = createRequire(path.join(process.cwd(), 'x.js'))
-cwdRequire('dotenv').config()
-const admin = cwdRequire('firebase-admin')
-const db = cwdRequire(path.join(process.cwd(), 'firestore.js'))()
-const FieldValue = admin.firestore.FieldValue
+// The baseline loads .env with dotenv; the TypeScript app dropped it for process.loadEnvFile (same rule: variables
+// already set win). Either way the app's own firestore module builds the client, so this proves the guard against
+// whatever Firestore classes that app really uses.
+try {
+  cwdRequire('dotenv').config()
+} catch (e) {
+  if (fs.existsSync('.env')) process.loadEnvFile('.env')
+}
+// FieldValue from the same @google-cloud/firestore the app's firebase-admin resolves (firebase-admin 14 has no
+// default namespace any more, and 11 reaches it as admin.firestore.FieldValue; this works for both).
+const { FieldValue } = cwdRequire(
+  cwdRequire.resolve('@google-cloud/firestore', { paths: [path.dirname(cwdRequire.resolve('firebase-admin'))] })
+)
+let db
+const loadDb = async () => {
+  const js = path.join(process.cwd(), 'firestore.js')
+  if (fs.existsSync(js)) return cwdRequire(js)()
+  return (await import(require('url').pathToFileURL(path.join(process.cwd(), 'firestore.ts')).href)).default()
+}
 const LOG = process.env.PARITY_WRITE_LOG
 
 const lines = () => (fs.existsSync(LOG) ? fs.readFileSync(LOG, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [])
@@ -29,6 +44,7 @@ const check = (name, fn) =>
   )
 
 async function main() {
+  db = await loadDb()
   fs.writeFileSync(LOG, '')
   const ref = db.collection('parity_guard_selftest').doc('x')
   const ref2 = db.collection('parity_guard_selftest').doc('y')
@@ -116,8 +132,11 @@ async function main() {
     assert.strictEqual(body, '{}')
     assert(log().some((l) => l.op === 'http' && l.url.includes('purge_cache')))
   })
-  await check('POST via node-fetch is recorded and answered', async () => {
-    const nf = cwdRequire('node-fetch')
+  await check('POST via node-fetch / global fetch is recorded and answered', async () => {
+    // The baseline used node-fetch; the TypeScript app uses global fetch. Prove whichever the app has.
+    // (Only if the app declares it: a transitive copy would be some other major.)
+    const declared = cwdRequire(path.join(process.cwd(), 'package.json')).dependencies || {}
+    const nf = declared['node-fetch'] ? cwdRequire('node-fetch') : fetch
     const r = await nf('https://api.patreon.com/x', { method: 'POST', body: 'x' })
     assert.strictEqual(r.status, 200)
     assert(log().some((l) => l.op === 'http' && l.url.includes('patreon.com')))

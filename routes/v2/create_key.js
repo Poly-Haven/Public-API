@@ -1,8 +1,8 @@
-const crypto = require('crypto')
+import '../../utils/env.ts'
+import crypto from 'crypto'
+import firestore from '../../firestore.ts'
 
-require('dotenv').config()
-
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.post('/', async (req, reply) => {
     const authHeader = req.headers.authorization
     if (!authHeader || authHeader !== `Bearer ${process.env.API_KEY_MASTER}`) {
@@ -12,20 +12,7 @@ module.exports = async function (fastify) {
       })
     }
 
-    const admin = require('firebase-admin')
-
-    if (!admin.apps.length) {
-      console.log('Firebase init')
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        }),
-      })
-    }
-
-    const db = admin.firestore()
+    const db = firestore()
 
     // Create new key
     let data = {

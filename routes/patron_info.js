@@ -1,16 +1,23 @@
-const crypto = require('crypto')
-const escape = require('escape-html')
+import '../utils/env.ts'
+import crypto from 'crypto'
+import escape from 'escape-html'
 
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
 const db = firestore()
 
-require('dotenv').config()
-
 // Written by the account page (via polyhaven.com's setPatronInfo), nextcloudInvite and sponsorAsset.
-const PATCHABLE_FIELDS = ['anon', 'display_name', 'auto_sponsor', 'notify_email', 'url', 'invite_sent', 'sponsor_tokens']
+const PATCHABLE_FIELDS = [
+  'anon',
+  'display_name',
+  'auto_sponsor',
+  'notify_email',
+  'url',
+  'invite_sent',
+  'sponsor_tokens',
+]
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.post('/', async (req, reply) => {
     if (!req.body.uuid || !req.body.key) {
       return reply.code(400).send({

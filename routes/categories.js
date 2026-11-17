@@ -1,13 +1,13 @@
-const escape = require('escape-html')
+import escape from 'escape-html'
 
-const cachedFirestore = require('../utils/cachedFirestore')
-const { sendText } = require('../utils/http')
+import cachedFirestore from '../utils/cachedFirestore.ts'
+import { sendText } from '../utils/http.ts'
 
-const asset_types = require('../asset_types.json')
+import asset_types from '../asset_types.json' with { type: 'json' }
 
 const db = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     return sendText(reply, 400, `Please format your request as /categories/[type]`)
   })

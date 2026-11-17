@@ -1,8 +1,8 @@
-const patreon_tiers = require('../constants/patreon_tiers.json')
+import patreon_tiers from '../constants/patreon_tiers.json' with { type: 'json' }
 
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const db = firestore()
 
@@ -38,7 +38,12 @@ module.exports = async function (fastify) {
 
     const totalFunds = sumCents / 100 + sumCorp
 
-    const colGoals = await db.collection('goals').where('target', '>', totalFunds).orderBy('target', 'asc').limit(1).get()
+    const colGoals = await db
+      .collection('goals')
+      .where('target', '>', totalFunds)
+      .orderBy('target', 'asc')
+      .limit(1)
+      .get()
     let goals = []
     colGoals.forEach((doc) => {
       goals.push(doc.data())

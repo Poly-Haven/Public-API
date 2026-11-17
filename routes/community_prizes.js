@@ -1,8 +1,8 @@
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
 const db = firestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const collection = await db.collection('community_prizes').get()
     let docs = {}

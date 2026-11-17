@@ -14,7 +14,7 @@ const fs = require('fs')
 const path = require('path')
 const http = require('http')
 const crypto = require('crypto')
-const { alignCounters, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, numericTolerance, nonDeterministicBody } = require('./normalize')
+const { isDiscordHookCall, alignCounters, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, numericTolerance, nonDeterministicBody } = require('./normalize')
 
 // ------------------------------------------------------------------ args
 const args = {}
@@ -366,8 +366,9 @@ async function runCase(c) {
   if (Math.max(a.ms, b.ms) > 2000) console.log('  slow case ' + c.__file + ' :: ' + c.name + ' old=' + (a.error || a.status) + '/' + a.ms + 'ms new=' + (b.error || b.status) + '/' + b.ms + 'ms')
   await sleep(c.timeoutMs ? 400 : 250) // un-awaited writes (dl_track, gallery_click, discord) land after the response
   const cmp = compareResponses({ url: c.path, path: c.path }, a, b)
-  const wa = logLines(args['old-log']).slice(oldBefore).map((l) => JSON.stringify(normalizeWrite(JSON.parse(l))))
-  const wb = logLines(args['new-log']).slice(newBefore).map((l) => JSON.stringify(normalizeWrite(JSON.parse(l))))
+  const recs = (file, from) => logLines(file).slice(from).map((l) => JSON.parse(l)).filter((r) => !isDiscordHookCall(r))
+  const wa = recs(args['old-log'], oldBefore).map((r) => JSON.stringify(normalizeWrite(r)))
+  const wb = recs(args['new-log'], newBefore).map((r) => JSON.stringify(normalizeWrite(r)))
   const sa = [...wa].sort()
   const sb = [...wb].sort()
   if (JSON.stringify(sa) !== JSON.stringify(sb)) {

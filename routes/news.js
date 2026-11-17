@@ -1,8 +1,8 @@
-const cachedFirestore = require('../utils/cachedFirestore')
+import cachedFirestore from '../utils/cachedFirestore.ts'
 
 const cachedDb = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const now = new Date().toISOString()
     const collection = await cachedDb.collection('news').get()

@@ -1,6 +1,7 @@
-require('dotenv').config()
+import '../utils/env.ts'
+import firestore from '../firestore.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.post('/', async (req, reply) => {
     if (req.body.key !== process.env.DL_KEY) {
       return reply.code(403).send({
@@ -13,20 +14,7 @@ module.exports = async function (fastify) {
     delete data.key
     data.timestamp = new Date().toISOString()
 
-    const admin = require('firebase-admin')
-
-    if (!admin.apps.length) {
-      console.log('Firebase init')
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        }),
-      })
-    }
-
-    const db = admin.firestore()
+    const db = firestore()
 
     await db.collection('searches').add(data)
 

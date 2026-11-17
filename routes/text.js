@@ -1,11 +1,11 @@
-const escape = require('escape-html')
+import escape from 'escape-html'
 
-const firestore = require('../firestore')
-const { sendText } = require('../utils/http')
+import firestore from '../firestore.ts'
+import { sendText } from '../utils/http.ts'
 
 const db = firestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     return sendText(reply, 400, `Please format your request as /text/[id]`)
   })

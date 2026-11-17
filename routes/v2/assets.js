@@ -1,13 +1,13 @@
-const asset_types = require('../../asset_types.json')
+import asset_types from '../../asset_types.json' with { type: 'json' }
 
-const cachedFirestore = require('../../utils/cachedFirestore')
-const { thumbnailUrl } = require('../../utils/imgUrl')
-const validateKey = require('../../utils/validateKey')
-const { applyFilters } = require('../../utils/assetFilters')
-const { publicVaultIds, maskVault } = require('../../utils/vaultStatus')
+import cachedFirestore from '../../utils/cachedFirestore.ts'
+import { thumbnailUrl } from '../../utils/imgUrl.ts'
+import validateKey from '../../utils/validateKey.ts'
+import { applyFilters } from '../../utils/assetFilters.ts'
+import { publicVaultIds, maskVault } from '../../utils/vaultStatus.ts'
 const db = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const asset_type = req.query.type || req.query.t
     const categories = req.query.categories || req.query.c

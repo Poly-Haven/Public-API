@@ -1,6 +1,7 @@
+import cachedFirestore from '../utils/cachedFirestore.ts'
+
 const simpleData = async (type) => {
   // Reads the whole assets collection filtered by type, so use the shared cache.
-  const cachedFirestore = require('../utils/cachedFirestore')
   const db = cachedFirestore()
 
   let collection = await db.collection('assets').where('type', '==', type).get()
@@ -13,17 +14,20 @@ const simpleData = async (type) => {
   return docs
 }
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/hdris', async (req, reply) => {
-    const data = require('../constants/legacy/hdris.json')
+    // Loaded on first use, as the require() it replaces was: these are large and rarely asked for.
+    const { default: data } = await import('../constants/legacy/hdris.json', { with: { type: 'json' } })
     return reply.code(200).send(data)
   })
   fastify.get('/textures', async (req, reply) => {
-    const data = require('../constants/legacy/textures.json')
+    // Loaded on first use, as the require() it replaces was: these are large and rarely asked for.
+    const { default: data } = await import('../constants/legacy/textures.json', { with: { type: 'json' } })
     return reply.code(200).send(data)
   })
   fastify.get('/models', async (req, reply) => {
-    const data = require('../constants/legacy/models.json')
+    // Loaded on first use, as the require() it replaces was: these are large and rarely asked for.
+    const { default: data } = await import('../constants/legacy/models.json', { with: { type: 'json' } })
     return reply.code(200).send(data)
   })
 

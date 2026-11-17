@@ -1,13 +1,13 @@
-const addDays = require('date-fns/addDays')
-const addMonths = require('date-fns/addMonths')
+import { addDays } from 'date-fns'
+import { addMonths } from 'date-fns'
 
-const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
-const firestore = require('../firestore')
-const { sendText } = require('../utils/http')
+import sortObjBySubObjProp from '../utils/sortObjBySubObjProp.ts'
+import firestore from '../firestore.ts'
+import { sendText } from '../utils/http.ts'
 
 const db = firestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', (req, reply) => {
     return sendText(reply, 400, `Please format your request as /popularity/[YYYY-MM]`)
   })
@@ -195,7 +195,7 @@ module.exports = async function (fastify) {
     popularities = sortObjBySubObjProp(popularities, 'popularity')
 
     // Get author.
-    ignore_authors = ['Dario Barresi', 'Rob Tuytel', 'Rico Cilliers']
+    const ignore_authors = ['Dario Barresi', 'Rob Tuytel', 'Rico Cilliers']
     for (const [slug, popInfo] of Object.entries(popularities)) {
       const info = textures[slug]
       for (const a of Object.keys(info.authors)) {

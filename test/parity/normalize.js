@@ -158,6 +158,15 @@ function normalizeText(pathname, text) {
 const TIME_KEYS = new Set(['timestamp', 'datetime', 'created_at', 'last_edited', 'received_at'])
 // why: all are set from the wall clock inside the handler (new Date().toISOString() / Date.now()).
 
+// The Discord webhook POST (/patreon_hook). why: the Express baseline sent it with hookcord/snekfetch, which opens raw
+// TLS sockets the guard cannot see, so that POST is neither recorded nor blocked on the old side. The Fastify app uses
+// global fetch, which the guard records (and fakes). serve.sh points both apps at a dead address, so nothing leaves the
+// machine either way; the call is dropped from the comparison rather than reported as a difference it is not. (The
+// new side's own records still show it, and the payload was compared against hookcord's on the wire separately.)
+function isDiscordHookCall(rec) {
+  return rec.op === 'http' && rec.method === 'POST' && /parity-discord-hook|discord(app)?\.com\/api\/webhooks\//.test(String(rec.url))
+}
+
 function normalizeWrite(rec) {
   const r = JSON.parse(JSON.stringify(rec))
   // why: log/, patreon_hooks/ document ids are Date.now() + 3 random digits; api_keys ids are 32 random bytes
@@ -182,4 +191,4 @@ function normalizeWrite(rec) {
   return r
 }
 
-module.exports = { alignCounters, numericTolerance, nonDeterministicBody, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, BODY_RULES, KEY_ORDER_RANDOM, TEXT_RULES }
+module.exports = { isDiscordHookCall, alignCounters, numericTolerance, nonDeterministicBody, normalizeBody, normalizeText, normalizeWrite, keyOrderRandom, BODY_RULES, KEY_ORDER_RANDOM, TEXT_RULES }

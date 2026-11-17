@@ -1,8 +1,7 @@
-const cachedFirestore = require('../utils/cachedFirestore')
+import '../utils/env.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
 
-require('dotenv').config()
-
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.post('/', async (req, reply) => {
     const key = req.body && req.body.key
 

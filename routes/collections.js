@@ -1,13 +1,13 @@
-const shuffleArray = require('../utils/shuffleArray')
+import shuffleArray from '../utils/shuffleArray.ts'
 
-const firestore = require('../firestore')
-const cachedFirestore = require('../utils/cachedFirestore')
-const { matchesCollection } = require('../utils/assetFilters')
+import firestore from '../firestore.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
+import { matchesCollection } from '../utils/assetFilters.ts'
 
 const db = firestore()
 const cachedDb = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const collection = await db.collection('collections').orderBy('date_published', 'desc').get()
     let docs = {}

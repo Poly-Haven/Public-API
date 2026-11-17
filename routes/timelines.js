@@ -1,9 +1,9 @@
-const firestore = require('../firestore')
-const { sendText } = require('../utils/http')
+import firestore from '../firestore.ts'
+import { sendText } from '../utils/http.ts'
 
 const db = firestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const collection = await db.collection('timelines').get()
     let docs = {}

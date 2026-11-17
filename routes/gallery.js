@@ -1,4 +1,4 @@
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
 const db = firestore()
 
@@ -29,7 +29,7 @@ const clampInt = (value, fallback, max) => {
   return Number.isFinite(n) && n > 0 ? Math.min(n, max) : fallback
 }
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const assetID = req.query.assetID
     const limit = req.query.limit

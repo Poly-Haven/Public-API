@@ -1,0 +1,54 @@
+import type { Asset } from '../types/firestore.ts'
+
+// Bunny serves every image on cdn.polyhaven.com with a ~1 year max-age, so a replaced image cannot
+// be corrected by a purge - not Bunny's, not Cloudflare's, and least of all in a browser that
+// already holds a copy. The only thing that reliably busts it is a different URL, so asset image
+// URLs carry a `v` param derived from the images' own content (assets/{slug}.img_version, written
+// by admin's compile pipeline).
+//
+// Bunny keys its cache on unknown query params and its Optimizer ignores them, so `v` sits happily
+// alongside width/height/quality without disturbing the resizing. `v` is deliberately not one of
+// the Optimizer's own params (width, height, quality, format, aspect_ratio, crop_gravity, blur,
+// sharpen, ...) so it is passed through untouched.
+
+type Params = Record<string, string | number | null | undefined>
+
+const CDN = 'https://cdn.polyhaven.com'
+const VERSION_PARAM = 'v'
+
+// Values are emitted verbatim rather than percent-encoded, so the output stays byte-identical to
+// the URLs these routes have always produced. Every param used here is numeric; anything needing
+// encoding does not belong in this helper.
+const buildQuery = (params: Params): string => {
+  const parts: string[] = []
+  for (const key in params) {
+    const value = params[key]
+    if (value === undefined || value === null || value === '') continue
+    parts.push(`${key}=${value}`)
+  }
+  return parts.join('&')
+}
+
+// `version` is optional throughout: an asset compiled before img_version existed simply gets the
+// unversioned URL it got before, which is exactly the old behaviour rather than a broken one.
+const cdnUrl = (path: string, params: Params, version?: string | null): string => {
+  const query = Object.assign({}, params)
+  if (version) {
+    query[VERSION_PARAM] = version
+  }
+  const qs = buildQuery(query)
+  return `${CDN}/${path}${qs ? '?' + qs : ''}`
+}
+
+// The one shape three routes (/info, /assets, /v2/assets) and the RSS feed all need. Takes the
+// whole asset document so callers cannot forget the version.
+//
+// `format=webp` is explicit because Cloudflare caches this URL for everyone. Left to itself, Bunny's
+// Optimizer picks WebP or PNG from each client's Accept header without sending a Vary, so whichever
+// client fetched a thumbnail first decided the format every later client got - a script asking
+// with `Accept: */*` pinned a PNG four times the size for all of them. Naming the format makes the
+// bytes a function of the URL alone.
+const thumbnailUrl = (slug: string, asset?: Pick<Asset, 'img_version'> | null): string =>
+  cdnUrl(`asset_img/thumbs/${slug}.png`, { width: 256, height: 256, format: 'webp' }, asset && asset.img_version)
+
+export { CDN, VERSION_PARAM, cdnUrl, thumbnailUrl }

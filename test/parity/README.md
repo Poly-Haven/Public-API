@@ -74,7 +74,7 @@ Pick two free ports (3000-3002 are often taken by dev servers: check `netstat -a
 
 5. Stop both servers. Find them with `netstat -ano | findstr LISTENING | findstr :310` and `taskkill /PID <pid> /F` (Windows) or `kill`.
 
-The new app can be started from any directory that has its own deps and `.env`; if its entry point is not `app.js`, edit `serve.sh`.
+The new app can be started from any directory that has its own deps and `.env`. `serve.sh` runs `server.js` when the directory has one (the TypeScript app) and `app.js` otherwise (the Express baseline). The harness itself is CommonJS (the repo is ESM, so `package.json` here says `"type": "commonjs"`); `guard.js` is preloaded into the app with `-r` and patches the `@google-cloud/firestore` module that `firebase-admin` resolves, which the ESM app shares with it. The startup line it prints names the modules it patched: check it when upgrading `firebase-admin`.
 
 ## Calibration
 

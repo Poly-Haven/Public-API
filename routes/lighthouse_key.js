@@ -1,3 +1,4 @@
+import '../utils/env.ts'
 // Project Lighthouse Steam keys for patrons. Design: info/steam_key_claims_plan.md (Poly Haven root).
 //
 // Called only by polyhaven.com's /api/lighthouseKey proxy, which signs the Patreon user ID from the
@@ -7,16 +8,13 @@
 // The same Firestore layout is used by admin.polyhaven.com (utils/steamKeys.ts, staff hand-outs and the
 // switches) and community.polyhaven.com (utils/steamKeys.ts, contributor claims). Keep them in step.
 
-const crypto = require('crypto')
-const admin = require('firebase-admin')
+import crypto from 'crypto'
+import { FieldValue } from 'firebase-admin/firestore'
 
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
 // Plain firestore(), never cachedFirestore: claim and patron reads must be fresh.
 const db = firestore()
-const FieldValue = admin.firestore.FieldValue
-
-require('dotenv').config()
 
 const PREFIX = process.env.STEAM_KEYS_COLLECTION_PREFIX || ''
 const COL = {
@@ -64,7 +62,7 @@ const getConfig = async () => {
   return config
 }
 
-// Same predicate as utils/validateKey.js
+// Same predicate as utils/validateKey.ts
 const isActivePatron = (p) => {
   if (p.status === 'active_patron') return true
   if (p.last_charge_status === 'Paid' && p.last_charge_date) {
@@ -185,7 +183,12 @@ const claim = async (ctx, email) => {
         claimed_at: FieldValue.serverTimestamp(),
       }
       if (testMode) record.test = true
-      t.update(keyRef, { status: 'claimed', pick: FieldValue.delete(), claim_id: ctx.claimId, claimed_at: FieldValue.serverTimestamp() })
+      t.update(keyRef, {
+        status: 'claimed',
+        pick: FieldValue.delete(),
+        claim_id: ctx.claimId,
+        claimed_at: FieldValue.serverTimestamp(),
+      })
       t.create(claimRef, record)
       // Test claims write no identity lock, so a tester can try both sides.
       if (!testMode) t.set(identityRef, { claim_id: ctx.claimId, created_at: FieldValue.serverTimestamp() })
@@ -220,7 +223,7 @@ const handle = (fn) => async (req, reply) => {
   }
 }
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   // Unauthenticated: lets the page decide on its 404 before anyone logs in.
   fastify.post('/open', async (req, reply) => {
     reply.header('Cache-Control', 'no-store')

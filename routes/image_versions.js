@@ -1,5 +1,5 @@
-const cachedFirestore = require('../utils/cachedFirestore')
-const { publicVaultIds } = require('../utils/vaultStatus')
+import cachedFirestore from '../utils/cachedFirestore.ts'
+import { publicVaultIds } from '../utils/vaultStatus.ts'
 
 // Read through the shared cache so this endpoint costs one Firestore read per node per 10 minutes
 // rather than one per request - per-read pricing is a real constraint here, and admin's
@@ -15,7 +15,7 @@ const db = cachedFirestore()
 // checksums via its rescan.
 const DOC_ID = 'site'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const doc = await db.collection('image_versions').doc(DOC_ID).get()
 

@@ -1,8 +1,8 @@
-const cachedFirestore = require('../../utils/cachedFirestore')
-const validateKey = require('../../utils/validateKey')
+import cachedFirestore from '../../utils/cachedFirestore.ts'
+import validateKey from '../../utils/validateKey.ts'
 const db = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     // Validate API key
     const keyValidation = await validateKey(req)

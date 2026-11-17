@@ -1,8 +1,8 @@
-const isBadWord = require('../utils/isBadWord')
+import isBadWord from '../utils/isBadWord.ts'
 
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const db = firestore()
     const collection = await db.collection('patrons').orderBy('joined', 'desc').limit(100).get()

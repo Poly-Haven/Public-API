@@ -1,9 +1,9 @@
-const escape = require('escape-html')
+import escape from 'escape-html'
 
-const taxonomy = require('../taxonomy.json')
-const attributes = require('../attributes.json')
+import taxonomy from '../taxonomy.json' with { type: 'json' }
+import attributes from '../attributes.json' with { type: 'json' }
 
-const asset_types = require('../asset_types.json')
+import asset_types from '../asset_types.json' with { type: 'json' }
 
 /**
  * The single-path category taxonomy: one tree per asset type, each node carrying a stable `id`
@@ -16,7 +16,7 @@ const asset_types = require('../asset_types.json')
 
 const typeNames = Object.keys(asset_types).filter((t) => t !== 'all')
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   // GET /taxonomy  ->  { types: {hdris: [...], textures: [...], models: [...]}, attributes: {...} }
   fastify.get('/', async (req, reply) => {
     return reply.code(200).send({

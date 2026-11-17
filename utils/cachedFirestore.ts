@@ -1,0 +1,409 @@
+import type { DocumentData } from 'firebase-admin/firestore'
+import firestore from '../firestore.ts'
+
+// What the cache hands back, shaped like the slice of Firestore's QuerySnapshot / DocumentSnapshot the
+// routes use. `T` is the document type the caller expects: nothing validates it, it is a cast at the
+// Firestore boundary like `doc.data() as T`.
+export interface CachedDoc<T> {
+  id: string
+  data(): T
+}
+export interface CachedSnapshot<T> {
+  forEach(callback: (doc: CachedDoc<T>) => void): void
+}
+export interface CachedDocSnapshot<T> {
+  id: string
+  exists: boolean
+  /** null when the document does not exist (the real client answers undefined). */
+  data(): T | null
+}
+/** A collection narrowed by where() clauses (== and array-contains only), applied in memory. */
+export interface CachedQuery<T> {
+  get(): Promise<CachedSnapshot<T>>
+  where(field: string, operator: string, value: unknown): CachedQuery<T>
+}
+export interface CachedCollection<T> extends CachedQuery<T> {
+  /** Not implemented: throws. Sort in memory after get(). */
+  orderBy(): never
+  /** Not implemented: throws. Slice in memory after get(). */
+  limit(): never
+  doc(docId: string): { get(): Promise<CachedDocSnapshot<T>> }
+}
+export interface CachedDb {
+  collection<T extends object = DocumentData>(collectionName: string): CachedCollection<T>
+}
+
+type Docs = Record<string, DocumentData>
+interface CacheEntry {
+  data: Docs
+  timestamp: number
+}
+
+// Cache for collections
+const collectionsCache = new Map<string, CacheEntry>()
+const pendingRequests = new Map<string, Promise<Docs>>() // Track ongoing requests to prevent duplicate fetches
+const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
+// Bumped by every clearCache(). A collection read that started before a flush may predate the
+// publish that triggered it, so comparing this before and after the read tells us whether the
+// result is safe to keep. Without it, an in-flight fetch resolving just after a flush writes its
+// pre-publish snapshot back with a fresh timestamp - re-arming a full TTL of staleness at exactly
+// the moment the flush was supposed to guarantee freshness.
+let cacheGeneration = 0
+// const CACHE_TTL = 10 * 1000 // 10 seconds DEBUG
+const MAX_CACHED_COLLECTIONS = 10 // Limit number of cached collections
+
+function getCacheStats() {
+  let cachedDocuments = 0
+
+  for (const cacheEntry of collectionsCache.values()) {
+    cachedDocuments += Object.keys(cacheEntry.data).length
+  }
+
+  return {
+    collections: collectionsCache.size,
+    pendingRequests: pendingRequests.size,
+    cachedDocuments,
+  }
+}
+
+// Anything holding derived state built from a cached collection needs to know when that state is
+// void. admin fires /clear_cache on every publish, before the Cloudflare purge, so without this the
+// search index would keep serving pre-publish vectors for its whole TTL - the exact stale-refill
+// failure the ordering in admin's purgeAssetCache.ts exists to avoid.
+const clearListeners = new Set<() => void>()
+
+function onClear(fn: () => void) {
+  clearListeners.add(fn)
+  return () => clearListeners.delete(fn)
+}
+
+function clearCache() {
+  const before = getCacheStats()
+  // Before clearing, so any read already in flight sees the new value when it resolves.
+  cacheGeneration++
+  collectionsCache.clear()
+  for (const fn of clearListeners) {
+    // A listener that throws must not stop the flush, or one bad subscriber pins every cache.
+    try {
+      fn()
+    } catch (err) {
+      console.error('[CACHE CLEAR] listener failed:', err)
+    }
+  }
+  const after = getCacheStats()
+
+  console.log(
+    `[CACHE CLEAR] Flushed ${before.collections} collection caches containing ${before.cachedDocuments} documents. Pending requests: ${before.pendingRequests}`
+  )
+
+  return {
+    clearedCollections: before.collections,
+    clearedDocuments: before.cachedDocuments,
+    pendingRequests: before.pendingRequests,
+    remainingCollections: after.collections,
+  }
+}
+
+// Helper function to check if cache is valid
+function isCacheValid(cacheEntry: CacheEntry | undefined): cacheEntry is CacheEntry {
+  return cacheEntry !== undefined && Date.now() - cacheEntry.timestamp < CACHE_TTL
+}
+
+// Cleanup expired cache entries
+function cleanupExpiredCache() {
+  const now = Date.now()
+  let removedCount = 0
+
+  // Create a list of collections to remove to avoid modifying map during iteration
+  const collectionsToRemove = []
+
+  for (const [collectionName, cacheEntry] of collectionsCache.entries()) {
+    // Don't remove cache entries that have pending requests
+    if (!pendingRequests.has(collectionName) && now - cacheEntry.timestamp >= CACHE_TTL) {
+      collectionsToRemove.push(collectionName)
+    }
+  }
+
+  // Remove expired entries
+  for (const collectionName of collectionsToRemove) {
+    collectionsCache.delete(collectionName)
+    removedCount++
+  }
+
+  // If still too many collections cached, remove oldest ones (but not those with pending requests)
+  if (collectionsCache.size > MAX_CACHED_COLLECTIONS) {
+    const entries = Array.from(collectionsCache.entries())
+      .filter(([collectionName]) => !pendingRequests.has(collectionName))
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)
+
+    const toRemove = Math.min(entries.length, collectionsCache.size - MAX_CACHED_COLLECTIONS)
+    for (let i = 0; i < toRemove; i++) {
+      collectionsCache.delete(entries[i][0])
+      removedCount++
+    }
+  }
+
+  if (removedCount > 0) {
+    console.log(
+      `[CACHE CLEANUP] Removed ${removedCount} expired collection caches. Active caches: ${collectionsCache.size}, Pending requests: ${pendingRequests.size}`
+    )
+  }
+} // Run cleanup every 10 minutes
+setInterval(cleanupExpiredCache, 10 * 60 * 1000)
+
+// Helper function to get cached collection
+async function getCachedCollection(collectionName: string): Promise<Docs> {
+  const cacheEntry = collectionsCache.get(collectionName)
+
+  if (isCacheValid(cacheEntry)) {
+    // console.log(`[${collectionName.toUpperCase()} CACHE HIT] Serving cached collection`)
+    return cacheEntry.data
+  }
+
+  // Check if there's already a pending request for this collection
+  if (pendingRequests.has(collectionName)) {
+    console.log(`[${collectionName.toUpperCase()} CACHE WAIT] Waiting for ongoing request`)
+    return await pendingRequests.get(collectionName)!
+  }
+
+  console.log(`[${collectionName.toUpperCase()} CACHE MISS] Fetching fresh collection`)
+
+  // Create a promise for this request and store it to prevent duplicate requests
+  const readCollection = async () => {
+    const db = firestore()
+    const collection = await db.collection(collectionName).get()
+    // Convert to the same format as the original code expects
+    const docs: Docs = {}
+    collection.forEach((doc) => {
+      docs[doc.id] = doc.data()
+    })
+    return docs
+  }
+
+  let fetchPromise!: Promise<Docs>
+  fetchPromise = (async () => {
+    try {
+      let generation = cacheGeneration
+      let docs = await readCollection()
+
+      if (generation !== cacheGeneration) {
+        // A clear_cache landed while this read was in flight, so `docs` may be the very snapshot
+        // the flush was meant to discard. Read once more - that read demonstrably starts after the
+        // flush. Once, not in a loop: another flush during the retry is someone publishing again,
+        // and their own flush will be followed by their own reads.
+        console.log(`[${collectionName.toUpperCase()} CACHE STALE] Flushed mid-read, re-reading`)
+        generation = cacheGeneration
+        docs = await readCollection()
+      }
+
+      // Only cache a result that no flush has invalidated since it was read.
+      if (generation === cacheGeneration && !isCacheValid(collectionsCache.get(collectionName))) {
+        collectionsCache.set(collectionName, {
+          data: docs,
+          timestamp: Date.now(),
+        })
+        console.log(`[${collectionName.toUpperCase()} CACHE STORE] Cached ${Object.keys(docs).length} documents`)
+      }
+
+      return docs
+    } finally {
+      // Only if it is still ours. A later request may have replaced it (this one having been
+      // dropped by a flush), and deleting that would strand its waiters on an orphaned promise.
+      if (pendingRequests.get(collectionName) === fetchPromise) {
+        pendingRequests.delete(collectionName)
+      }
+    }
+  })()
+
+  // Store the promise so other concurrent requests can wait for it
+  pendingRequests.set(collectionName, fetchPromise)
+
+  return await fetchPromise
+}
+
+const SUPPORTED_OPERATORS = ['==', 'array-contains']
+const SUPPORTED_TEXT = SUPPORTED_OPERATORS.join(', ')
+
+// Mock collection reference that applies filters in memory
+class CachedCollectionReference<T extends object> implements CachedQuery<T> {
+  collectionName: string
+  filters: { field: string; operator: string; value: unknown }[]
+
+  constructor(collectionName: string) {
+    this.collectionName = collectionName
+    this.filters = []
+  }
+
+  where(field: string, operator: string, value: unknown) {
+    // Filters are applied in memory below, and only these two operators are implemented. Anything
+    // else used to match nothing at all and silently return an empty result, so fail loudly instead.
+    if (!SUPPORTED_OPERATORS.includes(operator)) {
+      throw new Error(
+        `cachedFirestore does not support the '${operator}' operator (used on '${field}' of '${this.collectionName}'). ` +
+          `Supported: ${SUPPORTED_TEXT}. Filter in memory after .get(), or use the direct client.`
+      )
+    }
+    this.filters.push({ field, operator, value })
+    return this
+  }
+
+  orderBy(): never {
+    throw new Error(
+      `cachedFirestore does not implement orderBy (on '${this.collectionName}'). Sort in memory after .get().`
+    )
+  }
+
+  limit(): never {
+    throw new Error(
+      `cachedFirestore does not implement limit (on '${this.collectionName}'). Slice in memory after .get().`
+    )
+  }
+
+  async get(): Promise<CachedSnapshot<T>> {
+    // Get the cached data when we actually need it
+    const cachedData = await getCachedCollection(this.collectionName)
+    const filteredData = { ...cachedData }
+
+    // Apply filters in memory
+    for (const filter of this.filters) {
+      const { field, operator, value } = filter
+
+      for (const id in filteredData) {
+        const doc = filteredData[id]
+        let shouldKeep = false
+
+        if (operator === '==') {
+          shouldKeep = doc[field] === value
+        } else if (operator === 'array-contains') {
+          shouldKeep = Array.isArray(doc[field]) && doc[field].includes(value)
+        }
+        // Add more operators as needed
+
+        if (!shouldKeep) {
+          delete filteredData[id]
+        }
+      }
+    }
+
+    // Return a mock collection object that behaves like Firestore's QuerySnapshot
+    return {
+      forEach: (callback: (doc: CachedDoc<T>) => void) => {
+        for (const [id, data] of Object.entries(filteredData)) {
+          callback({
+            id: id,
+            data: () => data as T,
+          })
+        }
+      },
+    }
+  }
+}
+
+// Drop-in replacement for firestore that caches collections
+function cachedFirestore(): CachedDb {
+  const originalDb = firestore()
+
+  return {
+    // The client's own data fields, as before. (Its methods live on the prototype, so spreading never copied
+    // them; only `collection` below is the cached drop-in.) First, so the cached methods cannot be overwritten.
+    ...originalDb,
+    collection: <T extends object = DocumentData>(collectionName: string): CachedCollection<T> => {
+      // Return cached version for any collection
+      return {
+        get: async () => {
+          const cachedData = await getCachedCollection(collectionName)
+          return {
+            forEach: (callback: (doc: CachedDoc<T>) => void) => {
+              for (const [id, data] of Object.entries(cachedData)) {
+                callback({
+                  id: id,
+                  data: () => data as T,
+                })
+              }
+            },
+          }
+        },
+        where: (field: string, operator: string, value: unknown) => {
+          const cachedRef = new CachedCollectionReference<T>(collectionName)
+          return cachedRef.where(field, operator, value)
+        },
+        // Not implemented, but say so clearly rather than failing with "not a function".
+        orderBy: (): never => {
+          throw new Error(
+            `cachedFirestore does not implement orderBy (on '${collectionName}'). Sort in memory after .get(), or use the direct firestore client.`
+          )
+        },
+        limit: (): never => {
+          throw new Error(
+            `cachedFirestore does not implement limit (on '${collectionName}'). Slice in memory after .get(), or use the direct firestore client.`
+          )
+        },
+        doc: (docId: string) => {
+          return {
+            get: async () => {
+              const cachedData = await getCachedCollection(collectionName)
+              const docData = cachedData[docId]
+
+              if (docData) {
+                return {
+                  id: docId,
+                  exists: true,
+                  data: () => docData as T,
+                }
+              } else {
+                // Document not found in cache, check directly from Firestore
+                console.log(
+                  `[${collectionName.toUpperCase()} DOC MISS] Document ${docId} not in cache, checking Firestore directly`
+                )
+                try {
+                  const db = firestore()
+                  const docSnapshot = await db.collection(collectionName).doc(docId).get()
+
+                  if (docSnapshot.exists) {
+                    const freshDocData = docSnapshot.data() as DocumentData
+                    // Update the cache with the new document
+                    const cacheEntry = collectionsCache.get(collectionName)
+                    if (cacheEntry) {
+                      cacheEntry.data[docId] = freshDocData
+                      console.log(`[${collectionName.toUpperCase()} DOC CACHE] Added document ${docId} to cache`)
+                    }
+
+                    return {
+                      id: docId,
+                      exists: true,
+                      data: () => freshDocData as T,
+                    }
+                  } else {
+                    return {
+                      id: docId,
+                      exists: false,
+                      data: () => null,
+                    }
+                  }
+                } catch (error) {
+                  // Rethrow rather than reporting `exists: false`. A failed read and a genuinely
+                  // missing document are completely different answers, and callers act on them
+                  // very differently: validateKey turned a timeout here into "Invalid API key"
+                  // (403) for a paying customer across every /v2 endpoint, and v2/files turned it
+                  // into a 404 for an asset that exists. A caller that cannot tell the two apart
+                  // cannot help but get it wrong, so give it something it can distinguish.
+                  //
+                  // Consistent with the collection path above, which has always let read errors
+                  // propagate; only this doc-level fallback swallowed them.
+                  console.error(`[${collectionName.toUpperCase()} DOC ERROR] Failed to fetch document ${docId}:`, error)
+                  throw error
+                }
+              }
+            },
+          }
+        },
+      }
+    },
+  }
+}
+
+cachedFirestore.clearCache = clearCache
+cachedFirestore.getCacheStats = getCacheStats
+cachedFirestore.onClear = onClear
+
+export default cachedFirestore

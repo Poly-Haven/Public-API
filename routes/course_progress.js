@@ -1,8 +1,7 @@
-const crypto = require('crypto')
-const admin = require('firebase-admin') // for FieldValue
-const firestore = require('../firestore')
-
-require('dotenv').config()
+import '../utils/env.ts'
+import crypto from 'crypto'
+import { FieldValue } from 'firebase-admin/firestore' // for FieldValue
+import firestore from '../firestore.ts'
 
 const db = firestore()
 
@@ -22,7 +21,7 @@ function validate(req, reply) {
   return uuid
 }
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   // Read a user's progress.
   fastify.post('/', async (req, reply) => {
     const uuid = validate(req, reply)
@@ -36,11 +35,11 @@ module.exports = async function (fastify) {
     const uuid = validate(req, reply)
     if (!uuid) return reply
 
-    const update = { updatedAt: admin.firestore.FieldValue.serverTimestamp() }
+    const update = { updatedAt: FieldValue.serverTimestamp() }
     if (req.body.lastLecture) update.lastLecture = req.body.lastLecture
     if (req.body.completed) {
       const slugs = [].concat(req.body.completed)
-      update.completed = admin.firestore.FieldValue.arrayUnion(...slugs)
+      update.completed = FieldValue.arrayUnion(...slugs)
     }
 
     await db.collection('course_progress').doc(uuid).set(update, { merge: true })

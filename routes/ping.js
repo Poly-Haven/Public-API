@@ -1,18 +1,19 @@
-const revision = require('child_process').execSync('git rev-list --format=oneline --max-count=1 HEAD').toString().trim()
+import { execSync } from 'node:child_process'
 
-const embeddingIndex = require('../utils/embeddingIndex')
-const keywordIndex = require('../utils/keywordIndex')
-const workersAI = require('../utils/workersAI')
+const revision = execSync('git rev-list --format=oneline --max-count=1 HEAD').toString().trim()
 
-module.exports = async function (fastify) {
+import * as embeddingIndex from '../utils/embeddingIndex.ts'
+import * as keywordIndex from '../utils/keywordIndex.ts'
+import * as workersAI from '../utils/workersAI.ts'
+
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     return reply.code(200).send({
       time: Date.now(),
       node: process.env.NODE_ID || 'UNKNOWN',
       commit: revision,
-      // The two nodes are not on the same runtime (15.12.0 and 15.14.0 as of writing) and neither has
-      // global fetch, which is why utils/workersAI.js uses node-fetch. Reporting it here means the
-      // next person to wonder can curl instead of hunting for ssh credentials.
+      // The nodes are not necessarily on the same runtime build. Reporting it here means the next person to
+      // wonder can curl instead of hunting for ssh credentials.
       runtime: process.version,
       // The search index is per-node and built lazily, and admin's /clear_cache fan-out is what keeps
       // it current. Surfacing it here means a node with a stale or failed index is visible without SSH.

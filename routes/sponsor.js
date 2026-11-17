@@ -1,10 +1,12 @@
-const crypto = require('crypto')
-const escape = require('escape-html')
+import '../utils/env.ts'
+import crypto from 'crypto'
+import escape from 'escape-html'
+import { FieldValue } from 'firebase-admin/firestore'
+import firestore from '../firestore.ts'
 
-require('dotenv').config()
-const { sendText } = require('../utils/http')
+import { sendText } from '../utils/http.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', (req, reply) => {
     return sendText(reply, 400, `Please format your request as /sponsor/[id]`)
   })
@@ -13,7 +15,6 @@ module.exports = async function (fastify) {
     // Get sponsor name & link from given assetID
     const uid = req.params.id
 
-    const firestore = require('../firestore')
     const db = firestore()
 
     if (uid.startsWith('corp_')) {
@@ -66,21 +67,10 @@ module.exports = async function (fastify) {
       })
     }
 
-    const admin = require('firebase-admin')
-    if (!admin.apps.length) {
-      console.log('Firebase init')
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        }),
-      })
-    }
-    const db = admin.firestore()
+    const db = firestore()
 
     const doc = db.collection('assets').doc(req.body.assetID)
-    doc.update({ sponsors: admin.firestore.FieldValue.arrayUnion(uuid) })
+    doc.update({ sponsors: FieldValue.arrayUnion(uuid) })
 
     const logID =
       Date.now().toString() +

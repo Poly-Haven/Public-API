@@ -1,9 +1,9 @@
-const isBadWord = require('../utils/isBadWord')
-const validator = require('validator')
+import isBadWord from '../utils/isBadWord.ts'
+import validator from 'validator'
 
-const firestore = require('../firestore')
+import firestore from '../firestore.ts'
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const db = firestore()
     const collection = await db.collection('patrons').where('status', '==', 'active_patron').get()

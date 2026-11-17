@@ -3,9 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# `npm ci` deletes node_modules before reinstalling, and the running worker still lazy-requires modules
-# (firebase-admin among them), so installing in place breaks live requests with MODULE_NOT_FOUND for as
-# long as the install takes. Install into a staging dir instead and swap it in with two renames, and skip
+# `npm ci` deletes node_modules before reinstalling, and the running worker can still load modules on demand
+# (dynamic import(), e.g. the legacy JSON routes), so installing in place breaks live requests with
+# ERR_MODULE_NOT_FOUND for as long as the install takes. Install into a staging dir instead and swap it in with two renames, and skip
 # it entirely when the lockfile is unchanged since the last install.
 if ! cmp -s package-lock.json node_modules/.deployed-lock 2>/dev/null; then
   stage="$HOME/.api_deps_staging"
@@ -22,4 +22,4 @@ else
   echo "package-lock.json unchanged, skipping npm ci"
 fi
 
-pm2 reload ecosystem.config.js --update-env
+pm2 reload ecosystem.config.cjs --update-env

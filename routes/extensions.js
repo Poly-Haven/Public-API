@@ -1,4 +1,4 @@
-const extensions = require('../extensions.json')
+import extensions from '../extensions.json' with { type: 'json' }
 
 /**
  * Poly Haven's public Blender extensions repository.
@@ -18,7 +18,7 @@ const extensions = require('../extensions.json')
  * Note this is unrelated to /v2/extensions, which serves the paid add-on.
  */
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   // GET /extensions  ->  { version, blocklist, data: [...] }
   fastify.get('/', async (req, reply) => {
     reply.header('Cache-Control', 'public, max-age=3600')

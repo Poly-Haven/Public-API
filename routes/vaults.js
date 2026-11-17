@@ -1,15 +1,15 @@
-const shuffleArray = require('../utils/shuffleArray')
-const sortObjBySubObjProp = require('../utils/sortObjBySubObjProp')
+import shuffleArray from '../utils/shuffleArray.ts'
+import sortObjBySubObjProp from '../utils/sortObjBySubObjProp.ts'
 
-const firestore = require('../firestore')
-const cachedFirestore = require('../utils/cachedFirestore')
-const { matchesVault } = require('../utils/assetFilters')
-const { vaultStatus } = require('../utils/vaultStatus')
+import firestore from '../firestore.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
+import { matchesVault } from '../utils/assetFilters.ts'
+import { vaultStatus } from '../utils/vaultStatus.ts'
 
 const db = firestore()
 const cachedDb = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const colVaults = await db.collection('vaults').get()
     let vaults = {}

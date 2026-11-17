@@ -1,12 +1,12 @@
-const firestore = require('../firestore')
-const cachedFirestore = require('../utils/cachedFirestore')
+import firestore from '../firestore.ts'
+import cachedFirestore from '../utils/cachedFirestore.ts'
 
 const db = firestore()
 // This route sweeps the entire assets collection on every request, so read that one through the
 // shared cache. Everything else stays on the direct client to keep the cache small.
 const cachedDb = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     const colAssets = await cachedDb.collection('assets').get()
     const assets = {}

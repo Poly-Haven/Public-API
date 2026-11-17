@@ -1,11 +1,11 @@
-const escape = require('escape-html')
+import escape from 'escape-html'
 
-const cachedFirestore = require('../../utils/cachedFirestore')
-const validateKey = require('../../utils/validateKey')
-const { sendText } = require('../../utils/http')
+import cachedFirestore from '../../utils/cachedFirestore.ts'
+import validateKey from '../../utils/validateKey.ts'
+import { sendText } from '../../utils/http.ts'
 const db = cachedFirestore()
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', (req, reply) => {
     return sendText(reply, 400, `Please format your request as /files/[asset_id]`)
   })

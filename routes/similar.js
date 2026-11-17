@@ -1,9 +1,9 @@
-const escape = require('escape-html')
+import escape from 'escape-html'
 
-const cachedFirestore = require('../utils/cachedFirestore')
-const embeddingIndex = require('../utils/embeddingIndex')
-const { publicVaultIds, maskVault } = require('../utils/vaultStatus')
-const { sendText } = require('../utils/http')
+import cachedFirestore from '../utils/cachedFirestore.ts'
+import * as embeddingIndex from '../utils/embeddingIndex.ts'
+import { publicVaultIds, maskVault } from '../utils/vaultStatus.ts'
+import { sendText } from '../utils/http.ts'
 
 const db = cachedFirestore()
 
@@ -98,7 +98,7 @@ const tagRanking = (this_asset, docs) => {
   return ranked.sort((a, b) => b[1] - a[1])
 }
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', (req, reply) => {
     return sendText(reply, 400, `Please format your request as /similar/[asset_id]`)
   })

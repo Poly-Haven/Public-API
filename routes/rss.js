@@ -1,12 +1,11 @@
-const fetch = require('node-fetch')
-const { XMLBuilder } = require('fast-xml-parser')
+import { XMLBuilder } from 'fast-xml-parser'
 
-const { thumbnailUrl } = require('../utils/imgUrl')
-const { sendText } = require('../utils/http')
+import { thumbnailUrl } from '../utils/imgUrl.ts'
+import { sendText } from '../utils/http.ts'
 
 const assetTypeNames = ['HDRI', 'Texture', 'Model']
 
-module.exports = async function (fastify) {
+export default async function (fastify) {
   fastify.get('/', async (req, reply) => {
     try {
       // Fetch asset data from the API
