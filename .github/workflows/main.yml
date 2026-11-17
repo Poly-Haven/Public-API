@@ -22,17 +22,14 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
 
-    # Auth: set the SSH_KEY secret (a private deploy key whose public half is in ~api/.ssh/authorized_keys on each
-    # node) and delete SSH_PASSWORD. With SSH_KEY unset the action falls back to the password. Both secrets are
-    # passed so either works; prefer the key. Required secrets: SSH_HOST_API_A, SSH_HOST_API_B, SSH_USERNAME, and
-    # one of SSH_KEY / SSH_PASSWORD. They must exist BEFORE this workflow is merged to master (see deploy/README.md).
+    # Auth: SSH_KEY is a dedicated ed25519 deploy key whose public half is in ~api/.ssh/authorized_keys on each node
+    # (the nodes accept keys only). Required secrets: SSH_HOST_API_A, SSH_HOST_API_B, SSH_USERNAME, SSH_KEY.
     #
-    # Host key pinning: set SSH_FINGERPRINT_API_A / SSH_FINGERPRINT_API_B to each node's SHA256 host key
-    # fingerprint (ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub, the `SHA256:...` part) and the action refuses
-    # to connect to anything else. Optional: unset, the secret is empty and the action skips host verification.
+    # Host key pinning: SSH_FINGERPRINT_API_A / SSH_FINGERPRINT_API_B hold each node's SHA256 host key fingerprint,
+    # and the action refuses to connect to anything else. Re-set them whenever a node is rebuilt.
     #
-    # Nodes go one after the other. script_stop (plus set -e in the script) aborts on the first failing command, and
-    # a failed step skips the next node, so a bad deploy never takes both nodes down.
+    # Nodes go one after the other. set -e aborts on the first failing command (deploy.sh fails unless /ping reports
+    # the new commit), and a failed step skips the next node, so a bad deploy never takes both nodes down.
     steps:
       - name: Deploy API A
         uses: appleboy/ssh-action@v1.2.2
@@ -41,8 +38,6 @@ jobs:
           fingerprint: ${{ secrets.SSH_FINGERPRINT_API_A }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script_stop: true
           script: |
             set -euo pipefail
             cd ~/api
@@ -55,8 +50,6 @@ jobs:
           fingerprint: ${{ secrets.SSH_FINGERPRINT_API_B }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script_stop: true
           script: |
             set -euo pipefail
             cd ~/api
