@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Provision a fresh Debian 12 or 13 VPS as a Poly Haven api node. Run as root, from anywhere:
 #   NODE_MAJOR=24 BRANCH=fastify bash provision.sh
-# Idempotent: safe to re-run. It stops before starting the app if ~api/api/.env is missing; see deploy/README.md.
+# Idempotent: safe to re-run. It stops before starting the app if ~api/api/.env is missing; see the private runbook (info/api_v2_cutover_runbook.md, not in this repo).
 set -euo pipefail
 
 # --- settings (override from the environment) ---
@@ -138,7 +138,7 @@ Provisioned, but NOT started: $APP_DIR/.env does not exist.
 Next: copy it from an old node, set a unique NODE_ID, then (as $API_USER):
   chmod 600 ~/api/.env
   cd ~/api && pm2 start ecosystem.config.cjs && pm2 save
-See deploy/README.md for the order (parity run first).
+See the private runbook (info/api_v2_cutover_runbook.md) for the order (parity run first).
 MSG
   exit 0
 fi
